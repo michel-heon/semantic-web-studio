@@ -1,16 +1,20 @@
-#!/bin/bash 
-
+#!/bin/bash
+  
 ###################################################################
 # Script Name   :
-# Description   : Stript d'installation du translator et de Jena
-# Les variables d'installation sont dans 00-env.sh
-# Args          : N\A
-# Author       	: Michel Héon PhD
+# Description   :
+# Args          : 
+# Author        : Michel Héon PhD
 # Institution   : Université du Québec à Montréal
 # Copyright     : Université du Québec à Montréal (c) 2022
 # Email         : heon.michel@uqam.ca
 ###################################################################
 export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd -P)"
-source $SCRIPT_DIR/00-env.sh
-mvn clean install -Dtranslator.deploy.dir=$TRANSLATOR_HOME
-chmod +x $TRANSLATOR_HOME/bin/*
+if [ ! -z $1 ]; then 
+	export TRANSLATOR_HOME=$1
+else
+	echo export TRANSLATOR_HOME=/opt/translator
+fi
+echo INSTALL $TRANSLATOR_HOME
+export JENA_HOME=$TRANSLATOR_HOME
+export PATH=$JENA_HOME/bin:$PATH

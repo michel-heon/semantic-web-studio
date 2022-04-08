@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.atomgraph.etl.json;
+package ca.uqam.data.translator.jsontordf;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -26,7 +26,7 @@ import org.apache.jena.riot.system.StreamRDFLib;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 
-import ca.uqam.data.translator.json2rdf.JsonStreamRDFWriter;
+
 
 /**
  *

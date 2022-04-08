@@ -63,50 +63,71 @@
 			<!-- </execution> -->
 			<!-- </executions> -->
 			<!-- </plugin> -->
+			<!-- <plugin> -->
+			<!-- <groupId>org.codehaus.mojo</groupId> -->
+			<!-- <artifactId>wagon-maven-plugin</artifactId> -->
+			<!-- <version>1.0</version> -->
+			<!-- <executions> -->
+			<!-- <execution> -->
+			<!-- <id>download-jena</id> -->
+			<!-- <phase>pre-integration-test</phase> -->
+			<!-- <goals> -->
+			<!-- <goal>download-single</goal> -->
+			<!-- </goals> -->
+			<!-- <configuration> -->
+			<!-- <skip>${jena.skip.install}</skip> -->
+			<!-- <url>https://archive.apache.org/</url> -->
+			<!-- <fromFile>dist/jena/binaries/apache-jena-${jena.version}.tar.gz</fromFile> -->
+			<!-- <toDir>${project.build.directory}</toDir> -->
+			<!-- <overwrite>false</overwrite> -->
+			<!-- </configuration> -->
+			<!-- </execution> -->
+			<!-- </executions> -->
+			<!-- </plugin> -->
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>wagon-maven-plugin</artifactId>
-				<version>1.0</version>
+				<groupId>com.googlecode.maven-download-plugin</groupId>
+				<artifactId>download-maven-plugin</artifactId>
+				<version>1.6.8</version>
 				<executions>
 					<execution>
-						<id>download-jena</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>download-single</goal>
-						</goals>
-						<configuration>
-							<skip>${jena.skip.install}</skip>
-							<url>https://archive.apache.org/</url>
-							<fromFile>dist/jena/binaries/apache-jena-${jena.version}.tar.gz</fromFile>
-							<toDir>${project.build.directory}</toDir>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.7</version>
-				<executions>
-					<execution>
-						<id>prepare</id>
+						<id>install-jena</id>
 						<phase>install</phase>
-						<configuration>
-							<skip>${jena.skip.install}</skip>
-							<tasks>
-								<echo
-									message="Deploying jena in ${translator.deploy.dir}" />
-								<untar
-									src="${project.build.directory}/apache-jena-${jena.version}.tar.gz"
-									compression="gzip" dest="${project.build.directory}" />
-							</tasks>
-						</configuration>
 						<goals>
-							<goal>run</goal>
+							<goal>wget</goal>
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<skip>${jena.skip.install}</skip>
+					<url>https://archive.apache.org/dist/jena/binaries/apache-jena-${jena.version}.tar.gz</url>
+					<unpack>true</unpack>
+					<outputDirectory>${project.build.directory}</outputDirectory>
+					<overwrite>false</overwrite>
+				</configuration>
 			</plugin>
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.apache.maven.plugins</groupId> -->
+<!-- 				<artifactId>maven-antrun-plugin</artifactId> -->
+<!-- 				<version>1.7</version> -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<id>prepare</id> -->
+<!-- 						<phase>install</phase> -->
+<!-- 						<configuration> -->
+<!-- 							<skip>${jena.skip.install}</skip> -->
+<!-- 							<tasks> -->
+<!-- 								<echo message="Deploying jena in ${translator.deploy.dir}" /> -->
+<!-- 								<untar -->
+<!-- 									src="${project.build.directory}/apache-jena-${jena.version}.tar.gz" -->
+<!-- 									compression="gzip" dest="${project.build.directory}" /> -->
+<!-- 							</tasks> -->
+<!-- 						</configuration> -->
+<!-- 						<goals> -->
+<!-- 							<goal>run</goal> -->
+<!-- 						</goals> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 			</plugin> -->
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
@@ -119,6 +140,7 @@
 						<configuration>
 							<skip>${jena.skip.install}</skip>
 							<outputDirectory>${translator.deploy.dir}/bin</outputDirectory>
+							<overwrite>true</overwrite>
 							<resources>
 								<resource>
 									<directory>${project.basedir}/src/main/bash</directory>
@@ -140,9 +162,35 @@
 						<configuration>
 							<skip>${jena.skip.install}</skip>
 							<outputDirectory>${translator.deploy.dir}</outputDirectory>
+							<overwrite>true</overwrite>
 							<resources>
 								<resource>
 									<directory>${project.build.directory}/apache-jena-${jena.version}</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>install-translator</id>
+						<phase>install</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<skip>${jena.skip.install}</skip>
+							<overwrite>true</overwrite>
+							<outputDirectory>${translator.deploy.dir}/lib</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>*.jar</include>
+									</includes>
 								</resource>
 							</resources>
 						</configuration>
