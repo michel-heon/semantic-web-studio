@@ -1,6 +1,7 @@
 package ca.uqam.data.translator.xmltojson;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -41,7 +42,7 @@ public class XML2JSON {
     private final OutputStream jsonOut;
 
     @CommandLine.Option(names = { "--input-charset" }, description = "Input charset (default: ${DEFAULT-VALUE})")
-    private Charset inputCharset = StandardCharsets.UTF_8;
+    private static Charset inputCharset = StandardCharsets.UTF_8;
 
     @CommandLine.Option(names = { "--output-charset" }, description = "Output charset (default: ${DEFAULT-VALUE})")
     private Charset outputCharset = StandardCharsets.UTF_8;
@@ -60,5 +61,16 @@ public class XML2JSON {
             IOUtils.write(jsonPrettyPrintString, jsonOut, "UTF-8");
             
         }
+    }
+    public static String convert(String xml) throws IOException
+    {		
+    	InputStream _xmlIn = new ByteArrayInputStream(xml.getBytes(inputCharset));
+        String jsonPrettyPrintString;
+		try (Reader reader =  new BufferedReader(new InputStreamReader(_xmlIn, inputCharset)))
+        {
+            JSONObject xmlJSONObj = XML.toJSONObject(new InputStreamReader(_xmlIn));
+            jsonPrettyPrintString = xmlJSONObj.toString();
+        }
+		return jsonPrettyPrintString;
     }
 }

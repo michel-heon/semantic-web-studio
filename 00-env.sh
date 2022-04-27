@@ -13,7 +13,7 @@ export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd 
 if [ ! -z $1 ]; then 
 	export TRANSLATOR_HOME=$1
 else
-	echo export TRANSLATOR_HOME=/opt/translator
+	export TRANSLATOR_HOME=/opt/translator
 fi
 echo INSTALL $TRANSLATOR_HOME
 export JENA_HOME=$TRANSLATOR_HOME

@@ -1,0 +1,418 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <rechercher_prof_par_courriel_rdpResponse xmlns="http://tempuri.org/WS_Sitel/WS_Sitel_Services_INF">
+      <rechercher_prof_par_courriel_rdpResult>
+        <XmlProfs xmlns="">
+          <ListeProf>
+            <Prof>
+              <Matricule>6KsBV8mxkE0_</Matricule>
+              <Nom>Roger Nkambou</Nom>
+              <IndParleMedia/>
+              <IndCVDisponible>N</IndCVDisponible>
+              <IndBibliOrigineBibliotheque>O</IndBibliOrigineBibliotheque>
+              <ListeTache>
+                <Tache>
+                  <Tel>(514) 987-3000</Tel>
+                  <Poste>8395</Poste>
+                  <Local>PK-4520</Local>
+                  <Mail>nkambou.roger@uqam.ca</Mail>
+                  <Telecopieur>(514) 987-8477</Telecopieur>
+                  <CodeUnite>2100</CodeUnite>
+                  <NomUnite>Département d'informatique</NomUnite>
+                  <LocalUnite>PK-4150</LocalUnite>
+                  <TelephoneUnite>(514) 987-0437</TelephoneUnite>
+                  <PosteUnite/>
+                  <TelecopieurUnite>(514) 987-8477</TelecopieurUnite>
+                  <TitreDescr>Professeur</TitreDescr>
+                </Tache>
+              </ListeTache>
+              <ListeUniteRech>
+                <UniteRech>
+                  <Code>122</Code>
+                  <Descr>Laboratoire de recherche en gestion, diffusion et acquisition de connaissances (GDAC)</Descr>
+                  <Url/>
+                </UniteRech>
+              </ListeUniteRech>
+              <ListeCours>
+                <Cours>
+                  <Trimestre>20161</Trimestre>
+                  <Sigle>DIC9270</Sigle>
+                  <Titre>SÉMINAIRE EN INFORMATIQUE COGNITIVE I</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20161</Trimestre>
+                  <Sigle>DIC9411</Sigle>
+                  <Titre>PROJET DE THESE</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20161</Trimestre>
+                  <Sigle>INF1120</Sigle>
+                  <Titre>PROGRAMMATION I</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20161</Trimestre>
+                  <Sigle>INF2160</Sigle>
+                  <Titre>PARADIGMES DE PROGRAMMATION</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20161</Trimestre>
+                  <Sigle>INF9812</Sigle>
+                  <Titre>PROJET DE THESE</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20162</Trimestre>
+                  <Sigle>DME9100</Sigle>
+                  <Titre>STAGE DE RECHERCHE I</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20163</Trimestre>
+                  <Sigle>DIC9270</Sigle>
+                  <Titre>SÉMINAIRE EN INFORMATIQUE COGNITIVE I</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20163</Trimestre>
+                  <Sigle>INF2160</Sigle>
+                  <Titre>PARADIGMES DE PROGRAMMATION</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20163</Trimestre>
+                  <Sigle>INF7470</Sigle>
+                  <Titre>SYSTEMES TUTORIELS INTELLIGENTS</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20171</Trimestre>
+                  <Sigle>DIC9340</Sigle>
+                  <Titre>ENVIRONNEMENTS D'APPRENTISSAGE A BASE DE CONNAISS.</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20171</Trimestre>
+                  <Sigle>DIC9411</Sigle>
+                  <Titre>PROJET DE THESE</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20171</Trimestre>
+                  <Sigle>INF2160</Sigle>
+                  <Titre>PARADIGMES DE PROGRAMMATION</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20171</Trimestre>
+                  <Sigle>INF4230</Sigle>
+                  <Titre>INTELLIGENCE ARTIFICIELLE</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20171</Trimestre>
+                  <Sigle>INF8881</Sigle>
+                  <Titre>SEMINAIRE DE MAITRISE EN INFORMATIQUE I</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20171</Trimestre>
+                  <Sigle>INF9812</Sigle>
+                  <Titre>PROJET DE THESE</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20173</Trimestre>
+                  <Sigle>INF2160</Sigle>
+                  <Titre>PARADIGMES DE PROGRAMMATION</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20183</Trimestre>
+                  <Sigle>INF2160</Sigle>
+                  <Titre>PARADIGMES DE PROGRAMMATION</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20183</Trimestre>
+                  <Sigle>INF7470</Sigle>
+                  <Titre>SYSTEMES TUTORIELS INTELLIGENTS</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20191</Trimestre>
+                  <Sigle>DIC9271</Sigle>
+                  <Titre>SÉMINAIRE EN INFORMATIQUE COGNITIVE II</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20191</Trimestre>
+                  <Sigle>DIC9340</Sigle>
+                  <Titre>ENVIRONNEMENTS D'APPRENTISSAGE A BASE DE CONNAISS.</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20191</Trimestre>
+                  <Sigle>INF2160</Sigle>
+                  <Titre>PARADIGMES DE PROGRAMMATION</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20191</Trimestre>
+                  <Sigle>INF9812</Sigle>
+                  <Titre>PROJET DE THESE</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20201</Trimestre>
+                  <Sigle>DIC9411</Sigle>
+                  <Titre>PROJET DE THESE</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20201</Trimestre>
+                  <Sigle>INF6120</Sigle>
+                  <Titre>PROGRAMMATION FONCTIONNELLE ET LOGIQUE</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20203</Trimestre>
+                  <Sigle>DIC9270</Sigle>
+                  <Titre>SÉMINAIRE EN INFORMATIQUE COGNITIVE I</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20203</Trimestre>
+                  <Sigle>INF6120</Sigle>
+                  <Titre>PROGRAMMATION FONCTIONNELLE ET LOGIQUE</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20203</Trimestre>
+                  <Sigle>INF7470</Sigle>
+                  <Titre>SYSTEMES TUTORIELS INTELLIGENTS</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20211</Trimestre>
+                  <Sigle>DIC9270</Sigle>
+                  <Titre>SÉMINAIRE EN INFORMATIQUE COGNITIVE I</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20211</Trimestre>
+                  <Sigle>DIC9271</Sigle>
+                  <Titre>SÉMINAIRE EN INFORMATIQUE COGNITIVE II</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20211</Trimestre>
+                  <Sigle>DIC9340</Sigle>
+                  <Titre>ENVIRONNEMENTS D'APPRENTISSAGE A BASE DE CONNAISS.</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20211</Trimestre>
+                  <Sigle>INF9812</Sigle>
+                  <Titre>PROJET DE THESE</Titre>
+                </Cours>
+              </ListeCours>
+              <ListeExpertise>
+                <Expertise>
+                  <CleVivo>n6787553424</CleVivo>
+                  <Titre>Apprentissage machine</Titre>
+                  <CheminAcces>/#Apprentissage%20machine%7C100%7C1</CheminAcces>
+                </Expertise>
+                <Expertise>
+                  <CleVivo>n7197364992</CleVivo>
+                  <Titre>Informatique</Titre>
+                  <CheminAcces>/#Informatique%7C100%7C1</CheminAcces>
+                </Expertise>
+                <Expertise>
+                  <CleVivo>n13471520</CleVivo>
+                  <Titre>Ingénierie des connaissances</Titre>
+                  <CheminAcces>/#Ingénierie%20des%20connaissances%7C100%7C1</CheminAcces>
+                </Expertise>
+                <Expertise>
+                  <CleVivo>n4511552796</CleVivo>
+                  <Titre>Intelligence artificielle</Titre>
+                  <CheminAcces>/#Intelligence%20artificielle%7C100%7C1</CheminAcces>
+                </Expertise>
+                <Expertise>
+                  <CleVivo>n6913476061</CleVivo>
+                  <Titre>Science des données</Titre>
+                  <CheminAcces>/#Science%20des%20données%7C100%7C1</CheminAcces>
+                </Expertise>
+                <Expertise>
+                  <CleVivo>n8912654696</CleVivo>
+                  <Titre>Systèmes tutoriels intelligents</Titre>
+                  <CheminAcces>/#Systèmes%20tutoriels%20intelligents%7C100%7C1</CheminAcces>
+                </Expertise>
+              </ListeExpertise>
+              <ListeAutreAccomplissement>
+                <AutreAccomplissement>
+                  <Titre>Professeur associé</Titre>
+                  <Type>AFFI</Type>
+                  <Rang>1</Rang>
+                  <Url>http://www.iro.umontreal.ca</Url>
+                  <Role/>
+                </AutreAccomplissement>
+                <AutreAccomplissement>
+                  <Titre>Ambassadeur accrédité du Palais des Congrès de Montréal - Depuis 2015</Titre>
+                  <Type>PRIX</Type>
+                  <Rang>1</Rang>
+                  <Url>https://congresmtl.com/club-des-ambassadeurs/</Url>
+                  <Role/>
+                </AutreAccomplissement>
+                <AutreAccomplissement>
+                  <Titre>Best paper award - 1996</Titre>
+                  <Type>PRIX</Type>
+                  <Rang>2</Rang>
+                  <Url/>
+                  <Role/>
+                </AutreAccomplissement>
+                <AutreAccomplissement>
+                  <Titre>Best paper award - 2008</Titre>
+                  <Type>PRIX</Type>
+                  <Rang>3</Rang>
+                  <Url>http://www.nouvelles.uqam.ca/2008/prix-meilleur-article-scientifique-pour-professeur-roger-nkambou-doctorant-en-informatique</Url>
+                  <Role/>
+                </AutreAccomplissement>
+                <AutreAccomplissement>
+                  <Titre>Best paper award - 2012</Titre>
+                  <Type>PRIX</Type>
+                  <Rang>4</Rang>
+                  <Url>http://www.nouvelles.uqam.ca/2012/2308-informatique-cognitive-zhao-xin-wu-roger-nkambou-jacqueline-bourdeau-prix-france</Url>
+                  <Role/>
+                </AutreAccomplissement>
+              </ListeAutreAccomplissement>
+              <ListeAutreSupervision>
+                <AutreSupervision>
+                  <Descr>Kenmogne, Edith Bélise. (2018). Contribution to the sequential and parallel discovery of sequential patterns with an application to the design of e-learning recommenders. (Thèse de doctorat). Université de Dschang.</Descr>
+                  <Rang>1</Rang>
+                </AutreSupervision>
+                <AutreSupervision>
+                  <Descr>Luccioni, Alexandra. (2018). STI-DICO : an intelligent tutoring system to foster dictionary skills for french teachers-in-training. (Thèse de doctorat). Université du Québec à Montréal.</Descr>
+                  <Rang>2</Rang>
+                </AutreSupervision>
+                <AutreSupervision>
+                  <Descr>Tawamba, Emile. (2016). Vers une approche holistique de gestion de l'évolution des ontologies. (Thèse de doctorat). Université de Yaoundé I.</Descr>
+                  <Rang>3</Rang>
+                </AutreSupervision>
+                <AutreSupervision>
+                  <Descr>Larue, Othalia. (2015). Une architecture cognitive inspirée des théories des processus duaux pour une interaction fluide des comportements réactifs et délibératifs. (Thèse de doctorat). Université du Québec à Montréal.</Descr>
+                  <Rang>4</Rang>
+                </AutreSupervision>
+                <AutreSupervision>
+                  <Descr>Zouaq, Amal. (2008). Une approche d'ingénierie ontologique pour l'acquisition et l'exploitation des connaissances à partir de documents textuels : vers des objets de connaissances et d'apprentissage. (Thèse de doctorat). Université de Montréal.</Descr>
+                  <Rang>5</Rang>
+                </AutreSupervision>
+                <AutreSupervision>
+                  <Descr>Benaicha, Mohamed. (2017). Identification des concepts pour la ré-ingénierie des ontologies. (Mémoire de maîtrise). Université du Québec à Chicoutimi.</Descr>
+                  <Rang>6</Rang>
+                </AutreSupervision>
+                <AutreSupervision>
+                  <Descr>Asselin, Guillaume. (2013). Une approche multi-agents pour le développement d'un jeu vidéo. (Mémoire de maîtrise). Université de Montréal.</Descr>
+                  <Rang>7</Rang>
+                </AutreSupervision>
+              </ListeAutreSupervision>
+              <ListeLangueParlee>
+                <LangueParlee>
+                  <Langue>Français</Langue>
+                </LangueParlee>
+                <LangueParlee>
+                  <Langue>Anglais</Langue>
+                </LangueParlee>
+              </ListeLangueParlee>
+              <Livres>1. J. Masthoff, B.  Mobasher, M. C. Desmarais, R. Nkambou (2012): User Modeling, Adaptation, and Personalization - 20th International Conference, UMAP 2012, Montreal, Canada, July 16-20, 2012. Proceedings. LNCS 7379 Springer. ISBN 978-3-642-31453-7
+2. R. Nkambou, J. Bourdeau &amp; R. Mizoguchi (2010). Advances in Intelligent Tutoring Systems. Springer. ISBN: 978-3-642-14362-5
+3. B.P. Woolf, E. Aïmeur, R. Nkambou &amp; S. Lajoie (2008). Intelligent Tutoring Systems. LNCS No. 5091, Springer. ISBN 978 -3-540-69130-3
+</Livres>
+              <ChapitresLivres>1.	M. Rouane Hacene, P. Valtchev, R. Nkambou (2011). Supporting ontology design through large-scale FCA-based ontology restructuring. Proc. of the 19th International Conference on Conceptual Structures (ICCS 2011), LNCS No. 6828, pp. 257-269.
+2.	P. Fournier-Viger, R. Nkambou &amp; V.S. Tseng (2011). RuleGrowth: Mining Sequential Rules Common to Several Sequences by Pattern-Growth. Proceedings of the 26th ACM Symposium on Applied Computing (SAC 2011). ACM Press, pp. 954-959 .
+3.	U. Faghihi, P. Fournier-Viger &amp; R. Nkambou (2011). A Cognitive Tutoring Agent with Human-Like Learning Capabilities. Proc. of the 15th International. Conference on Artificial Intelligence and Education (AIED 2011). LNAI 6738, pp. 72-80. Springer
+4.	Fournier-Viger, P., Nkambou, R. &amp; Mephu Nguifo, E. (2010). Learning Procedural Knowledge from User Solutions To Ill-Defined Tasks in a Simulated Robotic Manipulator. In Romero et al. (Eds.). Handbook of Educational Data Mining, CRC Press, p. 451-465.
+5.	M. Rouane Hacene, S. Fennouh, R. Nkambou, P.  Valtchev (2010). Refactoring of Ontologies: Improving the Design of Ontological Models with Concept Analysis. IEEE  ICTAI  2010: 167-172
+6.	P. Fournier-Viger, U., Faghihi, R., Nkambou &amp; E., Mephu Nguifo (2010). CMRules: An Efficient Algorithm for Mining Sequential Rules Common to Several Sequences. Proceedings of the 23th International Florida Artificial Intelligence Research Society Conference. AAAI press, pp. 410-415.
+7.	P. Fournier-Viger., R. Nkambou, E. Mephu Nguifo (2009). Exploiting Partial Problem Spaces Learned from Users' Interactions to Provide Key Tutoring Services in Procedural and Ill-Defined Domains. Proc. of the 14th International. Conference on Artificial Intelligence and Education (AIED). IOS Press. pp. 383-390.
+8.	U. Faghihi, P. Fournier-Viger, R. Nkambou, P. Poirier &amp; A. Mayers (2009). How Emotional Mechanism Helps Episodic Learning in a Cognitive Agent. Proc. of the IEEE Sympo. on Intelligent Agents, pp. 23-30.
+9.	P. Fournier-Viger, R. Nkambou,U. Faghihi &amp; E. Mephu(2009). Mining Temporal Patterns to Improve Agents Behavior: Two Case Studies. In Cao, L.(Ed.) DM and Multiagent Integration, Springer, p. 77-92. 
+10.	P. Fournier-Viger,  R. Nkambou &amp; E. Mephu Nguifo (2008), A Knowledge Discovery Framework for Learning Task Models  from User Interactions in Intelligent Tutoring Systems. Proceedings of the 7th Mexican International Conference on Artificial Intelligence (MICAI 2008). LNAI 5317, pp. 765-778, Springer, Best Paper Award (1st place / 368 submissions / 25.6% acceptance rate). 
+11.	R. Nkambou,  E. Mephu Nguifo, P. Fournier-Viger (2008). Using Knowledge Discovery Techniques to Support Tutoring in an Ill-Defined Domain. LNCS No 5091. ITS'2008, pp. 395-405.  Top 5 papers.
+12.	A. Zouaq, R. Nkambou and C. Frasson (2008). Bridging the Gab between ITS and eLearning: Towards Learning Knowledge Objects.   LNCS No 5091. ITS'2008, pp. 448-458, Springer.
+13.	R. Nkambou,  E. Mephu Nguifo, O. Couturier &amp; P. Fournier-Viger (2007). Problem-Solving Knowledge Mining from Users' Actions in an ITS. Canadian AI'2007, LNAI No. 4509, pp. 393-404.
+14.	A. Zouaq, R. Nkambou and C. Frasson (2006). The Knowledge Puzzle: An Integrated Approach of Intelligent Tutoring Systems and Knowledge Management. In Proc. of 18th IEEE ICTAI'2006, pp. 575-582.
+15.	R. Nkambou, K. Belghith, F. Kabanza (2006). An Approach to Intelligent Training on a Robotic Simulator using an Innovative Path-Planner. Proceedings of the 8th International Conference on Intelligent Tutoring Systems (ITS'2006). LNCS No.4053, pp. 645-654, Springer-Verlag, Berlin.
+16.	D. Dubois, R. Nkambou, P. Hohmeyer (2006). How `Consciousness' Allows a Cognitive Tutoring Agent Make Good Diagnosis During Astronauts' Training. Proceedings of the 8th International Conference on Intelligent Tutoring Systems (ITS'2006). LNCS No 4053, pp. 154-163, Springer.
+17.	R. Nkambou (2006). Managing Student Emotions in Intelligent Tutoring Systems. Proceedings of the Florida Artificial Intelligence Research Society (FLAIRS'2006), pp. 389-394. AAAI press.
+18.	F. Kabanza, R. Nkambou, K. Belghith, L. Hartman (2005). Path-Planning for Autonomous Training on Robot Manipulators in Space. Proc. of  Int. Joint Conf. on Artificial Intelligence (IJCAI), pp. 1729-1732.
+19.	V. Psyché, J. Bourdeau, R. Nkambou, R. Mizoguchi (2005). Making Learning Design Standards Work with an Ontology of Educational Theories. Artificial Intelligence in Education, pp. 725-731.
+</ChapitresLivres>
+              <ArticlesScientifiques>1.	U. Faghihi, P. Fournier-Viger &amp; R. Nkambou (2012). A Computational Model for Causal Learning in Cognitive Agents. Knowledge-Based Systems, Elsevier. Elsevier Science (In press).
+2.	P. Fournier-Viger, U. Faghihi, R. Nkambou &amp; E. Mephu Nguifo (2012). CMRules: Mining Sequential Rules Common to Several Sequences. Knowledge-Based Systems. 25(1): 63-76. Elsevier Science.
+3.	K. Belghith, R. Nkambou, F., Kabanza and L., Hartman (2011). An Intelligent Simulator for Tele-robotics Training. IEEE Transactions on Learning Technologies (TLT) (in press). 
+4.	U. Faghihi, P. Poirier, P., Fournier-Viger &amp; R. Nkambou (2011). Human-Like Learning in a Cognitive Agent. Journal of Experimental &amp; Theoretical Artificial Intelligence, Taylor &amp; Francis (in press). 
+5.	U. Faghihi, P. Fournier-Viger, R. Nkambou &amp; P. Poirier (2011). Identifying Causes Helps a Tutoring System to Better Adapt to Learners During Training Sessions. J. of Intelligent Learning Systems &amp; Applications, 3(3).
+6.	R. Nkambou, P. Fournier-Viger &amp; E. Mephu Nguifo (2011). Learning Task Models in Ill-defined Domain Using an Hybrid Knowledge Discovery Framework. Knowledge-Based Systems, 24(1): 176-185. Elsevier.
+7.	P. Fournier-Viger, U. Faghihi, R. Nkambou &amp; E. Mephu Nguifo (2010). Exploiting Sequential Patterns Found in Users' Solutions and Virtual Tutor Behavior to Improve Assistance in ITS. Educational Technology &amp; Society, 13(1): 12-24. 
+8.	R. Nkambou, P. Fournier-Viger, E. Mephu Nguifo (2009). Improving the Behavior of Intelligent Tutoring Agents with Data Mining. IEEE Intelligent Systems, 24(3):46-53.
+9.	A. Zouaq et R. Nkambou (2009). Evaluating the Generation of Domain Ontologies in the Knowledge Puzzle Project. IEEE Transactions on Knowledge and Data Engineering, 21(11): 1559-1572. 
+10.	A. Zouaq &amp; R. Nkambou (2009). Enhancing learning objects with an ontology-based memory. IEEE Transactions on Knowledge and Data Engineering, 21(6): 881-893. 
+11.	P. Fournier-Viger, R. Nkambou &amp; A. Mayers (2008), "Evaluating Spatial Representations and Skills in a Simulator-Based Tutoring System," IEEE Transactions on Learning Technologies, Jan-Mar 2008, pp. 63-74.  
+12.	A. Zouaq, R. Nkambou (2008), "Building Domain Ontologies from Text for Educational Purposes" IEEE Transactions on Learning Technologies, Jan-Mar 2008, pp. 49-62.  IEEE Computer Society  
+13.	M. Gaha, D. Dubois &amp; R. Nkambou (2008). Proposition d'un traitement émotionnel pour un STI "conscient".  Sciences et Technologies de l'Information et de la Communication pour la Formation(STICEF), 14: 239-264
+14.	R. Nkambou, E. Delozanne &amp; C. Frasson (2008). Les dimensions émotionnelles de l'interaction dans un EIAH. Sciences et Techno. de l'Information et de la Communication pour la Formation (STICEF),  14: pp. 205-216.
+15.	 J. Pelle, R. Nkambou, J. Bourdeau (2007). Explicit Reflexion in Prolog-Tutor. International Journal of Artificial Intelligence in Education (IJAIED), 17(2): 169-215. IOS. 
+16.	A. Zouaq, R. Nkambou, C. Frasson (2007). An Integrated Approach for Automatic Aggregation of Learning Knowledge Objects. Interdisciplinary Journal of Knowledge and Learning Objects, 3: 135-162.
+17.	P. Fournier-Viger, M. Najjar, A. Mayers, R. Nkambou (2006). A Cognitive and Logic based Model for Building Glass-box Learning Objects. Inter.  Journal of Knowledge and Learning Objects, 2: 77-94.
+18.	J. Pelle, R. Nkambou, J. Bourdeau (2006). A framework to help instructional designers to specify cognitive diagnosis component in ILEs. Journal of Interactive Learning Research, 17(3): 269-293. AACE
+19.	R. Yatchou, C., Tangha, R., Nkambou, F., Tietche (2006). Grid-Based Virtual Clinic for Medical Diagnosis Tutoring. Journal des Sciences Pour l'Ingénieur, 7:72-78. 
+20.	R. Nkambou, G. Gouardères, B.P. Woolf (2005).  Toward Learning Grid Infrastructures. Applied Artificial Intelligence: An international journal, 19(9): 811-824. Taylor &amp; Francis Group, 2005.
+21.	G. Gouardères, M. Saber, R. Nkambou and Yatchou (2005). The Grid-e-Card: An Architecture for Collective Intelligence Sharing on the Grid. Applied Artificial Intelligence, 19(10): 1043-1073. 
+</ArticlesScientifiques>
+              <AutreCourriel>nkambou.roger@uqam.ca</AutreCourriel>
+              <UrlPagePersonnelle>http://gdac.uqam.ca/nkambou</UrlPagePersonnelle>
+              <ServicesAuxCollectivites>Depuis Octobre 2018: Directeur du Centre de Recherche en Intelligence Artificielle, Faculté des Sciences, UQAM
+2016-Actuellement: Directeur du Laboratoire de recherche GDAC (http://gdac.uqam.ca)
+2009-2014: Directeur du Doctorat en Informatique Cognitive
+
+General Chair:
+- Educational Data Mining (EDM 2019) - http://educationaldatamining.org/edm2019/
+- Intelligent Tutoring Systems (ITS 2018) - http://its2018.its-conferences.com/committees/conference-committee/
+- International World Wide Wed Conference (WWW 2016) - http://www2016.ca
+- User Modeling, Adaptation and Personalization (UMAP 2012)
+- Intelligent Tutoring Systems (ITS 2008)</ServicesAuxCollectivites>
+              <CheminementAcademique>1er juin 2009 -  Actuellement:     Professeur titulaire
+1er juin 2002 -  31 mai 2009:      Professeur agrégé   
+1er juin 1997 -  31 mai 2002:      Professeur adjoint
+juin 1996 - mai 1997:              Chercheur postdoctoral</CheminementAcademique>
+              <ListeProjRech>
+                <ProjRech>
+                  <Rang>1</Rang>
+                  <Titre>A Neural Control of Cognitive and Emotional Interactions for Intelligent Immersive Environments</Titre>
+                  <Descr/>
+                  <Url/>
+                </ProjRech>
+                <ProjRech>
+                  <Rang>2</Rang>
+                  <Titre>Methods and Tools for Active Adaptation in Serious Games Based on a Rich User Model</Titre>
+                  <Descr/>
+                  <Url/>
+                </ProjRech>
+                <ProjRech>
+                  <Rang>3</Rang>
+                  <Titre>Jeux sérieux adaptatifs utilisant l'analyse des réactions cognitives et émotionnelles pour favoriser l'apprentissage</Titre>
+                  <Descr/>
+                  <Url/>
+                </ProjRech>
+                <ProjRech>
+                  <Rang>4</Rang>
+                  <Titre>Algorithmes d'apprentissage profond pour la classification et la prédiction de comportements à partir de données multimodales</Titre>
+                  <Descr/>
+                  <Url/>
+                </ProjRech>
+                <ProjRech>
+                  <Rang>5</Rang>
+                  <Titre>Technologies éducatives pour l'enseignement en contexte: Systèmes tutoriels intelligents sensibles au contexte</Titre>
+                  <Descr>Je participe en tant que chercheur au projet TEEC, Technologies Éducatives pour l'Enseignement en Contexte. Le projet TEEC reçoit depuis fin 2016 une subvention de recherche conjointe de la France et du Québec, du programme ANR-FRQSC no 2017-QF-210862, pour 3 ans.</Descr>
+                  <Url>https://teec.teluq.ca/fr/</Url>
+                </ProjRech>
+              </ListeProjRech>
+              <ListeLienInteret>
+                <LienInteret>
+                  <Nom>Google Scholar</Nom>
+                  <Url>https://scholar.google.com/citations?user=qBEFCVAAAAAJ&amp;hl=en</Url>
+                </LienInteret>
+                <LienInteret>
+                  <Nom>LinkedIn</Nom>
+                  <Url>https://www.linkedin.com/in/roger-nkambou-94924112/?originalSubdomain=ca</Url>
+                </LienInteret>
+                <LienInteret>
+                  <Nom>Research Gate</Nom>
+                  <Url>https://www.researchgate.net/profile/Roger_Nkambou</Url>
+                </LienInteret>
+              </ListeLienInteret>
+              <Faculte>
+                <Nom/>
+                <Url/>
+              </Faculte>
+            </Prof>
+          </ListeProf>
+        </XmlProfs>
+      </rechercher_prof_par_courriel_rdpResult>
+    </rechercher_prof_par_courriel_rdpResponse>
+  </soap:Body>
+</soap:Envelope>

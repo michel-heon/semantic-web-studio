@@ -1,0 +1,84 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <rechercher_prof_par_courriel_rdpResponse xmlns="http://tempuri.org/WS_Sitel/WS_Sitel_Services_INF">
+      <rechercher_prof_par_courriel_rdpResult>
+        <XmlProfs xmlns="">
+          <ListeProf>
+            <Prof>
+              <Matricule>9FIb8i5XcNM_</Matricule>
+              <Nom>Marc H. Choko</Nom>
+              <IndParleMedia/>
+              <IndCVDisponible>O</IndCVDisponible>
+              <IndBibliOrigineBibliotheque>N</IndBibliOrigineBibliotheque>
+              <ListeTache>
+                <Tache>
+                  <Tel>(514) 987-4122</Tel>
+                  <Poste/>
+                  <Local>DE-2220</Local>
+                  <Mail>choko.marc@uqam.ca</Mail>
+                  <Telecopieur/>
+                  <CodeUnite>2030</CodeUnite>
+                  <NomUnite>École de Design</NomUnite>
+                  <UrlUnite>www.design.uqam.ca</UrlUnite>
+                  <LocalUnite>DE-2220</LocalUnite>
+                  <TelephoneUnite>(514) 987-4122</TelephoneUnite>
+                  <PosteUnite/>
+                  <TelecopieurUnite>(514) 987-7717</TelecopieurUnite>
+                  <TitreDescr>Professeur émérite</TitreDescr>
+                </Tache>
+              </ListeTache>
+              <ListeUniteRech/>
+              <ListeCours>
+                <Cours>
+                  <Trimestre>20161</Trimestre>
+                  <Sigle>DES6221</Sigle>
+                  <Titre>DESIGN GRAPHIQUE ET CULTURE</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20171</Trimestre>
+                  <Sigle>DES6221</Sigle>
+                  <Titre>DESIGN GRAPHIQUE ET CULTURE</Titre>
+                </Cours>
+                <Cours>
+                  <Trimestre>20181</Trimestre>
+                  <Sigle>DES6221</Sigle>
+                  <Titre>DESIGN GRAPHIQUE ET CULTURE</Titre>
+                </Cours>
+              </ListeCours>
+              <ListeExpertise/>
+              <ListeAutreAccomplissement/>
+              <ListeAutreSupervision/>
+              <ListeLangueParlee/>
+              <Livres>CHOKO, Marc H. et Joanne Burgess, Imperial Tobacco Canada. 100 ans,  288p., 2008.
+				                            Imperial Tobacco Canada. 100 Years,  288p., 2008.
+CHOKO, Marc H. (éd.), 25 ans de design / 25 Years of Design, Centre de design-UQAM, 400p., 2006.
+CHOKO, Marc H. et David L. Jones, Les affiches du Canadien Pacifique, Firefly Books, 223p., 2004.
+					, Posters of the Canadian Pacific, Firefly Books, 223p., 2004.
+CHOKO, Marc H., BOURASSA, Paul et Gérald BARIL, Le design au Québec, Éditions de l'Homme, 384p., 2003.
+CHOKO, Marc H., L'affiche au Québec, Éditions de l'Homme, 286p., 2001.
+CHOKO, Marc H., Les Habitations Jeanne-Mance, un projet social au centre-ville, Éditions Saint-Martin, 128 p., 1995.
+CHEN, Guangting et Marc H. CHOKO (éds), Le développement de la ville et l'habitat au XXIe siècle, Éditions scientifiques et techniques de Beijing, 304 p., 1995 (en chinois seulement).
+CHOKO, Marc H. et CHEN Guangting (éds), Le défi du logement urbain en Chine, Méridien, 253 p., 1994.
+CHOKO, Marc H., Affiches de guerre canadiennes. 1914-1918, 1939-1945, Éditions du Méridien, 200 p., 1994.
+		 Canadian War Posters, 1914-1918, 1939-1945, Éditions du Méridien, 200 p., 1994.
+CHOKO, Marc H., Une cité-jardin à Montréal. La Cité-jardin du tricentenaire, 1940-1947, Éditions du Méridien, 169 p., 1989.
+CHOKO, Marc H. et David L. JONES, Canadien Pacifique, Affiches 1883-1963, Éditions du Méridien, 128 p., 1988.
+		 Canadian Pacific, Posters 1883-1963, Meridian Press, 128 p., 1988a.
+CHOKO, Marc H., Les grandes places publiques de Montréal, Éditions du Méridien, 215 p., 1987.
+_________ The Major Squares of Montreal, Meridian Press, 214 p., 1987.
+CHOKO, Marc H., Crises du logement à Montréal, 1860-1939, Éditions Saint-Martin, 285 p., 1980.
+</Livres>
+              <AutreTelephone>4384959995</AutreTelephone>
+              <ListeProjRech/>
+              <ListeLienInteret/>
+              <Faculte>
+                <Nom/>
+                <Url/>
+              </Faculte>
+            </Prof>
+          </ListeProf>
+        </XmlProfs>
+      </rechercher_prof_par_courriel_rdpResult>
+    </rechercher_prof_par_courriel_rdpResponse>
+  </soap:Body>
+</soap:Envelope>
