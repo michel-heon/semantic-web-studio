@@ -10,6 +10,7 @@
 # Email         : heon.michel@uqam.ca
 ###################################################################
 export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd -P)"
+[ ! -z JENA_VERSION ] || export JENA_VERSION=3.17.0
 if [ ! -z $1 ]; then 
 	export TRANSLATOR_HOME=$1
 else
@@ -17,4 +18,4 @@ else
 fi
 echo INSTALL $TRANSLATOR_HOME
 export JENA_HOME=$TRANSLATOR_HOME
-export PATH=$JENA_HOME/bin:$PATH
+export PATH=$JENA_HOME:$JENA_HOME/bin:$PATH
