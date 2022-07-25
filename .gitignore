@@ -49,3 +49,4 @@ Thumbs.db
 *.wmv
 
 /deploy/
+/.apt_generated/
