@@ -1,0 +1,725 @@
+Usage for ldapsearch:
+
+Process one or more searches in an LDAP directory server.
+
+The criteria for the search request can be specified in a number of different
+ways, including providing all of the details directly via command-line
+arguments, providing all of the arguments except the filter via command-line
+arguments and specifying a file that holds the filters to use, or specifying a
+file that includes a set of LDAP URLs with the base DN, scope, filter, and
+attributes to return.
+
+See the examples below for a number of sample command lines for this tool.
+
+Usage:  ldapsearch {options} {filter} [{attr1} [{attr2} ...]]
+
+Available options include:
+
+  LDAP Connection and Authentication Arguments
+
+    -h, --hostname {host}
+        The IP address or resolvable name to use to connect to the directory
+        server.  If this is not provided, then a default value of 'localhost'
+        will be used.
+    -p, --port {port}
+        The port to use to connect to the directory server.  If this is not
+        provided, then a default value of 389 will be used.
+    -D, --bindDN {dn}
+        The DN to use to bind to the directory server when performing simple
+        authentication.
+    -w, --bindPassword {password}
+        The password to use to bind to the directory server when performing
+        simple authentication or a password-based SASL mechanism.
+    -j, --bindPasswordFile {path}
+        The path to the file containing the password to use to bind to the
+        directory server when performing simple authentication or a
+        password-based SASL mechanism.
+    --promptForBindPassword
+        Indicates that the tool should interactively prompt the user for the
+        bind password.
+    -Z, --useSSL
+        Use SSL when communicating with the directory server.
+    -q, --useStartTLS
+        Use StartTLS when communicating with the directory server.
+    --defaultTrust
+        Use the JVM's default trust store, and optionally an additional trust
+        store specified using the --trustStorePath argument, to
+        non-interactively determine whether to trust any certificate chain
+        presented during TLS negotiation.  If the chain cannot be trusted based
+        on any of those sources, then negotiation will fail without prompting
+        about whether to trust it.
+    -X, --trustAll
+        Trust any certificate presented by the directory server.
+    -K, --keyStorePath {path}
+        The path to the file to use as the key store for obtaining client
+        certificates when communicating securely with the directory server.
+    -W, --keyStorePassword {password}
+        The password to use to access the key store contents.
+    -u, --keyStorePasswordFile {path}
+        The path to the file containing the password to use to access the key
+        store contents.
+    --promptForKeyStorePassword
+        Indicates that the tool should interactively prompt the user for the
+        password to use to access the key store contents.
+    --keyStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store
+        file.
+    -P, --trustStorePath {path}
+        The path to the file to use as trust store when determining whether to
+        trust a certificate presented by the directory server.
+    --trustStorePassword {password}
+        The password to use to access the trust store contents.
+    -U, --trustStorePasswordFile {path}
+        The path to the file containing the password to use to access the trust
+        store contents.
+    --promptForTrustStorePassword
+        Indicates that the tool should interactively prompt the user for the
+        password to use to access the trust store contents.
+    --trustStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store
+        file.
+    -N, --certNickname {nickname}
+        The nickname (alias) of the client certificate in the key store to
+        present to the directory server for SSL client authentication.
+    --enableSSLDebugging
+        Enable Java's low-level support for debugging SSL/TLS communication.
+        This is equivalent to setting the 'javax.net.debug' property to 'all'.
+    -o, --saslOption {name=value}
+        A name-value pair providing information to use when performing SASL
+        authentication.
+    --useSASLExternal
+        Use the SASL EXTERNAL mechanism to authenticate.
+    --helpSASL
+        Provide information about the supported SASL mechanisms, including the
+        properties available for use with each.
+
+  Operation Arguments
+
+    -b, --baseDN {dn}
+        Specifies the base DN that should be used for the search.  If a filter
+        file is provided, then this base DN will be used for each search with a
+        filter read from that file.  This argument must not be provided if the
+        --ldapURLFile is given.  If no base DN is specified, then the null base
+        DN will be used by default.
+    -s, --scope {base|one|sub|subordinates}
+        Specifies the scope that to use for search requests.  The value should
+        be one of 'base', 'one', 'sub', or 'subordinates'.  If this argument is
+        not provided, a default of 'sub' will be used.
+    -z, --sizeLimit {value}
+        Specifies the maximum number of entries that the server should return
+        for each search.  A value of zero (which is the default if this
+        argument is not used) indicates that no client-side size limit should
+        be imposed.  Note that the server may impose its own limit on the
+        number of entries that may be returned for a search.
+    -l, --timeLimitSeconds {value}
+        Specifies the maximum length of time in seconds that the server should
+        spend processing each search.  A value of zero (which is the default if
+        this argument is not provided) indicates that no client-side time limit
+        should be imposed.  Note that the server may impose its own time limit
+        for search requests.
+    -a, --dereferencePolicy {never|always|search|find}
+        Specifies the alias dereferencing policy to use for search requests.
+        The value should be one of 'never', 'always', 'search', or 'find'.  If
+        this argument is not provided, a default of 'never' will be used.
+    -A, --typesOnly
+        Indicates that the server should only include the names of the
+        attributes contained in the entry rather than both names and values.
+    --requestedAttribute {attr}
+        Specifies an identifier that indicates which attribute(s) should be
+        included in entries that match the search criteria.  The value may be
+        an attribute name or OID, a special token like '*' to indicate all user
+        attributes or '+' to indicate all operational attributes, or an object
+        class name prefixed by an '@' symbol to indicate all attributes
+        associated with the specified object class.  This may be provided
+        multiple times to specify multiple requested attributes, and it may be
+        provided instead of or in addition to the set of requested attributes
+        in the set of trailing arguments.  If this is not specified, then the
+        server will behave as if all user attributes had been requested.
+    --filter {filter}
+        Specifies a filter to use when processing a search.  This may be
+        provided multiple times to issue multiple searches with different
+        filters.  If this argument is provided, then the first trailing
+        argument will not be interpreted as a search filter (all trailing
+        arguments will be interpreted as requested attributes).
+    -f, --filterFile {path}
+        Specifies the path to a file containing the search filters to issue.
+        Each filter should be on a separate line.  Blank lines and lines
+        beginning with the '#' character will be ignored.  This argument may be
+        provided multiple times to specify multiple filter files.  If a filter
+        file is provided, then the first trailing argument will not be
+        interpreted as a search filter (all trailing arguments will be
+        interpreted as requested attributes).
+    --ldapURLFile {path}
+        Specifies the path to a file containing LDAP URLs that define the
+        search requests to issue.  The LDAP URLs will specify the base DN,
+        scope, filter, and attributes to return for each search (any hostnames
+        and port numbers included in the URLs will be ignored).  Each URL
+        should be on a separate line.  Blank lines and lines beginning with the
+        '#' character will be ignored.  This argument may be provided multiple
+        times to specify multiple LDAP URL files.
+    --followReferrals
+        Attempt to follow any referrals and search result references
+        encountered during search processing.  If this is not provided, then
+        referrals and search references will be displayed in the output.
+    --retryFailedOperations
+        Indicates that, if a search fails in a way that indicates the
+        connection to the server may no longer be valid, the tool should
+        automatically create a new connection and re-try the search before
+        reporting it as a failure.
+    -c, --continueOnError
+        Continue processing searches even if an error is encountered.  If this
+        is not provided, then processing will abort after the first failed
+        search.
+    -r, --ratePerSecond {num}
+        Specifies a maximum search rate that the tool should be permitted to
+        achieve.  Note that this limit applies only to the rate at which the
+        client issues search requests and not to the rate at which the server
+        may send matching entries.
+    --useAdministrativeSession
+        Indicates that the tool should attempt to use an administrative session
+        to process all operations using a dedicated pool of worker threads.
+        This may be useful when trying to diagnose problems in a server that is
+        unresponsive because all normal worker threads are busy processing
+        other requests.
+    -n, --dryRun
+        Indicate which searches would be issued but do not actually send them
+        to the server.
+
+  Data Arguments
+
+    --wrapColumn {value}
+        The column at which long lines in the LDIF representation of an entry
+        should be wrapped.  A value of zero indicates that no wrapping should
+        be performed.  If this is not provided, then the wrap column will be
+        based on the width of the terminal used to run the tool.
+    -T, --dontWrap
+        Indicates that no line wrapping should be performed when displaying the
+        LDIF representations of matching entries.
+    --suppressBase64EncodedValueComments
+        Indicates that the tool should not include any comments that attempt to
+        provide a human-readable representation of any base64-encoded attribute
+        values in the search results.  If this argument is not provided, then
+        any attribute value whose LDIF representation requires base64 encoding
+        will be immediately followed by a comment that attempts to provide a
+        human-readable representation of the raw bytes that comprise that
+        base64-encoded value.
+    --outputFile {path}
+        Specifies the path to the file to which search results should be
+        written.  If this argument is not provided then results will be written
+        to standard output.
+    --compressOutput
+        Indicates that the output should be gzip-compressed.  This can only be
+        used if the --outputFile argument is provided and the
+        --teeResultsToStandardOut argument is not provided.
+    --encryptOutput
+        Indicates that the output should be encrypted with a key generated from
+        a provided password.  This can only be used if the --outputFile
+        argument is provided and the --teeResultsToStandardOut argument is not
+        provided.  If the --encryptionPassphraseFile argument is provided, then
+        that file will be used to specify the encryption passphrase; otherwise,
+        the passphrase will be interactively requested.
+    --encryptionPassphraseFile {path}
+        The path to a file that specifies the passphrase to use to encrypt the
+        output.  This can only be provided if the --encryptOutput argument is
+        given, but if that argument is given and no passphrase file is
+        specified, then the passphrase will be interactively requested.  If a
+        file is specified, then that file must exist and must contain exactly
+        one line comprised entirely of the passphrase.
+    --separateOutputFilePerSearch
+        Indicates that the tool should generate a separate output file for each
+        search rather than combining all results into a single file.
+    --teeResultsToStandardOut
+        Indicates that search results should be written to standard output as
+        well as to the output file specified via the 'outputFile' argument.
+    --outputFormat
+    {ldif|json|csv|multi-valued-csv|tab-delimited|multi-valued-tab-delimited|dn
+    s-only|values-only}
+        Specifies the format that should be used for the output generated by
+        this tool.  Allowed values are 'LDIF' (LDAP Data Interchange Format,
+        which is the standard string representation for LDAP data), 'JSON'
+        (JavaScript Object Notation, which is a popular format used by web
+        services), 'CSV' (comma-separated values, which is a commonly used
+        format for text processing, with only a single value per attribute),
+        'multi-valued-csv' (comma-separated values with a vertical bar between
+        values of multivalued attributes), 'tab-delimited' (another commonly
+        used general text format, with only a single value per attribute),
+        'multi-valued-tab-delimited' (tab-delimited text with a vertical bar
+        between values of multivalued attributes), 'dns-only' (in which only
+        the DN of each matching entry will be written on a line by itself with
+        no information about the entry's attributes), and 'values-only' (in
+        which each value returned will be written on a line by itself with no
+        attribute names, entry DNs, or delimiters between entries).  If either
+        the 'CSV' or 'tab-delimited' format is selected (or one of their
+        multivalued variants), the set of requested attributes must be provided
+        with the '--requestedAttribute' argument, the order in which the
+        attributes are provided on the command line specifies the order in
+        which they will be listed in the output, and if any of those attributes
+        has multiple values then only the first value will be used.  Further,
+        the 'CSV' and 'tab-delimited' formats cannot be used in conjunction
+        with the '--ldapURLFile' argument.  If no output format is specified, a
+        default of 'LDIF' will be used.
+    --requireMatch
+        Indicates that ldapsearch should exit with a nonzero result code, 94
+        (no results returned), if the search completes successfully but does
+        not return any matching entries.  This argument only affects the tool
+        exit code; it will not have any visible effect on the output.
+    --terse
+        Indicates that the tool should generate terse output.  The only thing
+        written to standard output will be search result entries and
+        references, without any summary messages.  Standard error will not be
+        affected.
+    -v, --verbose
+        Indicates that the tool should generate verbose output.
+
+  Control Arguments
+
+    --bindControl {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Specifies a control that should be included in all bind requests used
+        to authenticate to the server.
+    -J, --control {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Specifies a control that should be included in all search requests sent
+        to the server.
+    -E, --authorizationIdentity
+        Indicates that all bind requests should include the authorization
+        identity request control as defined in RFC 3829.  With this control, a
+        successful bind result should include the authorization identity
+        assigned to the connection.
+    --assertionFilter {filter}
+        A filter that will be used in conjunction with the LDAP assertion
+        request control (as described in RFC 4528) to indicate that the server
+        should only process searches in which the entry specified as the base
+        DN matches this filter.
+    --accountUsable
+        Indicates that all search requests should include the
+        UnboundID-proprietary account usable request control to request that
+        each search result entry returned include a response control with
+        information about the password policy usability state for the entry.
+    --excludeBranch {dn}
+        Indicates that all search requests should include the
+        UnboundID-proprietary exclude branch request control to indicate that
+        matching entries below the specified base DN should be excluded from
+        search results.  This argument may be provided multiple times if
+        multiple branches should be excluded.
+    --getAuthorizationEntryAttribute {attr}
+        Indicates that all bind requests should include the
+        UnboundID-proprietary get authorization entry request control to
+        request that the server return the specified attribute (or collection
+        of attributes, in the case of a special identifier like '*' to indicate
+        all user attributes or '+' to indicate all operational attributes) from
+        the authenticated user's entry.  This argument may be provided multiple
+        times to specify multiple attributes to request.
+    --getBackendSetID
+        Indicates that all search requests should include the
+        UnboundID-proprietary get backend set ID request control to request
+        that the Directory Proxy Server include a corresponding get backend set
+        ID response control in each search result entry, indicating the
+        entry-balancing backend set from which that entry was retrieved.
+    -g, --getEffectiveRightsAuthzID {authzID}
+        Indicates that all search requests should include the
+        UnboundID-proprietary get effective rights request control to return
+        information about the access control rights the specified user has when
+        interacting with each matching entry.
+    -e, --getEffectiveRightsAttribute {attr}
+        Indicates that all search requests should include the
+        UnboundID-proprietary get effective rights request control to return
+        information about the access control rights that a user has when
+        interacting with each matching entry.  This argument may be provided
+        multiple times to specify multiple attributes.
+    --getRecentLoginHistory
+        Indicates that all bind requests should include the get recent login
+        history request control to request that the server include a
+        corresponding response control with information about the user's recent
+        login history.
+    --getServerID
+        Indicates that all search requests should include the
+        UnboundID-proprietary get server ID request control to request that
+        server include a corresponding get server ID response control in each
+        search result entry, indicating the server from which that entry was
+        retrieved.
+    --getUserResourceLimits
+        Indicates that all bind requests should include the
+        UnboundID-proprietary get user resource limits request control to
+        request that the server return information about resource limits (e.g.,
+        size limit, time limit, idle time limit, etc.) imposed for the user.
+    --includeReplicationConflictEntries
+        Indicates that all search requests should include the
+        UnboundID-proprietary return conflict entries request control to
+        indicate that the server may return any replication conflict entries
+        that match the search criteria.  Replication conflict entries are
+        normally excluded from search results.
+    --includeSoftDeletedEntries
+    {with-non-deleted-entries|without-non-deleted-entries|deleted-entries-in-un
+    deleted-form}
+        Indicates that all search requests should include the
+        UnboundID-proprietary soft-deleted entry access request control to
+        indicate that the server may return any soft-deleted entries that match
+        the search criteria.  Soft-deleted entries are normally excluded from
+        search results.  The value for this argument must be one of:
+        'with-non-deleted-entries' (indicates that both regular and
+        soft-deleted entries should be returned), 'without-non-deleted-entries'
+        (indicates that only soft-deleted entries should be returned), or
+        'deleted-entries-in-undeleted-form' (returns only soft-deleted entries
+        in the form in the form the entries had before they were deleted).
+    --draftLDUPSubentries
+        Indicates that all search requests should include the subentries
+        request control as described in draft-ietf-ldup-subentry to indicate
+        that the server may return any LDAP subentries that match the search
+        criteria.  LDAP subentries are normally excluded from search results.
+        This control does not take a value.
+    --rfc3672Subentries {returnOnlySubentries}
+        Indicates that all search requests should include the subentries
+        request control as described in RFC 3672 to indicate that the server
+        may return any LDAP subentries that match the search criteria,
+        optionally including regular entries along with the subentries.  LDAP
+        subentries are normally excluded from search results.  This control
+        requires a Boolean value of either 'true' or 'false' to indicate
+        whether the server should return only subentries (if true), or both
+        regular entries and subentries (if false).
+    --joinRule
+    {dn:sourceAttr|reverse-dn:targetAttr|equals:sourceAttr:targetAttr|contains:
+    sourceAttr:targetAttr }
+        Indicates that all search requests should include the join request
+        control to indicate that matching entries should be joined with related
+        entries based on the specified criteria.  Allowed values include 'dn:'
+        followed by the name of an attribute in the source entry containing the
+        DNs of the entries with which to join; 'reverse-dn:' followed by the
+        name of an attribute in the target entries whose value is the DN of the
+        source entry; 'equals:' followed by the name of an attribute in the
+        source entry, a colon, and the name of an attribute in target entries
+        that must exactly match the source attribute; or 'contains:' followed
+        by the name of an attribute in the source entry, a colon, and the name
+        of an attribute in target entries that must match or contain the value
+        of the source attribute.
+    --joinBaseDN {search-base|source-entry-dn|{dn}}
+        Specifies the base DN to use for searches used to join search result
+        entries with related entries.  The value may be one of 'search-base' to
+        use the base DN of the search request, 'source-entry-dn' to use the DN
+        of the source entry as the base DN for join searches, or any valid LDAP
+        DN to use a custom base DN for join searches.  If this is not
+        specified, then the default join base DN will be the search base DN.
+    --joinScope {base|one|sub|subordinates}
+        Specifies the scope to use for searches used to join search result
+        entries with related entries.  The value may be one of 'base', 'one',
+        'sub', or 'subordinates'.  If this is not specified, then the scope of
+        the search request will be used as the join scope.
+    --joinSizeLimit {num}
+        Specifies the maximum number of entries that the server will permit to
+        be joined with any single search result entry.  If this is not
+        provided, the size limit from the search request will be used.  Note
+        that the server will impose a maximum join size limit of 1000 entries,
+        so any join size limit greater than that will be limited to 1000.
+    --joinFilter {filter}
+        Specifies an additional filter that the server will require target
+        entries to match in order to be joined with the source entry.  If this
+        is not provided, no additional join filter will be used.
+    --joinRequestedAttribute {attr}
+        Specifies an identifier that indicates which attribute(s) should be
+        included in entries joined with search result entries.  The value may
+        be an attribute name or OID, a special token like '*' to indicate all
+        user attributes or '+' to indicate all operational attributes, or an
+        object class name prefixed by an '@' symbol to indicate all attributes
+        associated with the specified object class.  This may be provided
+        multiple times to specify multiple requested attributes.  If this is
+        not specified, then the server will behave as if all user attributes
+        had been requested.
+    --joinRequireMatch
+        Indicates that the server should not return an entry that matches the
+        search criteria if it is not joined with at least one additional entry.
+        If this is not provided, then entries matching the search criteria will
+        be returned even if they are not joined with any other entries.
+    --manageDsaIT
+        Indicates that all search requests should include the manageDsaIT
+        request control to indicate that any referral entries in the scope of
+        the search should be treated as regular entries rather than causing the
+        server to send search result references.
+    --matchedValuesFilter {filter}
+        Indicates that all search requests should include the matched values
+        request control (as described in RFC 3876) to indicate that search
+        result entries should only include values for a given attribute that
+        match the provided filter.  This argument may be provided multiple
+        times to specify multiple matched values filters.
+    --matchingEntryCountControl
+    {examineCount=NNN[:alwaysExamine][:allowUnindexed][:skipResolvingExplodedIn
+    dexes][:fastShortCircuitThreshold=NNN][:slowShortCircuitThreshold=NNN][:ext
+    endedResponseData][:debug]}
+        Indicates that all search requests should include the
+        UnboundID-proprietary matching entry count request control, which
+        indicates that the server should return information about the number of
+        entries that match the search criteria.  The maximum number of entries
+        to examine must be specified, which helps indicate whether an exact
+        count or an estimate will be returned.  If alwaysExamine is specified
+        and the number of candidates is less than the examine count, then each
+        candidate will be examined to verify that it matches the criteria and
+        would actually be returned to the client in a search.  If
+        allowUnindexed is specified, then the count will be allowed to be
+        processed even if the search is unindexed (and may take a very long
+        time to complete).  If extended is specified, then the client will
+        request extended response data from the server.  If debug is specified,
+        then additional debug information may be included in the output.
+    --operationPurpose {purpose}
+        Indicates that all search requests should include the
+        UnboundID-proprietary operation purpose request control to provide the
+        specified reason for the operation.
+    --overrideSearchLimit {name=value}
+        Indicates that search operations should include the override search
+        limits request control with the specified name-value pair.  This may be
+        provided multiple times to specify multiple property name-value pairs
+        to include in the control.
+    -C, --persistentSearch ps[:changetype[:changesonly[:entrychgcontrols]]]
+        Indicates that the search request should include the persistent search
+        request control (as described in draft-ietf-ldapext-psearch) to
+        indicate that the server should return information about changes to
+        entries that match the search criteria as they are processed.  This
+        argument may only be used when processing a single search operation.
+    --permitUnindexedSearch
+        Indicates that all search requests should include the
+        UnboundID-proprietary permit unindexed search request control to
+        indicate that the server should process the search operation even if it
+        cannot do so efficiently using server indexes.  The requester must have
+        either the unindexed-search or unindexed-search-with-control privilege.
+    -Y, --proxyAs {authzID}
+        Indicates that all search requests should include the proxied
+        authorization request control (as described in RFC 4370) to process the
+        operation under an alternate authorization identity.  The authorization
+        ID should generally be specified in the form 'dn:' followed by the
+        target user's DN, or 'u:' followed by the username.
+    --proxyV1As {dn}
+        Indicates that all search requests should include the legacy proxied
+        authorization v1 request control (as described in
+        draft-weltman-ldapv3-proxy-04) to process the search under an alternate
+        authorization identity, specified as the DN of the desired user.
+    --rejectUnindexedSearch
+        Indicates that all search requests should include the
+        UnboundID-proprietary reject unindexed search request control to
+        indicate that the server should not process the search operation if it
+        cannot do so efficiently using server indexes, even if the requester
+        has the unindexed-search privilege.
+    --routeToBackendSet {entry-balancing-processor-id:backend-set-id}
+        Specifies the ID of an entry-balancing backend set to which the
+        Directory Proxy Server should send all of the search requests.  The
+        value should be formatted as the entry-balancing request processor ID
+        followed by a colon and the desired backend set ID for that
+        entry-balancing request processor.  This argument can be provided
+        multiple times to specify multiple backend set IDs for the same or
+        different entry-balancing request processors.  The request control will
+        be configured to use absolute routing rather than a routing hint.
+    --routeToServer {id}
+        Specifies the ID of the backend server to which the Directory Proxy
+        Server should send all search requests.
+    --suppressOperationalAttributeUpdates {attr}
+        Indicates that all operations should include the UnboundID-proprietary
+        suppress operational attribute updates request control to indicate that
+        the server should not apply any updates to the specified operational
+        attributes.  The value may be one of 'last-access-time',
+        'last-login-time', 'last-login-ip', or 'lastmod'.
+    --usePasswordPolicyControl
+        Indicates that bind requests should include the password policy request
+        control (as defined in draft-behera-ldap-password-policy-10) to request
+        that the response include password policy-related information about the
+        target entry.
+    --realAttributesOnly
+        Indicates that all search requests should include the
+        UnboundID-proprietary real attributes only request control to indicate
+        that the server should not include any virtual attributes in entries
+        that are returned.
+    -S, --sortOrder {value}
+        Indicates that all search requests should include the server-side sort
+        request control (as described in RFC 2891) to request that the server
+        sort results before returning them to the client.  The sort order
+        should be a comma-separated list of attribute names, each of which may
+        be optionally prefixed by '+' (to indicate that sorting should be in
+        ascending order for that attribute) or '-' (for descending order), and
+        may be optionally followed by a colon and the name or OID for the
+        ordering matching rule that should be used when sorting.  Ascending
+        order will be used if neither '+' or '-' is specified, and if no
+        matching rule ID is given then the attribute type's own ordering rule
+        will be used.
+    --simplePageSize {value}
+        Indicates that all search requests should include the simple paged
+        results control (as described in RFC 2696) to indicate that the search
+        should return entries in pages of no more than the specified size.
+        This can be useful for searches that must return a large number of
+        entries but the server restricts the number of entries that may be
+        returned for any search.
+    --virtualAttributesOnly
+        Indicates that all search requests should include the
+        UnboundID-proprietary virtual attributes only request control to
+        indicate that the server should only include virtual attributes in
+        entries that are returned.
+    -G, --virtualListView {before:after:index:count | before:after:value}
+        Indicates that all search requests should include the virtual list view
+        (VLV) request control (as described in draft-ietf-ldapext-ldapv3-vlv)
+        to indicate that the server should return the specified subset of the
+        sorted search results (and the 'sortOrder' argument must also be given
+        to specify the sort order).  The value should be a colon-delimited list
+        indicating which page of results to return, and it may take one of two
+        forms.  In either case, the first element specifies the number of
+        elements to return before the entry identified as the start of the
+        results, and the second is the number of entries after the 'start'
+        entry.  The third element identifies the start of the result set, and
+        it may be either an integer offset (in which the first entry in the
+        result set has an offset of one), or a string that provides a value for
+        which the server should identify the first entry whose value for the
+        primary sort attribute is greater than or equal to the given string.
+        In the event that an offset is provided, a fourth element must also be
+        given to indicate the expected number of entries in the result set, or
+        zero if that is not known.  For example, a value of '0:9:1:0' indicates
+        that the server should return the first ten entries of the result set
+        (starting at offset 1, which is the first entry, return the zero
+        previous entries and the nine following entries, with no indication of
+        how many entries match the search criteria).  Alternately, a value of
+        '0:99:smith' indicates that the server should the first 100 entries in
+        the result set for which the primary sort attribute has a value that is
+        greater than or equal to 'smith'.
+
+  Entry Transformation Arguments
+
+    --excludeAttribute {attr}
+        Specifies the name or OID of an attribute that should be excluded from
+        search result entries.  This argument may be provided multiple times to
+        specify multiple attributes to exclude.
+    --redactAttribute {attr}
+        Specifies the name or OID of an attribute whose values should be
+        redacted to indicate that the attribute is present in search result
+        entries but to hide the actual values for that attribute.  This
+        argument may be provided multiple times to specify multiple attributes
+        to redact.
+    --hideRedactedValueCount
+        Indicates that the output should not reveal the number of values
+        contained in redacted attributes.  If this argument is present, then a
+        redacted attribute will only ever have a single value of
+        '***REDACTED***'.  If this argument is not present, then a redacted
+        attribute with multiple values will still have the same number of
+        values that it originally had, but those values will be
+        '***REDACTED1***', '***REDACTED2***', etc.
+    --scrambleAttribute {attr}
+        Specifies the name or OID of an attribute whose values should be
+        scrambled.  Scrambling will be performed in a manner that attempts to
+        preserve the associated attribute syntax and that will generally try to
+        ensure that a given input value will consistently yield the same
+        scrambled output.  This argument may be provided multiple times to
+        specify multiple attributes to scramble.
+    --scrambleJSONField {fieldName}
+        Specifies the name of a JSON field whose values should be scrambled.
+        If the --scrambleAttribute argument is used to scramble any attributes
+        whose values may be JSON objects, then all JSON field names will be
+        preserved and only the values of the specified fields will be
+        scrambled.  If this argument is given (and it may be provided multiple
+        times to target multiple JSON fields), then only the specified fields
+        will have their values scrambled.  If this argument is not provided,
+        then any of the scramble attribute values that are JSON objects will
+        have all values scrambled.  JSON field names will be treated in a
+        case-insensitive manner.
+    --scrambleRandomSeed {value}
+        Specifies the value that will be used to seed the random number
+        generator used in the course of scrambling attribute values.  If a
+        random seed is provided, then scrambling the same entry with the same
+        seed should consistently yield the same scrambled representations.  If
+        no random seed is specified, an appropriate value will be selected
+        automatically.
+    --renameAttributeFrom {attr}
+        Specifies the name or OID of an attribute that should have its name
+        replaced with the value specified in the --renameAttributeTo argument.
+        This argument may be provided multiple times as long as the
+        --renameAttributeTo argument is also provided the same number of times,
+        and the order of --renameAttributeFrom values must correspond to the
+        order of --renameAttributeTo values.
+    --renameAttributeTo {attr}
+        Specifies the new name to use for an attribute to be renamed.  This
+        argument must be provided the same number of times as the
+        --renameAttributeFrom argument.
+    --moveSubtreeFrom {attr}
+        Specifies the base DN for a subtree to be moved to another location in
+        the DIT, with this source DN being replaced with the base DN specified
+        using the --moveSubtreeTo argument.  This argument may be provided
+        multiple times as long as the --moveSubtreeTo argument is also provided
+        the same number of times, and the order of --moveSubtreeFrom values
+        must correspond to the order of --moveSubtreeTo values.
+    --moveSubtreeTo {attr}
+        Specifies the new base DN for a subtree to be moved.  This argument
+        must be provided the same number of times as the --moveSubtreeFrom
+        argument.
+
+  Usage Arguments
+
+    --interactive
+        Launch the tool in interactive mode.
+    -H, --help
+        Display usage information for this program.
+    --version
+        Display version information for this program.
+    --propertiesFilePath {path}
+        The path to a properties file used to specify default values for
+        arguments not supplied on the command line.
+    --generatePropertiesFile {path}
+        Write an empty properties file that may be used to specify default
+        values for arguments.
+    --noPropertiesFile
+        Do not obtain any argument values from a properties file.
+    --suppressPropertiesFileComment
+        Suppress output listing the arguments obtained from a properties file.
+
+Examples
+
+  Establishes an unencrypted LDAP connection to directory.example.com:389,
+  performs a simple bind to authenticate as user
+  'uid=jdoe,ou=People,dc=example,dc=com', and issues a search request to
+  retrieve the givenName, sn, and mail attributes for the user with uid
+  'jqpublic' below dc=example,dc=com.  The search results will be written to
+  standard output.
+
+    ldapsearch --hostname directory.example.com --port 389 \
+         --bindDN uid=jdoe,ou=People,dc=example,dc=com \
+         --bindPassword password --baseDN ou=People,dc=example,dc=com \
+         --scope sub "(uid=jqpublic)" givenName sn mail
+
+  Establishes an SSL-encrypted LDAP connection to directory.example.com:636,
+  interactively prompting the user about whether to trust the certificate
+  presented by the directory server.  The tool will then bind with the SASL
+  PLAIN mechanism using an authentication ID of 'u:jdoe' and a password read
+  from a file.  It will then issue a search request for each filter in a given
+  file, writing the results for each search into a separate output file.
+
+    ldapsearch --hostname directory.example.com --port 636 --useSSL \
+         --saslOption mech=PLAIN --saslOption authID=u:jdoe \
+         --bindPasswordFile /path/to/password/file \
+         --baseDN ou=People,dc=example,dc=com --scope sub \
+         --filterFile /path/to/filter/file \
+         --outputFile /path/to/base/output/file \
+         --separateOutputFilePerSearch --requestedAttribute '*' \
+         --requestedAttribute "+"
+
+  Establishes an LDAP connection to directory.example.com:389 that is secured
+  with the StartTLS extended operation, using the information in the provided
+  trust store file to determine whether to trust the certificate presented by
+  the directory server.  It will then issue an unauthenticated search to
+  retrieve all user and operational attributes from the server's root DSE.  The
+  output will be written to a specified output file as well as displayed on
+  standard output.
+
+    ldapsearch --hostname directory.example.com --port 389 --useStartTLS \
+         --trustStorePath /path/to/truststore/file --baseDN "" --scope base \
+         --outputFile /path/to/output/file \
+         --teeResultsToStandardOut '(objectClass=*)' '*' "+"
+
+  Issues a search request to retrieve all entries at or below
+  'dc=example,dc=com', using the simple paged results control to retrieve up to
+  100 entries at a time.  The search will use an unencrypted LDAP connection,
+  and the tool will interactively prompt the user for the password to use when
+  performing simple authentication.
+
+    ldapsearch --hostname directory.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --baseDN dc=example,dc=com \
+         --scope sub --outputFile /path/to/output/file --simplePageSize 100 \
+         '(objectClass=*)' '*' "+"
+
+  Issues a search request to retrieve a special entry that provides details
+  about the server's use of indexes to determine the candidate set of potential
+  matching entries.  This feature is only supported in the UnboundID/Ping
+  Identity Directory Server, and the user must have access control rights to
+  retrieve the 'cn=debugsearch' entry and the 'debugsearchindex' operational
+  attribute.
+
+    ldapsearch --hostname directory.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --baseDN dc=example,dc=com \
+         --scope sub "(&(givenName=John)(sn=Doe))" debugsearchindex

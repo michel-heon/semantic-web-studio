@@ -1,0 +1,570 @@
+Usage for ldapmodify:
+
+Apply a set of add, delete, modify, and/or modify DN operations to a directory
+server.  Supply the changes to apply in LDIF format, either from standard input
+or from a file specified with the 'ldifFile' argument.  Change records must be
+separated by at least one blank line.
+
+Usage:  ldapmodify {options}
+
+Available options include:
+
+  LDAP Connection and Authentication Arguments
+
+    -h, --hostname {host}
+        The IP address or resolvable name to use to connect to the directory
+        server.  If this is not provided, then a default value of 'localhost'
+        will be used.
+    -p, --port {port}
+        The port to use to connect to the directory server.  If this is not
+        provided, then a default value of 389 will be used.
+    -D, --bindDN {dn}
+        The DN to use to bind to the directory server when performing simple
+        authentication.
+    -w, --bindPassword {password}
+        The password to use to bind to the directory server when performing
+        simple authentication or a password-based SASL mechanism.
+    -j, --bindPasswordFile {path}
+        The path to the file containing the password to use to bind to the
+        directory server when performing simple authentication or a
+        password-based SASL mechanism.
+    --promptForBindPassword
+        Indicates that the tool should interactively prompt the user for the
+        bind password.
+    -Z, --useSSL
+        Use SSL when communicating with the directory server.
+    -q, --useStartTLS
+        Use StartTLS when communicating with the directory server.
+    --defaultTrust
+        Use the JVM's default trust store, and optionally an additional trust
+        store specified using the --trustStorePath argument, to
+        non-interactively determine whether to trust any certificate chain
+        presented during TLS negotiation.  If the chain cannot be trusted based
+        on any of those sources, then negotiation will fail without prompting
+        about whether to trust it.
+    -X, --trustAll
+        Trust any certificate presented by the directory server.
+    -K, --keyStorePath {path}
+        The path to the file to use as the key store for obtaining client
+        certificates when communicating securely with the directory server.
+    -W, --keyStorePassword {password}
+        The password to use to access the key store contents.
+    -u, --keyStorePasswordFile {path}
+        The path to the file containing the password to use to access the key
+        store contents.
+    --promptForKeyStorePassword
+        Indicates that the tool should interactively prompt the user for the
+        password to use to access the key store contents.
+    --keyStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store
+        file.
+    -P, --trustStorePath {path}
+        The path to the file to use as trust store when determining whether to
+        trust a certificate presented by the directory server.
+    -T, --trustStorePassword {password}
+        The password to use to access the trust store contents.
+    -U, --trustStorePasswordFile {path}
+        The path to the file containing the password to use to access the trust
+        store contents.
+    --promptForTrustStorePassword
+        Indicates that the tool should interactively prompt the user for the
+        password to use to access the trust store contents.
+    --trustStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store
+        file.
+    -N, --certNickname {nickname}
+        The nickname (alias) of the client certificate in the key store to
+        present to the directory server for SSL client authentication.
+    --enableSSLDebugging
+        Enable Java's low-level support for debugging SSL/TLS communication.
+        This is equivalent to setting the 'javax.net.debug' property to 'all'.
+    -o, --saslOption {name=value}
+        A name-value pair providing information to use when performing SASL
+        authentication.
+    --useSASLExternal
+        Use the SASL EXTERNAL mechanism to authenticate.
+    --helpSASL
+        Provide information about the supported SASL mechanisms, including the
+        properties available for use with each.
+
+  Data Arguments
+
+    -f, --ldifFile {path}
+        The path to the LDIF file containing the changes to process.  If this
+        is not provided, then the changes will be read from standard input.  If
+        this argument is provided multiple times to supply multiple LDIF files,
+        then they will be processed in the order they were provided on the
+        command line.
+    --encryptionPassphraseFile {path}
+        The path to a file that contains the passphrase used to generate the
+        key used to encrypt the LDIF data.  If the data is encrypted and this
+        argument is not provided, then the tool will interactively prompt for
+        the correct password.
+    -i, --characterSet {charset}
+        The character set for the LDIF data to be read.  If this argument is
+        not provided, a default encoding of UTF-8 will be used.
+    -R, --rejectFile {path}
+        The path to a file to which the tool should write information about any
+        rejected changes.
+    -v, --verbose
+        Provide verbose output for operations processed.
+    --modifyEntriesMatchingFilter {filter}
+        Indicates that the changes read from standard input or the specified
+        LDIF file should be applied to all entries that match the specified
+        filter.  Only modify operations will be processed when this argument is
+        provided, and the DN of the modify change record will be used as the
+        base DN for the search used to identify the entries to modify.  If the
+        filter may match a large number of entries, then it is strongly
+        recommended that the searchPageSize argument be provided to process the
+        search in batches.  This argument may be provided multiple times to
+        specify multiple filters to use to search for entries to modify.
+    --modifyEntriesMatchingFiltersFromFile {path}
+        Indicates that the changes read from standard input or the specified
+        LDIF file should be applied to all entries that match a filter read
+        from the specified file.  Only modify operations will be processed when
+        this argument is provided, and the DN of the modify change record will
+        be used as the base DN for the search used to identify the entries to
+        modify.  If any of the filters may match a large number of entries,
+        then it is strongly recommended that the searchPageSize argument be
+        provided to process the search in batches.  This argument may be
+        provided multiple times to specify multiple filter files to use to
+        search for entries to modify.
+    --modifyEntryWithDN {dn}
+        Indicates that the changes read from standard input or the specified
+        LDIF file should be applied to the entry with the specified DN rather
+        than the DN contained in the change record.  Only modify operations
+        will be processed when this argument is provided, and it may be
+        provided multiple times to specify the DNs of multiple entries to
+        modify.
+    --modifyEntriesWithDNsFromFile {path}
+        Indicates that the changes read from standard input or the specified
+        LDIF file should be applied to the entries whose DNs are contained in
+        the specified file rather than the DN contained in the change record.
+        Only modify operations will be processed when this argument is
+        provided, and it may be provided multiple times to specify multiple DN
+        files.
+    --searchPageSize {value}
+        Specifies the page size to use in conjunction with the simple paged
+        results control when searching for entries to modify based on the
+        filter provided in the --modifyEntriesMatchingFilter or
+        --modifyEntriesMatchingFiltersFromFile argument.  If this argument is
+        not provided, then the simple paged results control will not be used.
+    --stripTrailingSpaces
+        Indicates that the tool should strip any illegal trailing spaces from
+        LDIF records before attempting to process them.  If this is not
+        provided, then any LDIF record with one or more illegal trailing spaces
+        will be considered an error.
+
+  Operation Arguments
+
+    --neverRetry
+        Indicates that the tool should not attempt to retry operations that
+        fail in a way that the connection to the directory server may be
+        invalid.  By default, it will automatically try to establish a new
+        connection and retry the failed operation.
+    -n, --dryRun
+        Parse the LDIF representations of the changes to apply but don't
+        actually perform any LDAP communication.
+    -a, --defaultAdd
+        Assume that any LDIF change record without a changeType represents an
+        add operation.  If this is not provided, then any change record without
+        a changeType will be considered an error.
+    -c, --continueOnError
+        Continue processing changes even if an error is encountered.  If this
+        is not provided, then processing will abort after the first failed
+        operation.
+    --followReferrals
+        Attempt to follow any referrals encountered while processing changes.
+        If this is not provided, then any referral received will be considered
+        an error.
+    --useAdministrativeSession
+        Indicates that the tool should attempt to use an administrative session
+        to process all operations using a dedicated pool of worker threads.
+        This may be useful when trying to diagnose problems in a server that is
+        unresponsive because all normal worker threads are busy processing
+        other requests.
+    --useTransaction
+        Indicates that the server should create a transaction to process all
+        operations as a single atomic unit.  This should generally only be used
+        with a relatively small number of changes, and it is recommended that
+        the changes be supplied in an LDIF file rather than via standard input.
+    --multiUpdateErrorBehavior {atomic|abort-on-error|continue-on-error}
+        Indicates that all add, delete, modify, and modify DN requests should
+        be sent to the server in a single multi-update request with the
+        specified error behavior.  The value for this argument must be one of
+        'atomic' (to indicate that all updates should be processed atomically
+        so that they will either all succeed or all fail), 'abort-on-error' (to
+        indicate that the server should only process changes until the first
+        error is encountered and ignore any remaining changes after that
+        error), or 'continue-on-error' (to indicate that the server should
+        continue attempting to process changes, even after one of them has
+        resulted in a failure).
+    -r, --ratePerSecond {num}
+        Specifies a maximum operation rate that the tool should be permitted to
+        achieve.
+
+  Control Arguments
+
+    -Y, --proxyAs {authzID}
+        Indicates that all requests should include the proxied authorization
+        request control (as described in RFC 4370) to process the operation
+        under an alternate authorization identity.  The authorization ID should
+        generally be specified in the form 'dn:' followed by the target user's
+        DN, or 'u:' followed by the username.
+    --proxyV1As {dn}
+        Indicates that all requests should include the legacy proxied
+        authorization v1 request control (as described in
+        draft-weltman-ldapv3-proxy-04) to process the operation under an
+        alternate authorization identity, specified as the DN of the desired
+        user.
+    --operationPurpose {purpose}
+        Indicates that all operations should include the UnboundID-proprietary
+        operation purpose request control to provide the specified reason for
+        the operation.
+    --useManageDsaIT
+        Indicates that all requests should include the manageDsaIT request
+        control to indicate that referral entries should be treated as regular
+        entries.
+    --assertionFilter {filter}
+        A filter that will be used in conjunction with the LDAP assertion
+        request control (as described in RFC 4528) to indicate that the server
+        should only apply changes to entries that match this filter.
+    -E, --authorizationIdentity
+        Indicates that all bind requests should include the authorization
+        identity request control as defined in RFC 3829.  With this control, a
+        successful bind result should include the authorization identity
+        assigned to the connection.
+    --generatePassword
+        Indicates that all add requests should include the generate password
+        request control to request that the server generate a password for the
+        new account.  The generated password will be returned in a
+        corresponding response control.
+    --getAuthorizationEntryAttribute {attr}
+        Indicates that all bind requests should include the
+        UnboundID-proprietary get authorization entry request control to
+        request that the server return the specified attribute (or collection
+        of attributes, in the case of a special identifier like '*' to indicate
+        all user attributes or '+' to indicate all operational attributes) from
+        the authenticated user's entry.  This argument may be provided multiple
+        times to specify multiple attributes to request.
+    --getBackendSetID
+        Indicates that all add, delete, modify, and modify DN requests should
+        include the UnboundID-proprietary get backend set ID request control to
+        request that the Directory Proxy Server include a corresponding get
+        backend set ID response control in each operation response, indicating
+        the entry-balancing backend set in which the write was processed.
+    --getRecentLoginHistory
+        Indicates that all bind requests should include the get recent login
+        history request control to request that the server include a
+        corresponding response control with information about the user's recent
+        login history.
+    --getServerID
+        Indicates that all add, delete modify, and modify DN requests should
+        include the UnboundID-proprietary get server ID request control to
+        request that server include a corresponding get server ID response
+        control in each operation response, indicating the server in which the
+        write was processed.
+    --getUserResourceLimits
+        Indicates that all bind requests should include the
+        UnboundID-proprietary get user resource limits request control to
+        request that the server return information about resource limits (e.g.,
+        size limit, time limit, idle time limit, etc.) imposed for the user.
+    --ignoreNoUserModification
+        Indicates that all add and modify requests should include the
+        UnboundID-proprietary ignore NO-USER-MODIFICATION request control to
+        permit setting values for certain operational attributes not normally
+        permitted to be provided by external clients.
+    --preReadAttribute {attr}
+        Indicates that all delete, modify, and modify DN requests should
+        include the pre-read control (as described in RFC 4527) to retrieve the
+        value(s) of the specified attribute as they appear immediately before
+        the operation has been processed.
+    --postReadAttribute {attr}
+        Indicates that all add, modify, and modify DN requests should include
+        the post-read control (as described in RFC 4527) to retrieve the
+        value(s) of the specified attribute as they appear immediately after
+        the operation has been processed.
+    --routeToBackendSet {entry-balancing-processor-id:backend-set-id}
+        Specifies the ID of an entry-balancing backend set to which the
+        Directory Proxy Server should send all of the add, delete, modify, and
+        modify DN requests.  The value should be formatted as the
+        entry-balancing request processor ID followed by a colon and the
+        desired backend set ID for that entry-balancing request processor.
+        This argument can be provided multiple times to specify multiple
+        backend set IDs for the same or different entry-balancing request
+        processors.  The request control will be configured to use absolute
+        routing rather than a routing hint.
+    --routeToServer {id}
+        Specifies the ID of the backend server to which the Directory Proxy
+        Server should send all add, delete, modify, and modify DN requests.
+    --useAssuredReplication
+        Indicates that all operation requests should include the
+        UnboundID-proprietary assured replication request control to indicate
+        that the server should delay returning a response to the client until a
+        minimum amount of replication processing has been performed for the
+        operation.  The '--assuredReplicationLocalLevel',
+        '--assuredReplicationRemoteLevel', and '--assuredReplicationTimeout'
+        arguments may be used to configure the settings to use for the assured
+        replication control, but the server will automatically determine an
+        appropriate value for any argument that is not provided.
+    --assuredReplicationLocalLevel {level}
+        Specifies the local assurance level to use for the assured replication
+        request control.  This should only be used if the
+        '--useAssuredReplication' argument is provided.  The value should be
+        one of 'none', 'received-any-server', or 'processed-all-servers'.  If
+        assured replication is to be used but this argument is not provided,
+        then the server will automatically determine the local assurance level
+        to use.
+    --assuredReplicationRemoteLevel {level}
+        Specifies the remote assurance level to use for the assured replication
+        request control.  This should only be used if the
+        '--useAssuredReplication' argument is provided.  The value should be
+        one of 'none', 'received-any-remote-location',
+        'received-all-remote-locations', or 'processed-all-remote-servers'.  If
+        assured replication is to be used but this argument is not provided,
+        then the server will automatically determine the remote assurance level
+        to use.
+    --assuredReplicationTimeout {timeout}
+        Specifies the timeout to use for assured replication processing.  This
+        should only be used if the '--useAssuredReplication' argument is also
+        provided.  If assured replication is to be used but this argument is
+        not provided, then the server will automatically determine the timeout
+        to use.
+    --replicationRepair
+        Indicates that all operation requests should include the
+        UnboundID-proprietary replication repair request control.  This will
+        cause the change to be applied only to the target directory server
+        instance but not to any other server in the replication topology.
+    --nameWithEntryUUID
+        Include the UnboundID-proprietary name with entryUUID request control
+        in all add requests sent to the server to indicate that the server
+        should use the entryUUID operational attribute as the naming attribute
+        for the resulting entry instead of the provided RDN.
+    --noOperation
+        Include the LDAP no-operation control in all add, delete, modify, and
+        modify DN requests sent to the server to indicate that the operation
+        should be validated but no changes should actually be applied.
+    --passwordUpdateBehavior {name=value}
+        Specifies that all add and modify requests should include the password
+        update behavior request control with the specified behavior.  Values
+        for this argument must be in the form 'name=value', where the property
+        name can be any of the following:  is-self-change,
+        allow-pre-encoded-password, skip-password-validation,
+        ignore-password-history, ignore-minimum-password-age,
+        password-storage-scheme, and must-change-password.  The value for each
+        property should be either 'true' or 'false', with the exception of the
+        password-storage-scheme property, whose value should be the name of the
+        desired password storage scheme.  This argument can be provided
+        multiple times to specify multiple password update behaviors.
+    --getPasswordValidationDetails
+        Indicates that all add and modify requests that target either the
+        'userPassword' or 'authPassword' attribute should include the
+        UnboundID-proprietary password validation details request control to
+        indicate that the response should include information about the
+        password quality requirements that the server will impose for the
+        target user's password and whether the provided password satisfies each
+        of those constraints.
+    --permissiveModify
+        Indicates that all modify operation requests should include the
+        permissive modify request control, which indicates that the server
+        should be more lenient for certain types of changes (e.g., trying to
+        add an attribute value that already exists, or trying to remove a value
+        that does not exist) that would normally cause the modify operation to
+        be rejected.
+    --clientSideSubtreeDelete
+        Indicates that all delete requests should be processed as client-side
+        subtree deletes by searching for all entries below the target entry and
+        then deleting them.
+    --serverSideSubtreeDelete
+        Indicates that all delete requests should be processed as server-side
+        subtree deletes using the subtree delete request control.
+    -s, --softDelete
+        Indicates that all delete requests should include the
+        UnboundID-proprietary soft delete request control, which indicates that
+        the server should hide the entry for a period of time before deleting
+        it so that it may be restored with an undelete operation if the delete
+        should be reverted.
+    --hardDelete
+        Indicates that all delete requests should include the
+        UnboundID-proprietary hard delete request control, which will
+        permanently delete the target entry even if the server would have
+        otherwise performed a soft delete operation to hide the entry for a
+        period of time before deleting it.
+    --allowUndelete
+        Treat any add operation that includes the 'ds-undelete-from-dn'
+        attribute as an undelete operation.  Undelete requests may be used to
+        restore a soft-deleted entry, optionally using a different DN than was
+        originally assigned to the entry.  The server must be configured to
+        allow soft delete operations, and the requester must have the
+        soft-delete-read privilege.
+    --retireCurrentPassword
+        Indicates that any modify operation that targets either the
+        'userPassword' or 'authPassword' attribute should include the
+        UnboundID-proprietary retire current password request control.  This
+        will indicate that the server should continue to allow the user to
+        authenticate with their current password (in addition to the new
+        password) for a brief period of time.
+    --purgeCurrentPassword
+        Indicates that any modify operation that targets either the
+        'userPassword' or 'authPassword' attribute should include the
+        UnboundID-proprietary purge current password request control.  This
+        will indicate that the server should could purge the current password
+        from the entry (even if it would have otherwise been retired for a
+        brief period of time).
+    --suppressOperationalAttributeUpdates {attr}
+        Indicates that all operations should include the UnboundID-proprietary
+        suppress operational attribute updates request control to indicate that
+        the server should not apply any updates to the specified operational
+        attributes.  The value may be one of 'last-access-time',
+        'last-login-time', 'last-login-ip', or 'lastmod'.
+    --suppressReferentialIntegrityUpdates
+        Indicates that the tool should include the UnboundID-proprietary
+        suppress referential integrity updates request control in all delete
+        and modify DN operations to indicate that the server should not perform
+        any referential integrity processing for those operations.
+    --usePasswordPolicyControl
+        Indicates that all add, bind and modify requests should include the
+        password policy request control (as defined in
+        draft-behera-ldap-password-policy-10) to request that the response
+        include password policy-related information about the target entry.
+    --uniquenessAttribute {attr}
+        Indicates that all add, modify, and modify DN requests should include a
+        uniqueness request control that indicates that the server should
+        attempt to prevent the requested operation from introducing a conflict
+        with the same value in an existing entry.  This may be provided
+        multiple times to specify multiple unique attribute types, and in that
+        case the '--uniquenessMultipleAttributeBehavior' argument may be used
+        to specify the behavior to exhibit for conflicts across those attribute
+        types.
+    --uniquenessFilter {filter}
+        Indicates that all add, modify and modify DN requests should include a
+        uniqueness request control that indicates that the server should
+        attempt to prevent the requested operation from introducing a conflict
+        with other entries matching the provided filter.  If the
+        '--uniquenessAttribute' argument is provided, then this filter will be
+        used to narrow the set of potentially conflicting entries to only those
+        that also match this filter.  If the '--uniquenessAttribute' argument
+        is not provided, then the server will consider it a conflict if any
+        other entry matches the provided filter.
+    --uniquenessBaseDN {dn}
+        Specifies the base DN that should be included in the uniqueness request
+        control.  This can only be used if at least one of the
+        '--uniquenessAttribute' or '--uniquenessFilter' arguments is provided.
+        If this is not given, the server will look for uniqueness conflicts
+        within all public naming contexts.
+    --uniquenessMultipleAttributeBehavior {behavior}
+        Specifies the behavior that the server should exhibit if the multiple
+        unique attribute types are configured.  This can only be used if the
+        '--uniquenessAttribute' argument is provided.  Allowed values for this
+        argument are 'unique-within-each-attribute' (to indicate that each
+        attribute should be considered separately),
+        'unique-across-all-attributes-including-in-same-entry' (to indicate
+        that the value of one unique attribute cannot also be present in the
+        value of any other unique attributes, even if the conflicting values
+        are in the same entry),
+        'unique-across-all-attributes-except-in-same-entry' (to indicate that
+        the value of one unique attribute cannot also be present in the value
+        of any other unique attribute, although the same entry will be
+        permitted to have the same value in multiple attributes), or
+        'unique-in-combination' (to indicate that no other entry will be
+        permitted to have the same combination of unique attribute values).  If
+        this is not specified, then a default of 'unique-within-each-attribute'
+        will be used.
+    --uniquenessPreCommitValidationLevel {level}
+        Specifies the level of pre-commit validation that should be used for
+        the uniqueness request control.  This can only be used if at least one
+        of the '--uniquenessAttribute' or '--uniquenessFilter' arguments is
+        provided.  Allowed values for this argument are 'none' (to indicate
+        that no pre-commit validation should be performed), 'all-subtree-views'
+        (to indicate that a minimum of one pre-commit check should be performed
+        in each applicable subtree view), 'all-backend-sets' (to indicate that
+        a minimum of one pre-commit check should be performed in each
+        entry-balancing backend set), and 'all-available-backend-servers' (to
+        indicate that the pre-commit check should be made in all backend
+        servers available through the Directory Proxy Server).  If this is not
+        specified, then a default of 'all-subtree-views' will be used.
+    --uniquenessPostCommitValidationLevel {level}
+        Specifies the level of post-commit validation that should be used for
+        the uniqueness request control.  This can only be used if at least one
+        of the '--uniquenessAttribute' or '--uniquenessFilter' arguments is
+        provided.  Allowed values for this argument are 'none' (to indicate
+        that no post-commit validation should be performed),
+        'all-subtree-views' (to indicate that a minimum of one post-commit
+        check should be performed in each applicable subtree view),
+        'all-backend-sets' (to indicate that a minimum of one post-commit check
+        should be performed in each entry-balancing backend set), and
+        'all-available-backend-servers' (to indicate that the post-commit check
+        should be made in all backend servers available through the Directory
+        Proxy Server).  If this is not specified, then a default of
+        'all-subtree-views' will be used.
+    -J, --control {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Specifies a control that should be included in all add, delete, modify,
+        and modify DN requests sent to the server.
+    --addControl {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Specifies a control that should be included in all add requests sent to
+        the server.
+    --bindControl {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Specifies a control that should be included in all bind requests used
+        to authenticate to the server.
+    --deleteControl {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Specifies a control that should be included in all delete requests sent
+        to the server.
+    --modifyControl {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Specifies a control that should be included in all modify requests sent
+        to the server.
+    --modifyDNControl {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Specifies a control that should be included in all modify DN requests
+        sent to the server.
+
+  Usage Arguments
+
+    --interactive
+        Launch the tool in interactive mode.
+    --outputFile {path}
+        Write all standard output and standard error messages to the specified
+        file instead of to the console.
+    --appendToOutputFile
+        Indicates that the tool should append to the file specified by the
+        --outputFile argument if it already exists.  If this argument is not
+        provided and the output file already exists, it will be overwritten.
+    --teeOutput
+        Write all standard output and standard error messages to the console as
+        well as to the specified output file.  The --outputFile argument must
+        also be provided.
+    -H, --help
+        Display usage information for this program.
+    --version
+        Display version information for this program.
+    --propertiesFilePath {path}
+        The path to a properties file used to specify default values for
+        arguments not supplied on the command line.
+    --generatePropertiesFile {path}
+        Write an empty properties file that may be used to specify default
+        values for arguments.
+    --noPropertiesFile
+        Do not obtain any argument values from a properties file.
+    --suppressPropertiesFileComment
+        Suppress output listing the arguments obtained from a properties file.
+
+Examples
+
+  Read the changes to apply from standard input and send them to the target
+  directory server over an unencrypted LDAP connection.  Any change records
+  that don't include a changetype will be treated as entries to be added.
+
+    ldapmodify --hostname ldap.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --bindPassword password \
+         --defaultAdd
+
+  Read the changes to apply from the specified LDIF and apply them to all
+  entries matching filter '(objectClass=person)' using the simple paged results
+  control to retrieve no more than 100 entries at a time.  The communication
+  will be encrypted with SSL, and if the first server is unavailable, the
+  second server will be tried.
+
+    ldapmodify --hostname ds1.example.com --port 636 \
+         --hostname ds2.example.com --port 636 --useSSL \
+         --bindDN uid=admin,dc=example,dc=com --bindPassword password \
+         --ldifFile changes.ldif \
+         --modifyEntriesMatchingFilter "(objectClass=person)" \
+         --searchPageSize 100

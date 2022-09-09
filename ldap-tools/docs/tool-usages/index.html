@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>Available Commmand-Line Tools</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="../unboundid.css" type="text/css">
+    <link rel="shortcut icon" href="../images/favicon.ico">
+  </head>
+
+  <body>
+    <h1>Available Command-Line Tools</h1>
+    <p>The following command-line tools are provided with the UnboundID LDAP SDK for Java.  Click on each tool name for usage information for that tool.</p>
+
+    <h3><a href="authrate.html">authrate</a></h3>
+    <p>Perform repeated authentications against an LDAP directory server, where each authentication consists of a search to find a user followed by a bind to verify the credentials for that user.</p>
+
+    <h3><a href="base64.html">base64</a></h3>
+    <p>Encode raw data using the base64 algorithm or decode base64-encoded data back to its raw representation.</p>
+
+    <h3><a href="collect-support-data.html">collect-support-data</a></h3>
+    <p>Collect and package system information useful in troubleshooting problems.  The information is packaged as a zip archive that can be sent to a technical support representative.</p>
+
+    <h3><a href="deliver-one-time-password.html">deliver-one-time-password</a></h3>
+    <p>Generate and deliver a one-time password to a user through some out-of-band mechanism.  That password can then be used to authenticate via the UNBOUNDID-DELIVERED-OTP SASL mechanism.</p>
+
+    <h3><a href="deliver-password-reset-token.html">deliver-password-reset-token</a></h3>
+    <p>Generate and deliver a single-use token to a user through some out-of-band mechanism.  The user can provide that token to the password modify extended request in lieu of the user's current password in order to select a new password.</p>
+
+    <h3><a href="dump-dns.html">dump-dns</a></h3>
+    <p>Obtain a listing of all of the DNs for all entries below a specified base DN in the Directory Server.</p>
+
+    <h3><a href="generate-schema-from-source.html">generate-schema-from-source</a></h3>
+    <p>Generate LDAP schema that may be used to store objects from a properly-annotated class contained in the Java classpath.  The schema elements will be written to the file in LDIF form.</p>
+
+    <h3><a href="generate-source-from-schema.html">generate-source-from-schema</a></h3>
+    <p>Generate source code for a Java class that may be used to represent data stored in an LDAP directory server.  The source code will be generated using information read from the directory server schema, and will contain an appropriate set of annotations required to use that class with the LDAP SDK persistence framework.</p>
+
+    <h3><a href="generate-totp-shared-secret.html">generate-totp-shared-secret</a></h3>
+    <p>Generate a shared secret that may be used to generate time-based one-time password (TOTP) authentication codes for use in authenticating with the UNBOUNDID-TOTP SASL mechanism, or in conjunction with the validate TOTP password extended operation.</p>
+
+    <h3><a href="identify-references-to-missing-entries.html">identify-references-to-missing-entries</a></h3>
+    <p>This tool may be used to identify entries containing one or more attributes which reference entries that do not exist.  This may require the ability to perform unindexed searches and/or the ability to use the simple paged results control.</p>
+
+    <h3><a href="identify-unique-attribute-conflicts.html">identify-unique-attribute-conflicts</a></h3>
+    <p>This tool may be used to identify unique attribute conflicts.  That is, it may identify values of one or more attributes which are supposed to exist only in a single entry but are found in multiple entries.</p>
+
+    <h3><a href="in-memory-directory-server.html">in-memory-directory-server</a></h3>
+    <p>A simple LDAP directory server which holds all of its information in memory and can be used for basic testing purposes.  It can be created and managed programmatically using the com.unboundid.ldap.listener.InMemoryDirectoryServer class.</p>
+
+    <h3><a href="indent-ldap-filter.html">indent-ldap-filter</a></h3>
+    <p>Parses a provided LDAP filter string and displays it a multi-line form that makes it easier to understand its hierarchy and embedded components.  If possible, it may also be able to simplify the provided filter in certain ways (for example, by removing unnecessary levels of hierarchy, like an AND embedded in an AND).</p>
+
+    <h3><a href="ldap-debugger.html">ldap-debugger</a></h3>
+    <p>Intercept and decode LDAP communication.</p>
+
+    <h3><a href="ldap-diff.html">ldap-diff</a></h3>
+    <p>Compare the contents of two LDAP servers.</p>
+
+    <h3><a href="ldap-result-code.html">ldap-result-code</a></h3>
+    <p>Display and query LDAP result codes.</p>
+
+    <h3><a href="ldapcompare.html">ldapcompare</a></h3>
+    <p>Perform compare operations in an LDAP directory server.  Compare operations may be used to efficiently determine whether a specified entry has a given value.</p>
+
+    <h3><a href="ldapdelete.html">ldapdelete</a></h3>
+    <p>Delete one or more entries from an LDAP directory server.  You can provide the DNs of the entries to delete using named arguments, as trailing arguments, from a file, or from standard input.  Alternatively, you can identify entries to delete using a search base DN and filter.</p>
+
+    <h3><a href="ldapmodify.html">ldapmodify</a></h3>
+    <p>Apply a set of add, delete, modify, and/or modify DN operations to a directory server.  Supply the changes to apply in LDIF format, either from standard input or from a file specified with the 'ldifFile' argument.  Change records must be separated by at least one blank line.</p>
+
+    <h3><a href="ldappasswordmodify.html">ldappasswordmodify</a></h3>
+    <p>Update the password for a user in an LDAP directory server using the password modify extended operation (as defined in RFC 3062), a standard LDAP modify operation, or an Active Directory-specific modification.</p>
+
+    <h3><a href="ldapsearch.html">ldapsearch</a></h3>
+    <p>Process one or more searches in an LDAP directory server.</p>
+
+    <h3><a href="ldif-diff.html">ldif-diff</a></h3>
+    <p>Compare the contents of two files containing LDIF entries.  The output will be an LDIF file containing the add, delete, and modify change records needed to convert the data in the source LDIF file into the data in the target LDIF file.</p>
+
+    <h3><a href="ldifmodify.html">ldifmodify</a></h3>
+    <p>Apply a set of changes (including add, delete, modify, and modify DN operations) to a set of entries contained in an LDIF file.  The changes will be read from a second file (containing change records rather than entries), and the updated entries will be written to a third LDIF file.  Unlike ldapmodify, the ldifmodify cannot read the changes to apply from standard input.</p>
+
+    <h3><a href="ldifsearch.html">ldifsearch</a></h3>
+    <p>Search one or more LDIF files to identify entries matching a given set of criteria.</p>
+
+    <h3><a href="manage-account.html">manage-account</a></h3>
+    <p>Retrieve or update information about the current state of a user account.  Processing will be performed using the password policy state extended operation, and you must have the password-reset privilege to use this extended operation.</p>
+
+    <h3><a href="manage-certificates.html">manage-certificates</a></h3>
+    <p>Manage certificates and private keys in a JKS, PKCS #12, PKCS #11, or BCFKS key store.</p>
+
+    <h3><a href="modrate.html">modrate</a></h3>
+    <p>Perform repeated modifications against an LDAP directory server.</p>
+
+    <h3><a href="move-subtree.html">move-subtree</a></h3>
+    <p>Move all entries in a specified subtree from one server to another.</p>
+
+    <h3><a href="oid-lookup.html">oid-lookup</a></h3>
+    <p>Search the OID registry to retrieve information about items that match a given OID or name.</p>
+
+    <h3><a href="parallel-update.html">parallel-update</a></h3>
+    <p>Use multiple concurrent threads to apply a set of add, delete, modify, and modify DN operations read from an LDIF file.</p>
+
+    <h3><a href="register-yubikey-otp-device.html">register-yubikey-otp-device</a></h3>
+    <p>Registers a YubiKey OTP device with the Directory Server for a specified user so that the device may be used to authenticate that user in conjunction with the UNBOUNDID-YUBIKEY-OTP SASL mechanism.  Alternately, it may be used to deregister one or more YubiKey OTP devices for a user so that they may no longer be used to authenticate that user.</p>
+
+    <h3><a href="search-and-mod-rate.html">search-and-mod-rate</a></h3>
+    <p>Perform repeated searches against an LDAP directory server and modify each entry returned.</p>
+
+    <h3><a href="searchrate.html">searchrate</a></h3>
+    <p>Perform repeated searches against an LDAP directory server.</p>
+
+    <h3><a href="split-ldif.html">split-ldif</a></h3>
+    <p>Splits a single LDIF file into multiple sets by separating entries below a specified base DN into different mutually-exclusive collections of entries.  A number of algorithms are available to determine how entries should be split, and entries outside the split base DN may be included in all sets or added to a dedicated LDIF file.</p>
+
+    <h3><a href="subtree-accessibility.html">subtree-accessibility</a></h3>
+    <p>List or update the set of subtree accessibility restrictions defined in the Directory Server.</p>
+
+    <h3><a href="summarize-access-log.html">summarize-access-log</a></h3>
+    <p>Examine one or more access log files from Ping Identity, UnboundID, or Nokia/Alcatel-Lucent 8661 server products to display a number of metrics about operations processed within the server.</p>
+
+    <h3><a href="test-ldap-sdk-performance.html">test-ldap-sdk-performance</a></h3>
+    <p>Provides a mechanism to help test the performance of the LDAP SDK.</p>
+
+    <h3><a href="tls-cipher-suite-selector.html">tls-cipher-suite-selector</a></h3>
+    <p>Provides information about the TLS cipher suites that are supported by the JVM and selects a recommended set of suites for secure communication.</p>
+
+    <h3><a href="transform-ldif.html">transform-ldif</a></h3>
+    <p>Apply one or more changes to entries or change records read from an LDIF file, writing the updating records to a new file.  This tool can apply a variety of transformations, including scrambling attribute values, redacting attribute values, excluding attributes or entries, replacing existing attributes, adding new attributes, renaming attributes, and moving entries from one subtree to another.</p>
+
+    <h3><a href="validate-ldap-schema.html">validate-ldap-schema</a></h3>
+    <p>Validate an LDAP schema read from one or more LDIF files.</p>
+
+    <h3><a href="validate-ldif.html">validate-ldif</a></h3>
+    <p>Validate the contents of an LDIF file against the server schema.</p>
+  </body>
+</html>

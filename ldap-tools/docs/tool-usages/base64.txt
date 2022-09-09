@@ -1,0 +1,140 @@
+The base64 Command-Line Tool
+
+Global Usage:
+
+Encode raw data using the base64 algorithm or decode base64-encoded data back
+to its raw representation.
+
+Subcommands:
+
+  encode
+    Base64-encodes raw data.
+
+  decode
+    Decodes base64-encoded data.
+
+Usage:  base64 {subcommand} {options}
+
+Available options include:
+--interactive
+    Launch the tool in interactive mode.
+-H, --help
+    Display usage information for this program.
+--helpSubcommands
+    Display the names and descriptions of the supported subcommands.
+-V, --version
+    Display version information for this program.
+--propertiesFilePath {path}
+    The path to a properties file used to specify default values for arguments
+    not supplied on the command line.
+--generatePropertiesFile {path}
+    Write an empty properties file that may be used to specify default values
+    for arguments.
+--noPropertiesFile
+    Do not obtain any argument values from a properties file.
+--suppressPropertiesFileComment
+    Suppress output listing the arguments obtained from a properties file.
+
+Examples
+
+  Base64-encodes the string 'Hello' and writes the result to standard output.
+
+    base64 encode --data Hello
+
+  Base64-decodes the data contained in the 'encoded-data.txt' file and writes
+  the result to the 'raw-data.txt' file.
+
+    base64 decode --inputFile encoded-data.txt --outputFile decoded-data.txt
+
+
+
+Available Subcommands:
+* encode
+* decode
+
+
+
+Usage for subcommand encode:
+
+Base64-encodes raw data.
+
+Usage:  encode {options}
+
+Available options include:
+-d, --data {data}
+    The raw data to be encoded.  If neither the --data nor the --inputFile
+    argument is provided, then the data will be read from standard input.
+-f, --inputFile {path}
+    The path to a file containing the raw data to be encoded.  If neither the
+    --data nor the --inputFile argument is provided, then the data will be read
+    from standard input.
+-o, --outputFile {path}
+    The path to a file to which the encoded data should be written.  If this is
+    not provided, the encoded data will be written to standard output.
+--url
+    Encode the data with the base64url mechanism rather than the standard
+    base64 mechanism.
+--ignoreTrailingLineBreak
+    Ignore any end-of-line marker that may be present at the end of the data to
+    encode.
+
+Examples
+
+  Base64-encodes the string 'Hello' and writes the result to standard output.
+
+    base64 encode encode --data Hello
+
+  Base64-encodes the data contained in the 'raw-data.txt' file and writes the
+  result to the 'encoded-data.txt' file.
+
+    base64 encode encode --inputFile raw-data.txt \
+         --outputFile encoded-data.txt
+
+  Base64-encodes data read from standard input and writes the result to
+  standard output.
+
+    base64 encode encode
+
+
+
+Usage for subcommand decode:
+
+Decodes base64-encoded data.
+
+Usage:  decode {options}
+
+Available options include:
+-d, --data {data}
+    The base64-encoded data to be decoded.  If neither the --data nor the
+    --inputFile argument is provided, then the data will be read from standard
+    input.
+-f, --inputFile {path}
+    The path to a file containing the base64-encoded data to be decoded.  If
+    neither the --data nor the --inputFile argument is provided, then the data
+    will be read from standard input.
+-o, --outputFile {path}
+    The path to a file to which the decoded data should be written.  If this is
+    not provided, the decoded data will be written to standard output.
+--url
+    Decode the data with the base64url mechanism rather than the standard
+    base64 mechanism.
+--addTrailingLineBreak
+    Add a line break to the end of the decoded data.
+
+Examples
+
+  Base64-decodes the string 'SGVsbG8=' and writes the result to standard
+  output.
+
+    base64 decode decode --data SGVsbG8=
+
+  Base64-decodes the data contained in the 'encoded-data.txt' file and writes
+  the result to the 'raw-data.txt' file.
+
+    base64 decode decode --inputFile encoded-data.txt \
+         --outputFile decoded-data.txt
+
+  Base64-decodes data read from standard input and writes the result to
+  standard output.
+
+    base64 decode decode

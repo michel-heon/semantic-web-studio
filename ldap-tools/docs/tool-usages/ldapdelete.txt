@@ -1,0 +1,388 @@
+Usage for ldapdelete:
+
+Delete one or more entries from an LDAP directory server.  You can provide the
+DNs of the entries to delete using named arguments, as trailing arguments, from
+a file, or from standard input.  Alternatively, you can identify entries to
+delete using a search base DN and filter.
+
+Usage:  ldapdelete {options} [{dn1} [{dn2} [{dn3} ...] ] ]
+
+Available options include:
+
+  LDAP Connection and Authentication Arguments
+
+    -h, --hostname {host}
+        The IP address or resolvable name to use to connect to the directory
+        server.  If this is not provided, then a default value of 'localhost'
+        will be used.
+    -p, --port {port}
+        The port to use to connect to the directory server.  If this is not
+        provided, then a default value of 389 will be used.
+    -D, --bindDN {dn}
+        The DN to use to bind to the directory server when performing simple
+        authentication.
+    -w, --bindPassword {password}
+        The password to use to bind to the directory server when performing
+        simple authentication or a password-based SASL mechanism.
+    -j, --bindPasswordFile {path}
+        The path to the file containing the password to use to bind to the
+        directory server when performing simple authentication or a
+        password-based SASL mechanism.
+    --promptForBindPassword
+        Indicates that the tool should interactively prompt the user for the
+        bind password.
+    -Z, --useSSL
+        Use SSL when communicating with the directory server.
+    -q, --useStartTLS
+        Use StartTLS when communicating with the directory server.
+    --defaultTrust
+        Use the JVM's default trust store, and optionally an additional trust
+        store specified using the --trustStorePath argument, to
+        non-interactively determine whether to trust any certificate chain
+        presented during TLS negotiation.  If the chain cannot be trusted based
+        on any of those sources, then negotiation will fail without prompting
+        about whether to trust it.
+    -X, --trustAll
+        Trust any certificate presented by the directory server.
+    -K, --keyStorePath {path}
+        The path to the file to use as the key store for obtaining client
+        certificates when communicating securely with the directory server.
+    -W, --keyStorePassword {password}
+        The password to use to access the key store contents.
+    -u, --keyStorePasswordFile {path}
+        The path to the file containing the password to use to access the key
+        store contents.
+    --promptForKeyStorePassword
+        Indicates that the tool should interactively prompt the user for the
+        password to use to access the key store contents.
+    --keyStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store
+        file.
+    -P, --trustStorePath {path}
+        The path to the file to use as trust store when determining whether to
+        trust a certificate presented by the directory server.
+    -T, --trustStorePassword {password}
+        The password to use to access the trust store contents.
+    -U, --trustStorePasswordFile {path}
+        The path to the file containing the password to use to access the trust
+        store contents.
+    --promptForTrustStorePassword
+        Indicates that the tool should interactively prompt the user for the
+        password to use to access the trust store contents.
+    --trustStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store
+        file.
+    -N, --certNickname {nickname}
+        The nickname (alias) of the client certificate in the key store to
+        present to the directory server for SSL client authentication.
+    --enableSSLDebugging
+        Enable Java's low-level support for debugging SSL/TLS communication.
+        This is equivalent to setting the 'javax.net.debug' property to 'all'.
+    -o, --saslOption {name=value}
+        A name-value pair providing information to use when performing SASL
+        authentication.
+    --useSASLExternal
+        Use the SASL EXTERNAL mechanism to authenticate.
+    --helpSASL
+        Provide information about the supported SASL mechanisms, including the
+        properties available for use with each.
+
+  Data Arguments
+
+    -b, --entryDN {dn}
+        The DN of an entry to delete.  This argument may be provided multiple
+        times to specify the DNs of multiple entries to delete, and entries
+        will be deleted in the order in which the arguments were given.  This
+        argument must not be used in conjunction with any other argument used
+        to indicate which entries should be deleted.
+    -f, --dnFile {path}
+        The path to a file containing the DNs of the entries to delete.  Each
+        DN must be on its own line in the file, with blank lines and lines
+        starting with the '#' character being ignored.  Each DN line may
+        optionally start with 'dn:' (or 'dn::' to indicate that the DN is
+        base64-encoded), and long DNs may be wrapped across multiple lines by
+        starting subsequent lines with at least one space.  This argument may
+        be provided multiple times to specify multiple DN files, and the files
+        will be processed in the order they were provided.  This argument must
+        not be used in conjunction with any other argument used to indicate
+        which entries should be deleted.
+    --deleteEntriesMatchingFilter {filter}
+        An LDAP search filter that can be used to identify the entries to
+        delete.  The base DN for the searches should be specified using the
+        --searchBaseDN argument, with the null DN being used by default if that
+        argument is not given.  This argument may be provided multiple times to
+        specify multiple filters, and searches will be performed in the order
+        in which the filters are provided.  This argument must not be used in
+        conjunction with any other argument used to indicate which entries
+        should be deleted.
+    --deleteEntriesMatchingFiltersFromFile {path}
+        The path to a file containing LDAP search filters (one filter per line,
+        with blank lines and lines starting with the '#' character being
+        ignored) that can be used to identify the entries to delete.  The base
+        DN for the searches should be specified using the --searchBaseDN
+        argument, with the null DN being used by default if that argument is
+        not given.  This argument may be provided multiple times to specify the
+        paths to multiple filter files, and the files will be processed in the
+        order they are provided on the command line.  This argument must not be
+        used in conjunction with any other argument used to indicate which
+        entries should be deleted.
+    --searchBaseDN {dn}
+        The base DN to use when searching for entries to delete.  This argument
+        may only be used in conjunction with the --deleteEntriesMatchingFilter
+        or --deleteEntriesMatchingFiltersFromFile arguments.  It may be
+        provided multiple times to specify multiple search base DNs.  If this
+        argument is not given, the null DN will be used as the base DN for the
+        searches.
+    --searchPageSize {value}
+        The page size to use in conjunction with the simple paged results
+        control when retrieving entries.  This argument may be used in
+        conjunction with either the --deleteEntriesMatchingFilter or the
+        --deleteEntriesMatchingFilterFromFile argument to indicate that the
+        search should use the simple paged results control to retrieve the
+        entries in pages rather than all at once.  It may also be used in
+        conjunction with the --clientSideSubtreeDelete argument to indicate the
+        page size for the simple paged results control that it uses.
+    --encryptionPassphraseFile {path}
+        The path to a file containing the passphrase used to encrypt an input
+        file.  If this is not provided and an input file is encrypted (and the
+        encryption key cannot be automatically obtained, for example, from a
+        Ping Identity Directory Server's encryption settings database), then
+        the user will be interactively prompted for the passphrase.
+    -i, --characterSet {charset}
+        The character set/data encoding to use when reading data from files or
+        standard input.  If this is not specified, the UTF-8 character set will
+        be used by default.
+    -R, --rejectFile {path}
+        The path to a file that will be updated with the DNs of any entries
+        that could not be deleted, along with information about the failed
+        delete attempt.  If this is not provided, then failure information will
+        only be written to standard error.
+    -v, --verbose
+        Generate verbose output.
+
+  Delete Operation Arguments
+
+    --neverRetry
+        Indicates that the tool should not attempt to retry operations that
+        fail in a way that the connection to the directory server may be
+        invalid.  By default, it will automatically try to establish a new
+        connection and retry the failed operation.
+    -n, --dryRun
+        Indicates that the tool should display what it would do, and may
+        perform searches if appropriate, but will not actually attempt to
+        delete any entries.  Note that if the server supports the no-operation
+        request control, you may wish to use the --noOperation argument
+        instead, which will actually send the delete requests with a control
+        indicating that the server should perform as much validation of the
+        request that it can, but should not actually delete the target entry.
+    -c, --continueOnError
+        Indicates that the tool should continue processing even after
+        encountering an error.  This is only applicable if it is run with
+        arguments that would cause it to attempt to delete multiple entries.
+    --followReferrals
+        Indicates that the tool should attempt to follow any referrals that it
+        encounters.  By default, any referrals that are returned will be
+        treated as failures.
+    --useAdministrativeSession
+        Indicates that the tool should attempt to use the Ping
+        Identity-proprietary start administrative session extended operation to
+        create an administrative session that will cause all requests to be
+        processed in a dedicated pool of worker threads.  This may be useful
+        when trying to diagnose or resolve an issue when all regular worker
+        threads are busy processing other requests
+    -r, --ratePerSecond {deletesPerSecond}
+        The maximum number of delete operations that should be attempted per
+        second.  If this is not provided, then no rate limit will be imposed on
+        delete requests.
+
+  Control Arguments
+
+    --clientSideSubtreeDelete
+        Indicates that all delete requests should be processed as client-side
+        subtree deletes by searching for all entries below the target entry and
+        then deleting them.
+    -x, --serverSideSubtreeDelete
+        Indicates that all delete requests should be processed as server-side
+        subtree deletes by using the subtree delete request control.
+    -s, --softDelete
+        Indicates that delete requests should include the Ping
+        Identity-proprietary soft delete request control to indicate that the
+        server should hide the entries rather than deleting them immediately.
+        Soft-deleted may or may not be completely removed after a period of
+        time, based on the server configuration.
+    --hardDelete
+        Indicates that delete requests should include the Ping
+        Identity-proprietary hard delete request control to indicate that the
+        target entries should be completely removed, even if they would have
+        otherwise been processed as soft deletes.
+    -Y, --proxyAs {authzID}
+        Indicates that search and delete requests should include the proxied
+        authorization v2 request control, to request that they be processed
+        under the authority of the specified user.
+    --proxyV1As {dn}
+        Indicates that search and delete requests should include the proxied
+        authorization v1 request control, to request that they be processed
+        under the authority of the specified user.
+    --useManageDsaIT
+        Indicates that search and delete requests should include the Manage DSA
+        IT request control to indicate that the server should treat referral
+        entries as regular entries.
+    --assertionFilter {filter}
+        Indicates that delete requests should include the assertion request
+        control to indicate that the server should reject any attempt to delete
+        an entry that does not match the provided filter.
+    --preReadAttribute {attr}
+        Indicates that delete requests should include the pre-read request
+        control to indicate that delete responses should include a post-read
+        response control with the values of the specified at the time the entry
+        was deleted.  This may be provided multiple times to request multiple
+        pre-read attributes.
+    --noOperation
+        Indicates that delete requests should include the no-operation request
+        control to indicate that the server should perform as much processing
+        as possible for the delete operation without actually removing the
+        entry.
+    --getBackendSetID
+        Indicates that delete requests sent through a Directory Proxy Server
+        should include the Ping Identity-proprietary get backend set ID request
+        control to indicate that the response should include a control with the
+        ID of the entry-balancing backend set in which the delete was
+        processed.
+    --routeToBackendSet {entry-balancing-processor-id:backend-set-id}
+        Indicates that search and delete requests should include the Ping
+        Identity-proprietary route to backend set request control to indicate
+        that the Directory Proxy Server should forward those requests to
+        servers in the specified entry-balancing backend set.  This control may
+        be provided multiple times to specify multiple backend sets for the
+        same or different entry-balancing request processors.
+    --getServerID
+        Indicates that delete requests should include the Ping
+        Identity-proprietary get server ID request control to indicate that the
+        response should include a control with the server ID of the Directory
+        Server instance in which the delete was processed.
+    --routeToServer {id}
+        Indicates that search and delete requests should include the Ping
+        Identity-proprietary route to server request control to indicate that
+        the Directory Proxy Server should forward those requests to the
+        specified backend server.
+    --useAssuredReplication
+        Indicates that delete requests should include the Ping
+        Identity-proprietary assured replication request control to delay the
+        response from the server until the change has been replicated to other
+        servers.  The --assuredReplicationLocalLevel,
+        --assuredReplicationRemoteLevel, and --assuredReplicationTimeout
+        arguments may also be used to customize the content of the request
+        control.
+    --assuredReplicationLocalLevel
+    {none|received-any-server|processed-all-servers}
+        The replication assurance level that should be used for servers in the
+        same location as the server that originally processed the change.  The
+        value must be one of 'none', 'received-any-server', or
+        'processed-all-servers'.  If this is not provided, the server will
+        determine an appropriate local assurance level.
+    --assuredReplicationRemoteLevel
+    {none|received-any-remote-location|received-all-remote-locations|processed-
+    all-remote-servers}
+        The replication assurance level that should be used for servers in a
+        different location from the server that originally processed the
+        change.  The value must be one of 'none',
+        'received-any-remote-location', 'received-all-remote-locations', or
+        'processed-all-remote-servers'.  If this is not provided, the server
+        will determine an appropriate remote assurance level.
+    --assuredReplicationTimeout {duration}
+        The maximum length of time that the server should delay the response to
+        the delete operation while waiting for the desired replication
+        assurance to be achieved.  If this is not provided, the server will
+        determine an appropriate timeout to use.
+    --replicationRepair
+        Indicates that delete requests should include the Ping
+        Identity-proprietary replication repair request control to indicate
+        that the delete operation should not be replicated.
+    --suppressReferentialIntegrityUpdates
+        Indicates that delete requests should include the Ping
+        Identity-proprietary suppress referential integrity updates request
+        control so that the server will not perform any referential integrity
+        processing for the delete operation.
+    --operationPurpose {value}
+        Indicates that requests should include the Ping Identity-proprietary
+        operation purpose request control to indicate the intended purpose for
+        the operations.
+    -E, --authorizationIdentity
+        Indicates that bind requests should include the authorization identity
+        request control to retrieve the authorization identity for the
+        authenticated connection.
+    --getAuthorizationEntryAttribute {attr}
+        Indicates that bind requests should include the Ping
+        Identity-proprietary get authorization entry request control to
+        retrieve the specified attribute from the authenticated user's entry.
+        This argument may be provided multiple times to request that multiple
+        attributes be returned.
+    --getUserResourceLimits
+        Indicates that bind requests should include the Ping
+        Identity-proprietary get user resource limits request control to
+        retrieve information about the resource limits that the server will
+        impose for the authenticated connection.
+    -J, --deleteControl {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Provides a control to include in all delete requests.
+    --bindControl {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Provides a control to include in all bind requests.
+
+  Usage Arguments
+
+    --interactive
+        Launch the tool in interactive mode.
+    --outputFile {path}
+        Write all standard output and standard error messages to the specified
+        file instead of to the console.
+    --appendToOutputFile
+        Indicates that the tool should append to the file specified by the
+        --outputFile argument if it already exists.  If this argument is not
+        provided and the output file already exists, it will be overwritten.
+    --teeOutput
+        Write all standard output and standard error messages to the console as
+        well as to the specified output file.  The --outputFile argument must
+        also be provided.
+    -H, --help
+        Display usage information for this program.
+    --version
+        Display version information for this program.
+    --propertiesFilePath {path}
+        The path to a properties file used to specify default values for
+        arguments not supplied on the command line.
+    --generatePropertiesFile {path}
+        Write an empty properties file that may be used to specify default
+        values for arguments.
+    --noPropertiesFile
+        Do not obtain any argument values from a properties file.
+    --suppressPropertiesFileComment
+        Suppress output listing the arguments obtained from a properties file.
+
+Examples
+
+  Deletes the entry with DN 'uid=test.user,ou=People,dc=example,dc=com'
+
+    ldapdelete --hostname ds.example.com --port 636 --useSSL \
+         --bindDN uid=admin,dc=example,dc=com \
+         uid=test.user,ou=People,dc=example,dc=com
+
+  Deletes the entries whose DNs are contained in the file 'dns-to-delete.txt'.
+
+    ldapdelete --hostname ds.example.com --port 636 --useSSL \
+         --trustStorePath trust-store.jks \
+         --bindDN uid=admin,dc=example,dc=com \
+         --bindPasswordFile admin-password.txt --dnFile dns-to-delete.txt
+
+  Deletes all entries matching filter '(description=delete)' below base entry
+  'ou=People,dc=example,dc=com'.
+
+    ldapdelete --hostname ds.example.com --port 389 --useStartTLS \
+         --trustStorePath trust-store.jks \
+         --bindDN uid=admin,dc=example,dc=com \
+         --bindPasswordFile admin-password.txt \
+         --deleteEntriesMatchingFilter "(description=delete)"
+
+  Deletes the entries whose DNs are read from standard input (one DN per
+  line).
+
+    ldapdelete --hostname ds.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com

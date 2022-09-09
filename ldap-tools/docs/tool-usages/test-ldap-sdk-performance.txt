@@ -1,0 +1,106 @@
+Usage for test-ldap-sdk-performance:
+
+Provides a mechanism to help test the performance of the LDAP SDK.
+
+It creates an LDAP listener that uses a canned-response request handler to
+return a predefined response to all requests.  Itthen invokes another tool
+(either searchrate, modrate, authrate, or search-and-mod-rate) to issue
+concurrent requests against that listener as quickly as possible.
+
+Usage:  test-ldap-sdk-performance {options}
+
+Available options include:
+--tool {searchrate|modrate|authrate|search-and-mod-rate}
+    The tool to invoke against the LDAP listener.  It may be one of searchrate,
+    modrate, authrate, or search-and-mod-rate.  If this is not provided, then
+    the searchrate tool will be invoked.
+-t, --numThreads {num}
+    The number of concurrent threads (each using its own connection) to use to
+    process requests.  If this is not provided, then a single thread will be
+    used.
+--entriesPerSearch {num}
+    The number of entries to return in response to each search request.  If
+    this is provided, the value must be between 0 and 100.  If it is not
+    provided, then a single entry will be returned.
+--bindOnly
+    Indicates that the authrate tool should only issue bind requests.  If this
+    is not provided, the authrate tool will perform both search and bind
+    operations.  This argument will only be used in conjunction with the
+    authrate tool.
+--resultCode {intValue}
+    The integer value for the result code to return in response to each
+    request.  If this is not provided, then a result code of 0 (success) will
+    be returned.
+--diagnosticMessage {message}
+    The diagnostic message to return in response to each request.  If this is
+    not provided, then no diagnostic message will be returned.
+-Z, --useSSL
+    Encrypt communication with SSL.  If this argument is not provided, then the
+    communication will not be encrypted.
+-I, --numIntervals {num}
+    The number of intervals to use when running the performance measurement
+    tool.  If this argument is provided in conjunction with the
+    --warmUpIntervals argument, then the warm-up intervals will not be included
+    in this count, and the total number of intervals run will be the sum of the
+    two values.  If this argument is not provided, then the tool will run until
+    it is interrupted (e.g., by pressing Ctrl+C or by killing the underlying
+    Java process).
+-i, --intervalDurationSeconds {num}
+    The length of time in seconds to use for each tool interval (that is, the
+    length of time between each line of output giving statistical information
+    for operations processed in that interval).  If this is not provided, then
+    a default interval duration of five seconds will be used.
+--warmUpIntervals {num}
+    The number of intervals to run before starting to actually collect
+    statistics to include in the final result.  This can give the JVM and JIT a
+    chance to identify and optimize hotspots in the code for the best and most
+    stable performance.  If this is not provided, then no warm-up intervals
+    will be used and the tool will start collecting statistics right away.
+--interactive
+    Launch the tool in interactive mode.
+--outputFile {path}
+    Write all standard output and standard error messages to the specified file
+    instead of to the console.
+--appendToOutputFile
+    Indicates that the tool should append to the file specified by the
+    --outputFile argument if it already exists.  If this argument is not
+    provided and the output file already exists, it will be overwritten.
+--teeOutput
+    Write all standard output and standard error messages to the console as
+    well as to the specified output file.  The --outputFile argument must also
+    be provided.
+-H, --help
+    Display usage information for this program.
+-V, --version
+    Display version information for this program.
+--propertiesFilePath {path}
+    The path to a properties file used to specify default values for arguments
+    not supplied on the command line.
+--generatePropertiesFile {path}
+    Write an empty properties file that may be used to specify default values
+    for arguments.
+--noPropertiesFile
+    Do not obtain any argument values from a properties file.
+--suppressPropertiesFileComment
+    Suppress output listing the arguments obtained from a properties file.
+
+Examples
+
+  Test LDAP SDK performance with the searchrate tool using ten concurrent
+  threads.  Communication will use an insecure connection, and each search will
+  return a success result with a single matching entry.  The tool will continue
+  to run until it is interrupted.
+
+    test-ldap-sdk-performance --numThreads 10
+
+  Test LDAP SDK performance with the modrate tool using ten concurrent threads
+  over SSL-encrypted connections.  Each modify will return an error result with
+  a result code of 32 (noSuchObject) and a diagnostic message of 'The target
+  entry does not exist'.  The tool will run five warm-up intervals of five
+  seconds each, and then ten 5-second intervals in which it will capture
+  statistics.  The tool will exit after those last ten intervals have
+  completed.
+
+    test-ldap-sdk-performance --tool modrate --numThreads 10 --useSSL \
+         --resultCode 32 --diagnosticMessage "The base entry does not exist" \
+         --warmUpIntervals 5 --numIntervals 10 --intervalDurationSeconds 5

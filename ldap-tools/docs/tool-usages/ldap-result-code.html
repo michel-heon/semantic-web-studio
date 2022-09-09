@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>The ldap-result-code Command-Line Tool</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="../unboundid.css" type="text/css">
+    <link rel="shortcut icon" href="../images/favicon.ico">
+  </head>
+
+  <body>
+    <h1>The ldap-result-code Command-Line Tool</h1>
+
+    <p>
+      Display and query LDAP result codes.
+    </p>
+    <p>
+      This tool may be used to list all known defined LDAP result codes, retrieve the name of the result code with a given integer value, or search for all result codes with names containing a given substring.
+    </p>
+    <p>
+      At most one of the --list, --int-value, and --search arguments may be provided.  If none of them is provided, then the --list option will be chosen by default.
+    </p>
+    <h3>Usage</h3>
+    <blockquote><pre>ldap-result-code <i>{arguments}</i></pre></blockquote>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-l</tt> / <tt>--list</tt> &mdash; List all defined result codes.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-i <i>{intValue}</i></tt> / <tt>--int-value <i>{intValue}</i></tt> &mdash; Retrieve the result code with the specified integer value.
+        <br>
+        The specified value must not be less than -2 147 483 648 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>-S <i>{searchString}</i></tt> / <tt>--search <i>{searchString}</i></tt> &mdash; Search for result codes whose name contains the given substring.
+        <br><br>
+      </li>
+      <li>
+        <tt>-a</tt> / <tt>--alphabetic-order</tt> &mdash; List result codes in alphabetic order rather than in numeric order.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--output-format <i>{csv|json|tab-delimited|table}</i></tt> &mdash; The format to use for the output.  The value may be one of 'csv', 'json', 'tab-delimited', or 'table'.  If the output format is not specified, then the 'table' format will be used by default.
+        <br>
+        A provided value should be one of the following:  'json', 'tab-delimited', 'table', 'csv'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--script-friendly</tt> &mdash; Format the output as tab-delimited text rather than as a table.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--interactive</tt> &mdash; Launch the tool in interactive mode.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--outputFile <i>{path}</i></tt> &mdash; Write all standard output and standard error messages to the specified file instead of to the console.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--appendToOutputFile</tt> &mdash; Indicates that the tool should append to the file specified by the --outputFile argument if it already exists.  If this argument is not provided and the output file already exists, it will be overwritten.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--teeOutput</tt> &mdash; Write all standard output and standard error messages to the console as well as to the specified output file.  The --outputFile argument must also be provided.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-H</tt> / <tt>--help</tt> &mdash; Display usage information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-V</tt> / <tt>--version</tt> &mdash; Display version information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--propertiesFilePath <i>{path}</i></tt> &mdash; The path to a properties file used to specify default values for arguments not supplied on the command line.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--generatePropertiesFile <i>{path}</i></tt> &mdash; Write an empty properties file that may be used to specify default values for arguments.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--noPropertiesFile</tt> &mdash; Do not obtain any argument values from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressPropertiesFileComment</tt> &mdash; Suppress output listing the arguments obtained from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Dependent Argument Sets</h3>
+    <ul>
+      <li>
+        If the <tt>--appendToOutputFile</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--teeOutput</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+    </ul>
+    <h3>Exclusive Argument Sets</h3>
+    <ul>
+      <li>
+        The following arguments cannot be used together:  <tt>--list</tt>, <tt>--int-value</tt>, <tt>--search</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--output-format</tt>, <tt>--script-friendly</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--propertiesFilePath</tt>, <tt>--noPropertiesFile</tt>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Display a table with all defined LDAP result codes.</li>
+    </ul>
+    <blockquote><pre>    ldap-result-code</pre></blockquote>
+    <ul>
+      <li>Display information about the result code with an integer value of '49'.  The matching result code should be formatted as a JSON object.</li>
+    </ul>
+    <blockquote><pre>    ldap-result-code --int-value 49 --output-format json</pre></blockquote>
+    <ul>
+      <li>Display information about any defined result codes whose name contains the substring 'attribute'.</li>
+    </ul>
+    <blockquote><pre>    ldap-result-code --search attribute</pre></blockquote>
+  </body>
+</html>

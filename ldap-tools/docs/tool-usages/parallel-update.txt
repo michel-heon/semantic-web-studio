@@ -1,0 +1,323 @@
+Usage for parallel-update:
+
+Use multiple concurrent threads to apply a set of add, delete, modify, and
+modify DN operations read from an LDIF file.
+
+As with other tools like ldapmodify, changes in the LDIF file to be processed
+should be ordered such that if there are any dependencies between changes (for
+example, if one add change record creates a parent entry and another add change
+record creates a child of that parent), prerequisite changes come before the
+changes that depend on them.  When this tool is preparing to process a change,
+it will determine whether the new change depends on any other changes that are
+currently in progress, and if so, will delay processing that change until its
+dependencies have been satisfied.  If a change does not depend on any other
+changes that are currently being processed, then it can be processed in
+parallel with those changes.
+
+This tool will keep track of any changes that fail in a way that indicates they
+succeed if re-tried later (for example, an attempt to add an entry that fails
+because its parent does not exist, but its parent may be created later in the
+set of LDIF changes), and can optionally re-try those changes after processing
+is complete.  Any changes that are not retried, as well as changes that still
+fail after the retry attempts, will be written to a rejects file with
+information about the reason for the failure so that an administrator can take
+any necessary further action upon them.
+
+Usage:  parallel-update {options}
+
+Available options include:
+
+  LDAP Connection and Authentication Arguments
+
+    -h, --hostname {host}
+        The IP address or resolvable name to use to connect to the directory
+        server.  If this is not provided, then a default value of 'localhost'
+        will be used.
+    -p, --port {port}
+        The port to use to connect to the directory server.  If this is not
+        provided, then a default value of 389 will be used.
+    -D, --bindDN {dn}
+        The DN to use to bind to the directory server when performing simple
+        authentication.
+    -w, --bindPassword {password}
+        The password to use to bind to the directory server when performing
+        simple authentication or a password-based SASL mechanism.
+    -j, --bindPasswordFile {path}
+        The path to the file containing the password to use to bind to the
+        directory server when performing simple authentication or a
+        password-based SASL mechanism.
+    --promptForBindPassword
+        Indicates that the tool should interactively prompt the user for the
+        bind password.
+    -Z, --useSSL
+        Use SSL when communicating with the directory server.
+    -q, --useStartTLS
+        Use StartTLS when communicating with the directory server.
+    --defaultTrust
+        Use the JVM's default trust store, and optionally an additional trust
+        store specified using the --trustStorePath argument, to
+        non-interactively determine whether to trust any certificate chain
+        presented during TLS negotiation.  If the chain cannot be trusted based
+        on any of those sources, then negotiation will fail without prompting
+        about whether to trust it.
+    -X, --trustAll
+        Trust any certificate presented by the directory server.
+    -K, --keyStorePath {path}
+        The path to the file to use as the key store for obtaining client
+        certificates when communicating securely with the directory server.
+    -W, --keyStorePassword {password}
+        The password to use to access the key store contents.
+    -u, --keyStorePasswordFile {path}
+        The path to the file containing the password to use to access the key
+        store contents.
+    --promptForKeyStorePassword
+        Indicates that the tool should interactively prompt the user for the
+        password to use to access the key store contents.
+    --keyStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store
+        file.
+    -P, --trustStorePath {path}
+        The path to the file to use as trust store when determining whether to
+        trust a certificate presented by the directory server.
+    -T, --trustStorePassword {password}
+        The password to use to access the trust store contents.
+    -U, --trustStorePasswordFile {path}
+        The path to the file containing the password to use to access the trust
+        store contents.
+    --promptForTrustStorePassword
+        Indicates that the tool should interactively prompt the user for the
+        password to use to access the trust store contents.
+    --trustStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store
+        file.
+    -N, --certNickname {nickname}
+        The nickname (alias) of the client certificate in the key store to
+        present to the directory server for SSL client authentication.
+    --enableSSLDebugging
+        Enable Java's low-level support for debugging SSL/TLS communication.
+        This is equivalent to setting the 'javax.net.debug' property to 'all'.
+    -o, --saslOption {name=value}
+        A name-value pair providing information to use when performing SASL
+        authentication.
+    --useSASLExternal
+        Use the SASL EXTERNAL mechanism to authenticate.
+    --helpSASL
+        Provide information about the supported SASL mechanisms, including the
+        properties available for use with each.
+
+  Change Processing Arguments
+
+  * -l, --ldifFile {path}
+        The path to the LDIF file containing the changes to process.  This must
+        be specified, and the file must exist.
+    --encryptionPassphraseFile {path}
+        The path to a file containing the passphrase needed to decrypt the
+        contents of the LDIF file.  If this argument is not provided and the
+        LDIF file is encrypted, then the tool may interactively prompt for the
+        encryption passphrase.  If this argument is provided, then the file
+        must exist and it must contain exactly one line that is comprised only
+        of the encryption passphrase.
+  * -R, --rejectFile {path}
+        The path to a file that will be written with a record of all operations
+        that could not be completed successfully, even after all retry
+        attempts.  This must be specified, and the file does not need to exist,
+        but the parent directory must exist.
+    --useFirstRejectResultCodeAsExitCode
+        Indicates that the tool should use the result code for the first
+        rejected operation (if any) as the exit code.  By default, the tool
+        will use an exit code of zero if all changes were attempted, even if
+        some of those changes were rejected.
+    -r, --neverRetry
+        Indicates that the tool should never attempt to retry any failed
+        operations.
+    -L, --logFile {path}
+        The path to a log file that will be written with a record of all
+        operations attempted during processing.  If this is specified, then the
+        file does not need to exist, but the parent directory must exist.  If
+        this is not specified, then no log file will be kept.
+    -a, --defaultAdd
+        Indicates that any LDIF records without a changetype should be treated
+        as add requests.  If this is not provided, then LDIF records without a
+        changetype will be rejected.
+    --followReferrals
+        Indicates that the tool should attempt to follow any referrals that the
+        server returns.  If this is not provided, then referral results will be
+        treated as failures.
+    -t, --numThreads {value}
+        The number of threads to use when processing operations in parallel.
+        The value must be greater than or equal to one, with a value of one
+        indicating that processing should be performed in a single thread
+        (without any parallelism).  If this is not specified, a default of
+        eight threads will be used.
+    -s, --ratePerSecond {value}
+        The maximum rate (in number of requests per second) at which the tool
+        should attempt to process requests.  If this is specified, the value
+        must be greater than or equal to one.  If this is not specified, then
+        no rate limiting will be performed.
+
+  Request Control Arguments
+
+    -M, --usePermissiveModify
+        Include the permissive modify request control in all modify requests.
+        This control indicates that the server should not reject attempts to
+        add attribute values that already exist in the entry or attempts to
+        remove attribute values that do not exist in the entry.
+    --ignoreNoUserModification
+        Include the proprietary ignore NO-USER-MODIFICATION request control in
+        all add and modify requests.  This control indicates that the server
+        should not reject requests in which the client attempts to set values
+        for attribute types declared with the NO-USER-MODIFICATION constraint
+        in the schema.  This control primarily applies to add operations, but
+        the server can be configured to allow it for a limited set of
+        attributes in modify operation.
+    -Y, --proxyAs {authzID}
+        Include the proxied authorization request control (as described in RFC
+        4370, also known as the proxied authorization v2 request control) in
+        all add, delete, modify, and modify DN requests.  This control
+        indicates that the operation should be processed under the authority of
+        an alternate authorization identity.  That authorization identity
+        should generally be specified as either the string 'dn:' followed by
+        the DN of the entry for the target user or 'u:' followed by the
+        username for the target user.
+    --proxyV1As {dn}
+        Include the proxied authorization v1 request control (as described in
+        draft-weltman-ldapv3-proxy-04) in all add, delete, modify, and modify
+        DN requests.  This control indicates that the operation should be
+        processed under the authority of an alternate authorization identity,
+        specified as the DN of the entry for the target user.
+    --passwordUpdateBehavior {name=value}
+        Include the proprietary password update behavior request control in all
+        add and modify requests.  This control may be used to customize the
+        server's treatment of any passwords contained in the request.  Values
+        for this argument must be provided in the form 'name=value', where the
+        property can be any of the following:  is-self-change,
+        allow-pre-encoded-password, skip-password-validation,
+        ignore-password-history, ignore-minimum-password-age,
+        password-storage-scheme, and must-change-password.  The value for the
+        password-storage-scheme property should be the name of the desired
+        scheme, and the value for all other properties should be either 'true'
+        or 'false'.  This argument can be provided multiple times to specify
+        multiple password update behaviors.
+    --operationPurpose {purpose}
+        Include the proprietary operation purpose request control in all
+        requests.  This control provides a human-readable reason for the
+        associated operation.
+    --useManageDsaIT
+        Include the manageDsaIT request control in all add, delete, modify, and
+        modify DN request.  This control indicates that the server should treat
+        referral entries as regular entries, and that the server should attempt
+        to process that change directly against the referral entry rather
+        generating a referral to indicate that the change should be sent to
+        another server or to a different location in the same server.
+    --nameWithEntryUUID
+        Include the UnboundID-proprietary name with entryUUID request control
+        in all add requests sent to the server to indicate that the server
+        should use the entryUUID operational attribute as the naming attribute
+        for the resulting entry instead of the provided RDN.
+    --useSoftDelete
+        Include the proprietary soft delete request control in all delete
+        requests.  This control indicates that the server should hide the
+        target entry for a period of time before actually removing it so that
+        it may be restored with an undelete operation if the delete should be
+        reverted.
+    --useHardDelete
+        Include the proprietary hard delete request control in all delete
+        requests.  This control indicates that the server should completely
+        remove the target entry, even if it would have otherwise automatically
+        processed the operation as a soft delete.
+    --allowUndelete
+        Include the proprietary undelete request control in all add requests
+        that include the 'ds-undelete-from-dn' attribute.  This control
+        indicates that the server should un-delete the target soft-deleted
+        entry rather than creating a new entry.  The server must be configured
+        to allow soft delete operations, and the requester must hav ethe
+        soft-delete-read privilege.
+    --useAssuredReplication
+        Include the UnboundID-proprietary assured replication request control
+        to indicate that the update response should be delayed until the change
+        has been sufficiently replicated to other servers.
+    --assuredReplicationLocalLevel
+    {none|received-any-server|processed-all-servers}
+        The replication assurance level that should be used for servers in the
+        same location as the server that originally processed the change.  The
+        value must be one of 'none', 'received-any-server', or
+        'processed-all-servers'.  If this is not provided, the server will
+        determine an appropriate local assurance level.
+    --assuredReplicationRemoteLevel {level}
+        The assurance level to request when replicating changes to other
+        servers in a different location from the server that originally
+        received the change.  The value should be one of 'none',
+        'received-any-remote-location', 'received-all-remote-locations', or
+        'processed-all-remote-servers'.  If this is not specified, then the
+        server will determine an appropriate remote assurance level.
+    --assuredReplicationTimeout {duration}
+        The timeout to use for assured replication processing.  If provided,
+        the value should be in the form of an integer followed by a time unit
+        that is one of 'nanosecond', 'microsecond', 'millisecond', 'second',
+        'minute', 'hour', 'day', or 'week' (or one of their plurals or
+        abbreviations).  For example, values of '500 milliseconds', '500 ms',
+        and '500ms' all specify a timeout of 500 milliseconds.  If this is not
+        specified, then the server will select an appropriate timeout.
+    --replicationRepair
+        Include the proprietary replication repair request control in all add,
+        delete, modify, and modify DN requests.  This control indicates that
+        the requested operation should only be processed in the server instance
+        that originally received the change, and it should not be replicated to
+        other servers in the topology.  This should generally only be used
+        under the direction of support personnel.
+    --suppressOperationalAttributeUpdates {attr}
+        Include the proprietary suppress operational attribute update request
+        control in all add, bind, delete, modify, and modify DN requests.  This
+        control indicates that the server should not update the specified
+        operational attribute in the course of processing the operation.  The
+        value may be one of 'last-access-time', 'last-login-time',
+        'last-login-ip', or 'lastmod'.  This argument may be provided multiple
+        times to suppress updates to multiple operational attributes.
+    --suppressReferentialIntegrityUpdates
+        Include the proprietary suppress referential integrity updates request
+        control in all delete and modify DN requests.  This control indicates
+        that the server should not perform any referential integrity processing
+        for the associated operation.
+    --addControl {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Include the specified control in all add requests.
+    --bindControl {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Include the specified control in all bind requests.
+    --deleteControl {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Include the specified control in all delete requests.
+    --modifyControl {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Include the specified control in all modify requests.
+    --modifyDNControl {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Include the specified control in all modify DN requests.
+
+  Usage Arguments
+
+    --interactive
+        Launch the tool in interactive mode.
+    -H, --help
+        Display usage information for this program.
+    -V, --version
+        Display version information for this program.
+    --propertiesFilePath {path}
+        The path to a properties file used to specify default values for
+        arguments not supplied on the command line.
+    --generatePropertiesFile {path}
+        Write an empty properties file that may be used to specify default
+        values for arguments.
+    --noPropertiesFile
+        Do not obtain any argument values from a properties file.
+    --suppressPropertiesFileComment
+        Suppress output listing the arguments obtained from a properties file.
+
+  * Indicates the argument is required
+
+Examples
+
+  Uses ten concurrent threads to apply the changes read from the changes.ldif
+  file against the LDAP server at server.example.com:636 over a TLS-encrypted
+  connection.  Any rejected changes will be written to the rejects.ldif file,
+  and processing will be limited to a rate of 5000 attempts per second.
+
+    parallel-update --hostname server.example.com --port 636 --useSSL \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --ldifFile changes.ldif --rejectFile rejects.ldif --defaultAdd \
+         --numThreads 10 --ratePerSecond 5000

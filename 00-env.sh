@@ -25,13 +25,16 @@ else
     # Assigner TRANSLATOR_HOME
     # si elle n'est pas déjà assignée
     if [ -z $TRANSLATOR_HOME ]; then 
-        export TRANSLATOR_HOME=/opt/translator
+        export TRANSLATOR_HOME=$HOME/translator
     fi
 fi
 
 export JENA_HOME=$TRANSLATOR_HOME
-export PATH=$JENA_HOME:$JENA_HOME/bin:$PATH
+export TOOLS_DIR=$TRANSLATOR_HOME/ldap-tools/tools
+export PATH=$JENA_HOME:$JENA_HOME/bin:$TOOLS_DIR:$PATH
 
 >&2 echo "TRANSLATOR_HOME = $TRANSLATOR_HOME"
 >&2 echo "JENA_HOME = $JENA_HOME"
 >&2 echo "JENA_VERSION = $JENA_VERSION"
+>&2 echo "ldap TOOLS_DIR = $TOOLS_DIR"
+

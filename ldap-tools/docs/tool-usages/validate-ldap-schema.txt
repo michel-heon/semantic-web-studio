@@ -1,0 +1,158 @@
+Usage for validate-ldap-schema:
+
+Validate an LDAP schema read from one or more LDIF files.
+
+Usage:  validate-ldap-schema {options}
+
+Available options include:
+
+  Input Arguments
+
+  * --schema-path {path}
+        The path to the schema definitions to parse.  This may be an LDIF file
+        containing a subschema subentry, or it may be a directory containing
+        one or more schema files (in which case the files will be processed in
+        alphabetic order by file name).  This may be provided multiple times if
+        schema definitions should be read from multiple paths (in which case
+        the paths will be processed in they order they were provided on the
+        command line).
+    --allow-multiple-entries-per-schema-file
+        Allow schema files to contain multiple entries.  By default, each
+        schema file may contain only a single entry.
+    --allow-schema-files-in-subdirectories
+        Allow searching for schema files in subdirectories of the provided
+        schema path(s).  This only applies to schema paths that reference
+        directories, and if this argument is provided, then subdirectories will
+        also be examined to look for additional schema files.
+
+  Validation Arguments
+
+    --allowed-element-type {elementType}
+        A type of schema element that is allowed to be defined in schema files.
+        This may be provided multiple times if multiple specific element types
+        are allowed.  Allowed values include:  'attribute-syntax',
+        'matching-rule', 'attribute-type', 'object-class', 'name-form',
+        'dit-content-rule', 'dit-structure-rule', and 'matching-rule-use'.  If
+        this argument is not provided, then all element types will be allowed.
+    --prohibited-element-type {elementType}
+        A type of schema element that is not permitted to be defined in schema
+        files.  This may be provided multiple times if multiple specific
+        element types are prohibited.  Allowed values include:
+        'attribute-syntax', 'matching-rule', 'attribute-type', 'object-class',
+        'name-form', 'dit-content-rule', 'dit-structure-rule', and
+        'matching-rule-use'.  If this argument is not provided, then no element
+        types will be prohibited.
+    --allow-redefining-elements
+        Allow a schema element to be defined multiple times.  If this is
+        provided, then subsequent definitions of a schema elements will
+        override previous definitions of the same element.  By default, each
+        schema element may only be defined once.
+    --allow-undefined-element-type {elementType}
+        A type of schema element that may be referenced by an element read from
+        a schema file but that has not been defined in the schema files being
+        read.  This may be provided multiple times if multiple types of
+        undefined elements should be allowed.  Allowed values include:
+        'attribute-syntax', 'matching-rule', 'attribute-type', 'object-class',
+        'name-form', 'dit-content-rule', 'dit-structure-rule', and
+        'matching-rule-use'.  If this argument is not provided, now undefined
+        element types will be allowed, and any reference to an undefined schema
+        element will be reported as an error.
+    --use-lenient-oid-validation
+        Use lenient validation for numeric object identifiers.  By default,
+        numeric OIDs will be strictly validated.
+    --allow-non-numeric-oids
+        Allow schema elements to have non-numeric object identifiers.  Although
+        this is technically not valid, some servers allow the use of
+        non-numeric OIDs.
+    --allow-elements-without-names
+        Allow schema elements to only have OIDs but no names.  Although it is
+        technically valid to have schema elements without names, such elements
+        are not as user-friendly as those with names.
+    --use-lenient-name-validation
+        Use lenient validation for schema element names.  Valid LDAP schema
+        element names must start with a letter, and must only contain letters,
+        digits, and hyphens, although some servers have more lax name
+        requirements.  If this option is provided, then schema element names
+        will also be permitted to have underscores, and will be permitted to
+        start with any allowed character.
+    --allow-attribute-types-without-syntax
+        Allow attribute type definitions that do not directly specify a syntax
+        and do not inherit the syntax of a superior attribute type.  Although
+        this is technically not valid, some servers assume a default syntax for
+        such attribute types.
+    --reject-attribute-types-without-equality-matching-rule
+        Report an error for each attribute type definitions that does not
+        directly specify an equality matching rule and does not inherit an
+        equality matching rule from a superior attribute type.  Although this
+        is technically valid, servers will fall back to byte-for-byte matching
+        for values of such attributes (although some servers may assume a
+        default equality matching rule based on the syntax), which may not be
+        the desired behavior.
+    --allow-structural-object-classes-without-superior
+        Allow structural object classes that do not superior class.  All
+        structural object classes must specify a superior class, and that
+        superior class must be structural or abstract, but some servers may
+        assume a default superior object class of 'top' for any structural
+        class that does not explicitly specify one.
+    --reject-object-classes-with-multiple-superiors
+        Reject object classes that have multiple superior classes.  Although
+        this is valid, some servers do not support object classes with multiple
+        superiors.
+    --allow-empty-descriptions
+        Allow schema elements with an empty string as the value for the 'DESC'
+        element.  LDAP does not allow schema element definitions to contain
+        empty quoted strings, but some servers allow them to have empty
+        descriptions.
+
+  Usage Arguments
+
+    --interactive
+        Launch the tool in interactive mode.
+    --outputFile {path}
+        Write all standard output and standard error messages to the specified
+        file instead of to the console.
+    --appendToOutputFile
+        Indicates that the tool should append to the file specified by the
+        --outputFile argument if it already exists.  If this argument is not
+        provided and the output file already exists, it will be overwritten.
+    --teeOutput
+        Write all standard output and standard error messages to the console as
+        well as to the specified output file.  The --outputFile argument must
+        also be provided.
+    -H, --help
+        Display usage information for this program.
+    -V, --version
+        Display version information for this program.
+    --propertiesFilePath {path}
+        The path to a properties file used to specify default values for
+        arguments not supplied on the command line.
+    --generatePropertiesFile {path}
+        Write an empty properties file that may be used to specify default
+        values for arguments.
+    --noPropertiesFile
+        Do not obtain any argument values from a properties file.
+    --suppressPropertiesFileComment
+        Suppress output listing the arguments obtained from a properties file.
+
+  * Indicates the argument is required
+
+Examples
+
+  Validate schema definitions in the specified path using the default
+  settings.
+
+    validate-ldap-schema --schema-path /path/to/schema
+
+  Validate schema definitions in the specified path using more lenient
+  settings.
+
+    validate-ldap-schema --schema-path /path/to/schema \
+         --allow-multiple-entries-per-schema-file \
+         --allow-schema-files-in-subdirectories --allow-redefining-elements \
+         --allow-undefined-element-type attribute-syntax \
+         --allow-undefined-element-type matching-rule \
+         --use-lenient-oid-validation --allow-non-numeric-oids \
+         --allow-elements-without-names --use-lenient-name-validation \
+         --allow-attribute-types-without-syntax \
+         --allow-structural-object-classes-without-superior \
+         --allow-empty-descriptions

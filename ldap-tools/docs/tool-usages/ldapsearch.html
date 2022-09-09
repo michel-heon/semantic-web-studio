@@ -1,0 +1,912 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>The ldapsearch Command-Line Tool</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="../unboundid.css" type="text/css">
+    <link rel="shortcut icon" href="../images/favicon.ico">
+  </head>
+
+  <body>
+    <h1>The ldapsearch Command-Line Tool</h1>
+
+    <p>
+      Process one or more searches in an LDAP directory server.
+    </p>
+    <p>
+      The criteria for the search request can be specified in a number of different ways, including providing all of the details directly via command-line arguments, providing all of the arguments except the filter via command-line arguments and specifying a file that holds the filters to use, or specifying a file that includes a set of LDAP URLs with the base DN, scope, filter, and attributes to return.
+    </p>
+    <p>
+      See the examples below for a number of sample command lines for this tool.
+    </p>
+    <h3>Usage</h3>
+    <blockquote><pre>ldapsearch <i>{arguments}</i> <i>{filter} [{attr1} [{attr2} ...]]</i></pre></blockquote>
+    <h3>LDAP Connection and Authentication Arguments</h3>
+    <ul>
+      <li>
+        <tt>-h <i>{host}</i></tt> / <tt>--hostname <i>{host}</i></tt> &mdash; The IP address or resolvable name to use to connect to the directory server.  If this is not provided, then a default value of 'localhost' will be used.
+        <br><br>
+      </li>
+      <li>
+        <tt>-p <i>{port}</i></tt> / <tt>--port <i>{port}</i></tt> &mdash; The port to use to connect to the directory server.  If this is not provided, then a default value of 389 will be used.
+        <br>
+        The specified value must not be less than 1 or greater than 65 535.
+        <br><br>
+      </li>
+      <li>
+        <tt>-D <i>{dn}</i></tt> / <tt>--bindDN <i>{dn}</i></tt> &mdash; The DN to use to bind to the directory server when performing simple authentication.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>-w <i>{password}</i></tt> / <tt>--bindPassword <i>{password}</i></tt> &mdash; The password to use to bind to the directory server when performing simple authentication or a password-based SASL mechanism.
+        <br><br>
+      </li>
+      <li>
+        <tt>-j <i>{path}</i></tt> / <tt>--bindPasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to bind to the directory server when performing simple authentication or a password-based SASL mechanism.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForBindPassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the bind password.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-Z</tt> / <tt>--useSSL</tt> &mdash; Use SSL when communicating with the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-q</tt> / <tt>--useStartTLS</tt> &mdash; Use StartTLS when communicating with the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--defaultTrust</tt> &mdash; Use the JVM's default trust store, and optionally an additional trust store specified using the --trustStorePath argument, to non-interactively determine whether to trust any certificate chain presented during TLS negotiation.  If the chain cannot be trusted based on any of those sources, then negotiation will fail without prompting about whether to trust it.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-X</tt> / <tt>--trustAll</tt> &mdash; Trust any certificate presented by the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-K <i>{path}</i></tt> / <tt>--keyStorePath <i>{path}</i></tt> &mdash; The path to the file to use as the key store for obtaining client certificates when communicating securely with the directory server.
+        <br><br>
+      </li>
+      <li>
+        <tt>-W <i>{password}</i></tt> / <tt>--keyStorePassword <i>{password}</i></tt> &mdash; The password to use to access the key store contents.
+        <br><br>
+      </li>
+      <li>
+        <tt>-u <i>{path}</i></tt> / <tt>--keyStorePasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to access the key store contents.
+        <br>
+        The specified path must refer to a file that may or may not exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForKeyStorePassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the password to use to access the key store contents.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--keyStoreFormat <i>{format}</i></tt> &mdash; The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store file.
+        <br><br>
+      </li>
+      <li>
+        <tt>-P <i>{path}</i></tt> / <tt>--trustStorePath <i>{path}</i></tt> &mdash; The path to the file to use as trust store when determining whether to trust a certificate presented by the directory server.
+        <br><br>
+      </li>
+      <li>
+        <tt>--trustStorePassword <i>{password}</i></tt> &mdash; The password to use to access the trust store contents.
+        <br><br>
+      </li>
+      <li>
+        <tt>-U <i>{path}</i></tt> / <tt>--trustStorePasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to access the trust store contents.
+        <br>
+        The specified path must refer to a file that may or may not exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForTrustStorePassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the password to use to access the trust store contents.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--trustStoreFormat <i>{format}</i></tt> &mdash; The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store file.
+        <br><br>
+      </li>
+      <li>
+        <tt>-N <i>{nickname}</i></tt> / <tt>--certNickname <i>{nickname}</i></tt> &mdash; The nickname (alias) of the client certificate in the key store to present to the directory server for SSL client authentication.
+        <br><br>
+      </li>
+      <li>
+        <tt>--enableSSLDebugging</tt> &mdash; Enable Java's low-level support for debugging SSL/TLS communication.  This is equivalent to setting the 'javax.net.debug' property to 'all'.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-o <i>{name=value}</i></tt> / <tt>--saslOption <i>{name=value}</i></tt> &mdash; A name-value pair providing information to use when performing SASL authentication.
+        <br><br>
+      </li>
+      <li>
+        <tt>--useSASLExternal</tt> &mdash; Use the SASL EXTERNAL mechanism to authenticate.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--helpSASL</tt> &mdash; Provide information about the supported SASL mechanisms, including the properties available for use with each.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Operation Arguments</h3>
+    <ul>
+      <li>
+        <tt>-b <i>{dn}</i></tt> / <tt>--baseDN <i>{dn}</i></tt> &mdash; Specifies the base DN that should be used for the search.  If a filter file is provided, then this base DN will be used for each search with a filter read from that file.  This argument must not be provided if the --ldapURLFile is given.  If no base DN is specified, then the null base DN will be used by default.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>-s <i>{base|one|sub|subordinates}</i></tt> / <tt>--scope <i>{base|one|sub|subordinates}</i></tt> &mdash; Specifies the scope that to use for search requests.  The value should be one of 'base', 'one', 'sub', or 'subordinates'.  If this argument is not provided, a default of 'sub' will be used.
+        <br>
+        The provided value should be one of 'base', 'one', 'sub', or 'subordinate'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-z <i>{value}</i></tt> / <tt>--sizeLimit <i>{value}</i></tt> &mdash; Specifies the maximum number of entries that the server should return for each search.  A value of zero (which is the default if this argument is not used) indicates that no client-side size limit should be imposed.  Note that the server may impose its own limit on the number of entries that may be returned for a search.
+        <br>
+        The specified value must not be less than 0 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>-l <i>{value}</i></tt> / <tt>--timeLimitSeconds <i>{value}</i></tt> &mdash; Specifies the maximum length of time in seconds that the server should spend processing each search.  A value of zero (which is the default if this argument is not provided) indicates that no client-side time limit should be imposed.  Note that the server may impose its own time limit for search requests.
+        <br>
+        The specified value must not be less than 0 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>-a <i>{never|always|search|find}</i></tt> / <tt>--dereferencePolicy <i>{never|always|search|find}</i></tt> &mdash; Specifies the alias dereferencing policy to use for search requests.  The value should be one of 'never', 'always', 'search', or 'find'.  If this argument is not provided, a default of 'never' will be used.
+        <br>
+        A provided value should be one of the following:  'always', 'never', 'search', 'find'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-A</tt> / <tt>--typesOnly</tt> &mdash; Indicates that the server should only include the names of the attributes contained in the entry rather than both names and values.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--requestedAttribute <i>{attr}</i></tt> &mdash; Specifies an identifier that indicates which attribute(s) should be included in entries that match the search criteria.  The value may be an attribute name or OID, a special token like '*' to indicate all user attributes or '+' to indicate all operational attributes, or an object class name prefixed by an '@' symbol to indicate all attributes associated with the specified object class.  This may be provided multiple times to specify multiple requested attributes, and it may be provided instead of or in addition to the set of requested attributes in the set of trailing arguments.  If this is not specified, then the server will behave as if all user attributes had been requested.
+        <br><br>
+      </li>
+      <li>
+        <tt>--filter <i>{filter}</i></tt> &mdash; Specifies a filter to use when processing a search.  This may be provided multiple times to issue multiple searches with different filters.  If this argument is provided, then the first trailing argument will not be interpreted as a search filter (all trailing arguments will be interpreted as requested attributes).
+        <br>
+        A provided value must be able to be parsed as an LDAP search filter as described in RFC 4515.
+        <br><br>
+      </li>
+      <li>
+        <tt>-f <i>{path}</i></tt> / <tt>--filterFile <i>{path}</i></tt> &mdash; Specifies the path to a file containing the search filters to issue.  Each filter should be on a separate line.  Blank lines and lines beginning with the '#' character will be ignored.  This argument may be provided multiple times to specify multiple filter files.  If a filter file is provided, then the first trailing argument will not be interpreted as a search filter (all trailing arguments will be interpreted as requested attributes).
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--ldapURLFile <i>{path}</i></tt> &mdash; Specifies the path to a file containing LDAP URLs that define the search requests to issue.  The LDAP URLs will specify the base DN, scope, filter, and attributes to return for each search (any hostnames and port numbers included in the URLs will be ignored).  Each URL should be on a separate line.  Blank lines and lines beginning with the '#' character will be ignored.  This argument may be provided multiple times to specify multiple LDAP URL files.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--followReferrals</tt> &mdash; Attempt to follow any referrals and search result references encountered during search processing.  If this is not provided, then referrals and search references will be displayed in the output.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--retryFailedOperations</tt> &mdash; Indicates that, if a search fails in a way that indicates the connection to the server may no longer be valid, the tool should automatically create a new connection and re-try the search before reporting it as a failure.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-c</tt> / <tt>--continueOnError</tt> &mdash; Continue processing searches even if an error is encountered.  If this is not provided, then processing will abort after the first failed search.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-r <i>{num}</i></tt> / <tt>--ratePerSecond <i>{num}</i></tt> &mdash; Specifies a maximum search rate that the tool should be permitted to achieve.  Note that this limit applies only to the rate at which the client issues search requests and not to the rate at which the server may send matching entries.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--useAdministrativeSession</tt> &mdash; Indicates that the tool should attempt to use an administrative session to process all operations using a dedicated pool of worker threads.  This may be useful when trying to diagnose problems in a server that is unresponsive because all normal worker threads are busy processing other requests.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-n</tt> / <tt>--dryRun</tt> &mdash; Indicate which searches would be issued but do not actually send them to the server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--countEntries</tt> &mdash; Indicates that the tool exit code should represent the number of entries returned during search processing.  If this is not provided, or if an error is encountered while processing the search, then the tool exit code will reflect the LDAP result code received during search processing (or an appropriate client-side result code if a problem was encountered before sending any searches).  Note that because some operating systems do not allow exit code values greater than 255, that will be the maximum exit value for this tool even if more than 255 entries are returned.  Also note that this argument can only be used when processing a single search.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Data Arguments</h3>
+    <ul>
+      <li>
+        <tt>--wrapColumn <i>{value}</i></tt> &mdash; The column at which long lines in the LDIF representation of an entry should be wrapped.  A value of zero indicates that no wrapping should be performed.  If this is not provided, then the wrap column will be based on the width of the terminal used to run the tool.
+        <br>
+        The specified value must not be less than 0 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>-T</tt> / <tt>--dontWrap</tt> &mdash; Indicates that no line wrapping should be performed when displaying the LDIF representations of matching entries.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressBase64EncodedValueComments</tt> &mdash; Indicates that the tool should not include any comments that attempt to provide a human-readable representation of any base64-encoded attribute values in the search results.  If this argument is not provided, then any attribute value whose LDIF representation requires base64 encoding will be immediately followed by a comment that attempts to provide a human-readable representation of the raw bytes that comprise that base64-encoded value.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--outputFile <i>{path}</i></tt> &mdash; Specifies the path to the file to which search results should be written.  If this argument is not provided then results will be written to standard output.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--compressOutput</tt> &mdash; Indicates that the output should be gzip-compressed.  This can only be used if the --outputFile argument is provided and the --teeResultsToStandardOut argument is not provided.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--encryptOutput</tt> &mdash; Indicates that the output should be encrypted with a key generated from a provided password.  This can only be used if the --outputFile argument is provided and the --teeResultsToStandardOut argument is not provided.  If the --encryptionPassphraseFile argument is provided, then that file will be used to specify the encryption passphrase; otherwise, the passphrase will be interactively requested.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--encryptionPassphraseFile <i>{path}</i></tt> &mdash; The path to a file that specifies the passphrase to use to encrypt the output.  This can only be provided if the --encryptOutput argument is given, but if that argument is given and no passphrase file is specified, then the passphrase will be interactively requested.  If a file is specified, then that file must exist and must contain exactly one line comprised entirely of the passphrase.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--separateOutputFilePerSearch</tt> &mdash; Indicates that the tool should generate a separate output file for each search rather than combining all results into a single file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--teeResultsToStandardOut</tt> &mdash; Indicates that search results should be written to standard output as well as to the output file specified via the 'outputFile' argument.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--outputFormat <i>{ldif|json|csv|multi-valued-csv|tab-delimited|multi-valued-tab-delimited|dns-only|values-only}</i></tt> &mdash; Specifies the format that should be used for the output generated by this tool.  Allowed values are 'LDIF' (LDAP Data Interchange Format, which is the standard string representation for LDAP data), 'JSON' (JavaScript Object Notation, which is a popular format used by web services), 'CSV' (comma-separated values, which is a commonly used format for text processing, with only a single value per attribute), 'multi-valued-csv' (comma-separated values with a vertical bar between values of multivalued attributes), 'tab-delimited' (another commonly used general text format, with only a single value per attribute), 'multi-valued-tab-delimited' (tab-delimited text with a vertical bar between values of multivalued attributes), 'dns-only' (in which only the DN of each matching entry will be written on a line by itself with no information about the entry's attributes), and 'values-only' (in which each value returned will be written on a line by itself with no attribute names, entry DNs, or delimiters between entries).  If either the 'CSV' or 'tab-delimited' format is selected (or one of their multivalued variants), the set of requested attributes must be provided with the '--requestedAttribute' argument, the order in which the attributes are provided on the command line specifies the order in which they will be listed in the output, and if any of those attributes has multiple values then only the first value will be used.  Further, the 'CSV' and 'tab-delimited' formats cannot be used in conjunction with the '--ldapURLFile' argument.  If no output format is specified, a default of 'LDIF' will be used.
+        <br>
+        A provided value should be one of the following:  'values-only', 'multi-valued-csv', 'tab-delimited', 'ldif', 'csv', 'multi-valued-tab-delimited', 'json', 'dns-only'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--requireMatch</tt> &mdash; Indicates that ldapsearch should exit with a nonzero result code, 94 (no results returned), if the search completes successfully but does not return any matching entries.  This argument only affects the tool exit code; it will not have any visible effect on the output.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--terse</tt> &mdash; Indicates that the tool should generate terse output.  The only thing written to standard output will be search result entries and references, without any summary messages.  Standard error will not be affected.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-v</tt> / <tt>--verbose</tt> &mdash; Indicates that the tool should generate verbose output.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Control Arguments</h3>
+    <ul>
+      <li>
+        <tt>--bindControl <i>{oid}[:{criticality}[:{stringValue}|::{base64Value}]]</i></tt> &mdash; Specifies a control that should be included in all bind requests used to authenticate to the server.
+        <br>
+        A provided value must be a string representation of a valid LDAP control in the form {oid}[:{criticality}[:{stringValue}|::{base64Value}]].
+        <br><br>
+      </li>
+      <li>
+        <tt>-J <i>{oid}[:{criticality}[:{stringValue}|::{base64Value}]]</i></tt> / <tt>--control <i>{oid}[:{criticality}[:{stringValue}|::{base64Value}]]</i></tt> &mdash; Specifies a control that should be included in all search requests sent to the server.
+        <br>
+        A provided value must be a string representation of a valid LDAP control in the form {oid}[:{criticality}[:{stringValue}|::{base64Value}]].
+        <br><br>
+      </li>
+      <li>
+        <tt>-E</tt> / <tt>--authorizationIdentity</tt> &mdash; Indicates that all bind requests should include the authorization identity request control as defined in RFC 3829.  With this control, a successful bind result should include the authorization identity assigned to the connection.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--assertionFilter <i>{filter}</i></tt> &mdash; A filter that will be used in conjunction with the LDAP assertion request control (as described in RFC 4528) to indicate that the server should only process searches in which the entry specified as the base DN matches this filter.
+        <br>
+        A provided value must be able to be parsed as an LDAP search filter as described in RFC 4515.
+        <br><br>
+      </li>
+      <li>
+        <tt>--accountUsable</tt> &mdash; Indicates that all search requests should include the UnboundID-proprietary account usable request control to request that each search result entry returned include a response control with information about the password policy usability state for the entry.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--excludeBranch <i>{dn}</i></tt> &mdash; Indicates that all search requests should include the UnboundID-proprietary exclude branch request control to indicate that matching entries below the specified base DN should be excluded from search results.  This argument may be provided multiple times if multiple branches should be excluded.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>--getAuthorizationEntryAttribute <i>{attr}</i></tt> &mdash; Indicates that all bind requests should include the UnboundID-proprietary get authorization entry request control to request that the server return the specified attribute (or collection of attributes, in the case of a special identifier like '*' to indicate all user attributes or '+' to indicate all operational attributes) from the authenticated user's entry.  This argument may be provided multiple times to specify multiple attributes to request.
+        <br><br>
+      </li>
+      <li>
+        <tt>--getBackendSetID</tt> &mdash; Indicates that all search requests should include the UnboundID-proprietary get backend set ID request control to request that the Directory Proxy Server include a corresponding get backend set ID response control in each search result entry, indicating the entry-balancing backend set from which that entry was retrieved.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-g <i>{authzID}</i></tt> / <tt>--getEffectiveRightsAuthzID <i>{authzID}</i></tt> &mdash; Indicates that all search requests should include the UnboundID-proprietary get effective rights request control to return information about the access control rights the specified user has when interacting with each matching entry.
+        <br><br>
+      </li>
+      <li>
+        <tt>-e <i>{attr}</i></tt> / <tt>--getEffectiveRightsAttribute <i>{attr}</i></tt> &mdash; Indicates that all search requests should include the UnboundID-proprietary get effective rights request control to return information about the access control rights that a user has when interacting with each matching entry.  This argument may be provided multiple times to specify multiple attributes.
+        <br><br>
+      </li>
+      <li>
+        <tt>--getRecentLoginHistory</tt> &mdash; Indicates that all bind requests should include the get recent login history request control to request that the server include a corresponding response control with information about the user's recent login history.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--getServerID</tt> &mdash; Indicates that all search requests should include the UnboundID-proprietary get server ID request control to request that server include a corresponding get server ID response control in each search result entry, indicating the server from which that entry was retrieved.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--getUserResourceLimits</tt> &mdash; Indicates that all bind requests should include the UnboundID-proprietary get user resource limits request control to request that the server return information about resource limits (e.g., size limit, time limit, idle time limit, etc.) imposed for the user.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--includeReplicationConflictEntries</tt> &mdash; Indicates that all search requests should include the UnboundID-proprietary return conflict entries request control to indicate that the server may return any replication conflict entries that match the search criteria.  Replication conflict entries are normally excluded from search results.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--includeSoftDeletedEntries <i>{with-non-deleted-entries|without-non-deleted-entries|deleted-entries-in-undeleted-form}</i></tt> &mdash; Indicates that all search requests should include the UnboundID-proprietary soft-deleted entry access request control to indicate that the server may return any soft-deleted entries that match the search criteria.  Soft-deleted entries are normally excluded from search results.  The value for this argument must be one of:  'with-non-deleted-entries' (indicates that both regular and soft-deleted entries should be returned), 'without-non-deleted-entries' (indicates that only soft-deleted entries should be returned), or 'deleted-entries-in-undeleted-form' (returns only soft-deleted entries in the form in the form the entries had before they were deleted).
+        <br>
+        A provided value should be one of the following:  'with-non-deleted-entries', 'deleted-entries-in-undeleted-form', 'without-non-deleted-entries'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--draftLDUPSubentries</tt> &mdash; Indicates that all search requests should include the subentries request control as described in draft-ietf-ldup-subentry to indicate that the server may return any LDAP subentries that match the search criteria.  LDAP subentries are normally excluded from search results.  This control does not take a value.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--rfc3672Subentries <i>{returnOnlySubentries}</i></tt> &mdash; Indicates that all search requests should include the subentries request control as described in RFC 3672 to indicate that the server may return any LDAP subentries that match the search criteria, optionally including regular entries along with the subentries.  LDAP subentries are normally excluded from search results.  This control requires a Boolean value of either 'true' or 'false' to indicate whether the server should return only subentries (if true), or both regular entries and subentries (if false).
+        <br>
+        A provided value should be either 'true' or 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--joinRule <i>{dn:sourceAttr|reverse-dn:targetAttr|equals:sourceAttr:targetAttr|contains:sourceAttr:targetAttr }</i></tt> &mdash; Indicates that all search requests should include the join request control to indicate that matching entries should be joined with related entries based on the specified criteria.  Allowed values include 'dn:' followed by the name of an attribute in the source entry containing the DNs of the entries with which to join; 'reverse-dn:' followed by the name of an attribute in the target entries whose value is the DN of the source entry; 'equals:' followed by the name of an attribute in the source entry, a colon, and the name of an attribute in target entries that must exactly match the source attribute; or 'contains:' followed by the name of an attribute in the source entry, a colon, and the name of an attribute in target entries that must match or contain the value of the source attribute.
+        <br><br>
+      </li>
+      <li>
+        <tt>--joinBaseDN <i>{search-base|source-entry-dn|{dn}}</i></tt> &mdash; Specifies the base DN to use for searches used to join search result entries with related entries.  The value may be one of 'search-base' to use the base DN of the search request, 'source-entry-dn' to use the DN of the source entry as the base DN for join searches, or any valid LDAP DN to use a custom base DN for join searches.  If this is not specified, then the default join base DN will be the search base DN.
+        <br><br>
+      </li>
+      <li>
+        <tt>--joinScope <i>{base|one|sub|subordinates}</i></tt> &mdash; Specifies the scope to use for searches used to join search result entries with related entries.  The value may be one of 'base', 'one', 'sub', or 'subordinates'.  If this is not specified, then the scope of the search request will be used as the join scope.
+        <br>
+        The provided value should be one of 'base', 'one', 'sub', or 'subordinate'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--joinSizeLimit <i>{num}</i></tt> &mdash; Specifies the maximum number of entries that the server will permit to be joined with any single search result entry.  If this is not provided, the size limit from the search request will be used.  Note that the server will impose a maximum join size limit of 1000 entries, so any join size limit greater than that will be limited to 1000.
+        <br>
+        The specified value must not be less than 0 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--joinFilter <i>{filter}</i></tt> &mdash; Specifies an additional filter that the server will require target entries to match in order to be joined with the source entry.  If this is not provided, no additional join filter will be used.
+        <br>
+        A provided value must be able to be parsed as an LDAP search filter as described in RFC 4515.
+        <br><br>
+      </li>
+      <li>
+        <tt>--joinRequestedAttribute <i>{attr}</i></tt> &mdash; Specifies an identifier that indicates which attribute(s) should be included in entries joined with search result entries.  The value may be an attribute name or OID, a special token like '*' to indicate all user attributes or '+' to indicate all operational attributes, or an object class name prefixed by an '@' symbol to indicate all attributes associated with the specified object class.  This may be provided multiple times to specify multiple requested attributes.  If this is not specified, then the server will behave as if all user attributes had been requested.
+        <br><br>
+      </li>
+      <li>
+        <tt>--joinRequireMatch</tt> &mdash; Indicates that the server should not return an entry that matches the search criteria if it is not joined with at least one additional entry.  If this is not provided, then entries matching the search criteria will be returned even if they are not joined with any other entries.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--manageDsaIT</tt> &mdash; Indicates that all search requests should include the manageDsaIT request control to indicate that any referral entries in the scope of the search should be treated as regular entries rather than causing the server to send search result references.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--matchedValuesFilter <i>{filter}</i></tt> &mdash; Indicates that all search requests should include the matched values request control (as described in RFC 3876) to indicate that search result entries should only include values for a given attribute that match the provided filter.  This argument may be provided multiple times to specify multiple matched values filters.
+        <br>
+        A provided value must be able to be parsed as an LDAP search filter as described in RFC 4515.
+        <br><br>
+      </li>
+      <li>
+        <tt>--matchingEntryCountControl <i>{examineCount=NNN[:alwaysExamine][:allowUnindexed][:skipResolvingExplodedIndexes][:fastShortCircuitThreshold=NNN][:slowShortCircuitThreshold=NNN][:extendedResponseData][:debug]}</i></tt> &mdash; Indicates that all search requests should include the UnboundID-proprietary matching entry count request control, which indicates that the server should return information about the number of entries that match the search criteria.  The maximum number of entries to examine must be specified, which helps indicate whether an exact count or an estimate will be returned.  If alwaysExamine is specified and the number of candidates is less than the examine count, then each candidate will be examined to verify that it matches the criteria and would actually be returned to the client in a search.  If allowUnindexed is specified, then the count will be allowed to be processed even if the search is unindexed (and may take a very long time to complete).  If extended is specified, then the client will request extended response data from the server.  If debug is specified, then additional debug information may be included in the output.
+        <br><br>
+      </li>
+      <li>
+        <tt>--operationPurpose <i>{purpose}</i></tt> &mdash; Indicates that all search requests should include the UnboundID-proprietary operation purpose request control to provide the specified reason for the operation.
+        <br><br>
+      </li>
+      <li>
+        <tt>--overrideSearchLimit <i>{name=value}</i></tt> &mdash; Indicates that search operations should include the override search limits request control with the specified name-value pair.  This may be provided multiple times to specify multiple property name-value pairs to include in the control.
+        <br><br>
+      </li>
+      <li>
+        <tt>-C <i>ps[:changetype[:changesonly[:entrychgcontrols]]]</i></tt> / <tt>--persistentSearch <i>ps[:changetype[:changesonly[:entrychgcontrols]]]</i></tt> &mdash; Indicates that the search request should include the persistent search request control (as described in draft-ietf-ldapext-psearch) to indicate that the server should return information about changes to entries that match the search criteria as they are processed.  This argument may only be used when processing a single search operation.
+        <br><br>
+      </li>
+      <li>
+        <tt>--permitUnindexedSearch</tt> &mdash; Indicates that all search requests should include the UnboundID-proprietary permit unindexed search request control to indicate that the server should process the search operation even if it cannot do so efficiently using server indexes.  The requester must have either the unindexed-search or unindexed-search-with-control privilege.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-Y <i>{authzID}</i></tt> / <tt>--proxyAs <i>{authzID}</i></tt> &mdash; Indicates that all search requests should include the proxied authorization request control (as described in RFC 4370) to process the operation under an alternate authorization identity.  The authorization ID should generally be specified in the form 'dn:' followed by the target user's DN, or 'u:' followed by the username.
+        <br><br>
+      </li>
+      <li>
+        <tt>--proxyV1As <i>{dn}</i></tt> &mdash; Indicates that all search requests should include the legacy proxied authorization v1 request control (as described in draft-weltman-ldapv3-proxy-04) to process the search under an alternate authorization identity, specified as the DN of the desired user.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>--rejectUnindexedSearch</tt> &mdash; Indicates that all search requests should include the UnboundID-proprietary reject unindexed search request control to indicate that the server should not process the search operation if it cannot do so efficiently using server indexes, even if the requester has the unindexed-search privilege.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--routeToBackendSet <i>{entry-balancing-processor-id:backend-set-id}</i></tt> &mdash; Specifies the ID of an entry-balancing backend set to which the Directory Proxy Server should send all of the search requests.  The value should be formatted as the entry-balancing request processor ID followed by a colon and the desired backend set ID for that entry-balancing request processor.  This argument can be provided multiple times to specify multiple backend set IDs for the same or different entry-balancing request processors.  The request control will be configured to use absolute routing rather than a routing hint.
+        <br><br>
+      </li>
+      <li>
+        <tt>--routeToServer <i>{id}</i></tt> &mdash; Specifies the ID of the backend server to which the Directory Proxy Server should send all search requests.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressOperationalAttributeUpdates <i>{attr}</i></tt> &mdash; Indicates that all operations should include the UnboundID-proprietary suppress operational attribute updates request control to indicate that the server should not apply any updates to the specified operational attributes.  The value may be one of 'last-access-time', 'last-login-time', 'last-login-ip', or 'lastmod'.
+        <br>
+        A provided value should be one of the following:  'last-access-time', 'last-login-ip', 'last-login-time', 'lastmod'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--usePasswordPolicyControl</tt> &mdash; Indicates that bind requests should include the password policy request control (as defined in draft-behera-ldap-password-policy-10) to request that the response include password policy-related information about the target entry.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--realAttributesOnly</tt> &mdash; Indicates that all search requests should include the UnboundID-proprietary real attributes only request control to indicate that the server should not include any virtual attributes in entries that are returned.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-S <i>{value}</i></tt> / <tt>--sortOrder <i>{value}</i></tt> &mdash; Indicates that all search requests should include the server-side sort request control (as described in RFC 2891) to request that the server sort results before returning them to the client.  The sort order should be a comma-separated list of attribute names, each of which may be optionally prefixed by '+' (to indicate that sorting should be in ascending order for that attribute) or '-' (for descending order), and may be optionally followed by a colon and the name or OID for the ordering matching rule that should be used when sorting.  Ascending order will be used if neither '+' or '-' is specified, and if no matching rule ID is given then the attribute type's own ordering rule will be used.
+        <br><br>
+      </li>
+      <li>
+        <tt>--simplePageSize <i>{value}</i></tt> &mdash; Indicates that all search requests should include the simple paged results control (as described in RFC 2696) to indicate that the search should return entries in pages of no more than the specified size.  This can be useful for searches that must return a large number of entries but the server restricts the number of entries that may be returned for any search.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--virtualAttributesOnly</tt> &mdash; Indicates that all search requests should include the UnboundID-proprietary virtual attributes only request control to indicate that the server should only include virtual attributes in entries that are returned.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-G <i>{before:after:index:count | before:after:value}</i></tt> / <tt>--virtualListView <i>{before:after:index:count | before:after:value}</i></tt> &mdash; Indicates that all search requests should include the virtual list view (VLV) request control (as described in draft-ietf-ldapext-ldapv3-vlv) to indicate that the server should return the specified subset of the sorted search results (and the 'sortOrder' argument must also be given to specify the sort order).  The value should be a colon-delimited list indicating which page of results to return, and it may take one of two forms.  In either case, the first element specifies the number of elements to return before the entry identified as the start of the results, and the second is the number of entries after the 'start' entry.  The third element identifies the start of the result set, and it may be either an integer offset (in which the first entry in the result set has an offset of one), or a string that provides a value for which the server should identify the first entry whose value for the primary sort attribute is greater than or equal to the given string.  In the event that an offset is provided, a fourth element must also be given to indicate the expected number of entries in the result set, or zero if that is not known.  For example, a value of '0:9:1:0' indicates that the server should return the first ten entries of the result set (starting at offset 1, which is the first entry, return the zero previous entries and the nine following entries, with no indication of how many entries match the search criteria).  Alternately, a value of '0:99:smith' indicates that the server should the first 100 entries in the result set for which the primary sort attribute has a value that is greater than or equal to 'smith'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Entry Transformation Arguments</h3>
+    <ul>
+      <li>
+        <tt>--excludeAttribute <i>{attr}</i></tt> &mdash; Specifies the name or OID of an attribute that should be excluded from search result entries.  This argument may be provided multiple times to specify multiple attributes to exclude.
+        <br><br>
+      </li>
+      <li>
+        <tt>--redactAttribute <i>{attr}</i></tt> &mdash; Specifies the name or OID of an attribute whose values should be redacted to indicate that the attribute is present in search result entries but to hide the actual values for that attribute.  This argument may be provided multiple times to specify multiple attributes to redact.
+        <br><br>
+      </li>
+      <li>
+        <tt>--hideRedactedValueCount</tt> &mdash; Indicates that the output should not reveal the number of values contained in redacted attributes.  If this argument is present, then a redacted attribute will only ever have a single value of '***REDACTED***'.  If this argument is not present, then a redacted attribute with multiple values will still have the same number of values that it originally had, but those values will be '***REDACTED1***', '***REDACTED2***', etc.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--scrambleAttribute <i>{attr}</i></tt> &mdash; Specifies the name or OID of an attribute whose values should be scrambled.  Scrambling will be performed in a manner that attempts to preserve the associated attribute syntax and that will generally try to ensure that a given input value will consistently yield the same scrambled output.  This argument may be provided multiple times to specify multiple attributes to scramble.
+        <br><br>
+      </li>
+      <li>
+        <tt>--scrambleJSONField <i>{fieldName}</i></tt> &mdash; Specifies the name of a JSON field whose values should be scrambled.  If the --scrambleAttribute argument is used to scramble any attributes whose values may be JSON objects, then all JSON field names will be preserved and only the values of the specified fields will be scrambled.  If this argument is given (and it may be provided multiple times to target multiple JSON fields), then only the specified fields will have their values scrambled.  If this argument is not provided, then any of the scramble attribute values that are JSON objects will have all values scrambled.  JSON field names will be treated in a case-insensitive manner.
+        <br><br>
+      </li>
+      <li>
+        <tt>--scrambleRandomSeed <i>{value}</i></tt> &mdash; Specifies the value that will be used to seed the random number generator used in the course of scrambling attribute values.  If a random seed is provided, then scrambling the same entry with the same seed should consistently yield the same scrambled representations.  If no random seed is specified, an appropriate value will be selected automatically.
+        <br>
+        The specified value must not be less than -2 147 483 648 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--renameAttributeFrom <i>{attr}</i></tt> &mdash; Specifies the name or OID of an attribute that should have its name replaced with the value specified in the --renameAttributeTo argument.  This argument may be provided multiple times as long as the --renameAttributeTo argument is also provided the same number of times, and the order of --renameAttributeFrom values must correspond to the order of --renameAttributeTo values.
+        <br><br>
+      </li>
+      <li>
+        <tt>--renameAttributeTo <i>{attr}</i></tt> &mdash; Specifies the new name to use for an attribute to be renamed.  This argument must be provided the same number of times as the --renameAttributeFrom argument.
+        <br><br>
+      </li>
+      <li>
+        <tt>--moveSubtreeFrom <i>{attr}</i></tt> &mdash; Specifies the base DN for a subtree to be moved to another location in the DIT, with this source DN being replaced with the base DN specified using the --moveSubtreeTo argument.  This argument may be provided multiple times as long as the --moveSubtreeTo argument is also provided the same number of times, and the order of --moveSubtreeFrom values must correspond to the order of --moveSubtreeTo values.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>--moveSubtreeTo <i>{attr}</i></tt> &mdash; Specifies the new base DN for a subtree to be moved.  This argument must be provided the same number of times as the --moveSubtreeFrom argument.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Additional Arguments</h3>
+    <ul>
+      <li>
+        <tt>--scriptFriendly</tt> &mdash; Indicates that the tool should operate in script-friendly mode.  This argument has no effect and is provided only for the purpose of compatibility with other ldapsearch tools.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-V <i>{value}</i></tt> / <tt>--ldapVersion <i>{value}</i></tt> &mdash; Specifies the LDAP protocol version that the tool should use when communicating with the directory server.  This argument has no effect and is provided only for the purpose of compatibility with other ldapsearch tools.
+        <br>
+        The specified value must not be less than -2 147 483 648 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--interactive</tt> &mdash; Launch the tool in interactive mode.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-H</tt> / <tt>--help</tt> &mdash; Display usage information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--version</tt> &mdash; Display version information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--propertiesFilePath <i>{path}</i></tt> &mdash; The path to a properties file used to specify default values for arguments not supplied on the command line.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--generatePropertiesFile <i>{path}</i></tt> &mdash; Write an empty properties file that may be used to specify default values for arguments.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--noPropertiesFile</tt> &mdash; Do not obtain any argument values from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressPropertiesFileComment</tt> &mdash; Suppress output listing the arguments obtained from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Dependent Argument Sets</h3>
+    <ul>
+      <li>
+        If the <tt>--keyStorePassword</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--keyStorePasswordFile</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--promptForKeyStorePassword</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--trustStorePassword</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--trustStorePasswordFile</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--promptForTrustStorePassword</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--keyStorePath</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--trustStorePath</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--defaultTrust</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--trustAll</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--bindPassword</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--bindPasswordFile</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--promptForBindPassword</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--getEffectiveRightsAttribute</tt> argument is provided, then the <tt>--getEffectiveRightsAuthzID</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--virtualListView</tt> argument is provided, then the <tt>--sortOrder</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--separateOutputFilePerSearch</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--separateOutputFilePerSearch</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--filter</tt>, <tt>--filterFile</tt>, <tt>--ldapURLFile</tt>
+      </li>
+      <li>
+        If the <tt>--teeResultsToStandardOut</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--joinBaseDN</tt> argument is provided, then the <tt>--joinRule</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--joinScope</tt> argument is provided, then the <tt>--joinRule</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--joinSizeLimit</tt> argument is provided, then the <tt>--joinRule</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--joinFilter</tt> argument is provided, then the <tt>--joinRule</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--joinRequestedAttribute</tt> argument is provided, then the <tt>--joinRule</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--joinRequireMatch</tt> argument is provided, then the <tt>--joinRule</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--hideRedactedValueCount</tt> argument is provided, then the <tt>--redactAttribute</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--scrambleJSONField</tt> argument is provided, then the <tt>--scrambleAttribute</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--scrambleRandomSeed</tt> argument is provided, then the <tt>--scrambleAttribute</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--renameAttributeFrom</tt> argument is provided, then the <tt>--renameAttributeTo</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--renameAttributeTo</tt> argument is provided, then the <tt>--renameAttributeFrom</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--moveSubtreeFrom</tt> argument is provided, then the <tt>--moveSubtreeTo</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--moveSubtreeTo</tt> argument is provided, then the <tt>--moveSubtreeFrom</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--compressOutput</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--encryptOutput</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--encryptionPassphraseFile</tt> argument is provided, then the <tt>--encryptOutput</tt> argument must also be provided.
+      </li>
+    </ul>
+    <h3>Exclusive Argument Sets</h3>
+    <ul>
+      <li>
+        The following arguments cannot be used together:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--keyStorePassword</tt>, <tt>--keyStorePasswordFile</tt>, <tt>--promptForKeyStorePassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--trustStorePassword</tt>, <tt>--trustStorePasswordFile</tt>, <tt>--promptForTrustStorePassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--defaultTrust</tt>, <tt>--trustAll</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--trustAll</tt>, <tt>--trustStorePath</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--bindDN</tt>, <tt>--saslOption</tt>, <tt>--useSASLExternal</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--bindPassword</tt>, <tt>--bindPasswordFile</tt>, <tt>--promptForBindPassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--baseDN</tt>, <tt>--ldapURLFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--scope</tt>, <tt>--ldapURLFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--requestedAttribute</tt>, <tt>--ldapURLFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--filter</tt>, <tt>--ldapURLFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--filterFile</tt>, <tt>--ldapURLFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--followReferrals</tt>, <tt>--manageDsaIT</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--persistentSearch</tt>, <tt>--filterFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--persistentSearch</tt>, <tt>--ldapURLFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--draftLDUPSubentries</tt>, <tt>--rfc3672Subentries</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--realAttributesOnly</tt>, <tt>--virtualAttributesOnly</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--simplePageSize</tt>, <tt>--virtualListView</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--terse</tt>, <tt>--verbose</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--rejectUnindexedSearch</tt>, <tt>--permitUnindexedSearch</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--wrapColumn</tt>, <tt>--dontWrap</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--countEntries</tt>, <tt>--filter</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--countEntries</tt>, <tt>--filterFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--countEntries</tt>, <tt>--ldapURLFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--countEntries</tt>, <tt>--persistentSearch</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--compressOutput</tt>, <tt>--teeResultsToStandardOut</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--encryptOutput</tt>, <tt>--teeResultsToStandardOut</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--propertiesFilePath</tt>, <tt>--noPropertiesFile</tt>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Establishes an unencrypted LDAP connection to directory.example.com:389, performs a simple bind to authenticate as user 'uid=jdoe,ou=People,dc=example,dc=com', and issues a search request to retrieve the givenName, sn, and mail attributes for the user with uid 'jqpublic' below dc=example,dc=com.  The search results will be written to standard output.</li>
+    </ul>
+    <blockquote><pre>    ldapsearch --hostname directory.example.com --port 389 \
+         --bindDN uid=jdoe,ou=People,dc=example,dc=com \
+         --bindPassword password --baseDN ou=People,dc=example,dc=com \
+         --scope sub "(uid=jqpublic)" givenName sn mail</pre></blockquote>
+    <ul>
+      <li>Establishes an SSL-encrypted LDAP connection to directory.example.com:636, interactively prompting the user about whether to trust the certificate presented by the directory server.  The tool will then bind with the SASL PLAIN mechanism using an authentication ID of 'u:jdoe' and a password read from a file.  It will then issue a search request for each filter in a given file, writing the results for each search into a separate output file.</li>
+    </ul>
+    <blockquote><pre>    ldapsearch --hostname directory.example.com --port 636 --useSSL \
+         --saslOption mech=PLAIN --saslOption authID=u:jdoe \
+         --bindPasswordFile /path/to/password/file \
+         --baseDN ou=People,dc=example,dc=com --scope sub \
+         --filterFile /path/to/filter/file \
+         --outputFile /path/to/base/output/file \
+         --separateOutputFilePerSearch --requestedAttribute '*' \
+         --requestedAttribute "+"</pre></blockquote>
+    <ul>
+      <li>Establishes an LDAP connection to directory.example.com:389 that is secured with the StartTLS extended operation, using the information in the provided trust store file to determine whether to trust the certificate presented by the directory server.  It will then issue an unauthenticated search to retrieve all user and operational attributes from the server's root DSE.  The output will be written to a specified output file as well as displayed on standard output.</li>
+    </ul>
+    <blockquote><pre>    ldapsearch --hostname directory.example.com --port 389 --useStartTLS \
+         --trustStorePath /path/to/truststore/file --baseDN "" --scope base \
+         --outputFile /path/to/output/file \
+         --teeResultsToStandardOut '(objectClass=*)' '*' "+"</pre></blockquote>
+    <ul>
+      <li>Issues a search request to retrieve all entries at or below 'dc=example,dc=com', using the simple paged results control to retrieve up to 100 entries at a time.  The search will use an unencrypted LDAP connection, and the tool will interactively prompt the user for the password to use when performing simple authentication.</li>
+    </ul>
+    <blockquote><pre>    ldapsearch --hostname directory.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --baseDN dc=example,dc=com \
+         --scope sub --outputFile /path/to/output/file --simplePageSize 100 \
+         '(objectClass=*)' '*' "+"</pre></blockquote>
+    <ul>
+      <li>Issues a search request to retrieve a special entry that provides details about the server's use of indexes to determine the candidate set of potential matching entries.  This feature is only supported in the UnboundID/Ping Identity Directory Server, and the user must have access control rights to retrieve the 'cn=debugsearch' entry and the 'debugsearchindex' operational attribute.</li>
+    </ul>
+    <blockquote><pre>    ldapsearch --hostname directory.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --baseDN dc=example,dc=com \
+         --scope sub "(&(givenName=John)(sn=Doe))" debugsearchindex</pre></blockquote>
+  </body>
+</html>

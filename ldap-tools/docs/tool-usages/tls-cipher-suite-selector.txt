@@ -1,0 +1,13 @@
+Usage for tls-cipher-suite-selector:
+
+Provides information about the TLS cipher suites that are supported by the JVM
+and selects a recommended set of suites for secure communication.
+
+Usage:  tls-cipher-suite-selector {options}
+
+Available options include:
+-H, --help
+    Display usage information for this program.
+-V, --version
+    Display version information for this program.
+

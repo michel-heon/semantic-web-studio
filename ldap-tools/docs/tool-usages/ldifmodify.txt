@@ -1,0 +1,142 @@
+Usage for ldifmodify:
+
+Apply a set of changes (including add, delete, modify, and modify DN
+operations) to a set of entries contained in an LDIF file.  The changes will be
+read from a second file (containing change records rather than entries), and
+the updated entries will be written to a third LDIF file.  Unlike ldapmodify,
+the ldifmodify cannot read the changes to apply from standard input.
+
+All of the change records will be read into memory before processing begins, so
+it is important to ensure that the tool is given enough memory to hold those
+change records.  However, it will only operate on a single source entry at a
+time, so the size of the source LDIF file does not significantly impact the
+amount of memory that the tool requires.
+
+Note that the tool will attempt to correctly handle multiple changes affecting
+the same entry.  However, because it only operates on one entry at a time, it
+cannot always behave in exactly the same way as if it were applying the changes
+over LDAP to a server populated with the source LDIF file.  For example, it is
+not possible to reject an attempt to delete an entry that has subordinates, so
+any delete will be treated as a subtree delete.
+
+Further, not all types of modify DN change records are supported.  In
+particular, modify DN change records are not permitted if they target any entry
+that has been targeted by a previous change record (for example, renaming an
+entry that was created by a previous add change record).
+
+Finally, it cannot perform other types of validation, like ensuring that all of
+the necessary superior entries exist when adding a new entry, or ensuring that
+a modify DN will not introduce a conflict with an existing entry.
+
+Usage:  ldifmodify {options}
+
+Available options include:
+
+  Input Arguments
+
+  * -s, --sourceLDIF {path}
+        The path to an LDIF file containing the source entries to be updated.
+        This argument must be provided exactly once, and the file must exist.
+    --sourceEncryptionPassphraseFile {path}
+        The path to the file containing the passphrase needed to decrypt the
+        contents of the source LDIF file (if it is encrypted).  If this
+        argument is provided, the file must exist and must contain exactly one
+        line that contains only the encryption passphrase.  If the source LDIF
+        file is encrypted but this argument is not provided, then the tool will
+        interactively prompt for the passphrase.
+  * -m, --changesLDIF {path}
+        The path to the file containing the LDIF change records that represent
+        the changes to apply.  This argument must be provided exactly once, and
+        the file must exist.  The entire contents of the file will be read into
+        memory so that all changes will be available when processing entries in
+        the source LDIF file.
+    --changesEncryptionPassphraseFile {path}
+        The path to the file containing the passphrase needed to decrypt the
+        contents of the changes LDIF file (if it is encrypted).  If this
+        argument is provided, the file must exist and must contain exactly one
+        line that contains only the encryption passphrase.  If the changes LDIF
+        file is encrypted but this argument is not provided, then the tool will
+        interactively prompt for the passphrase.
+    --stripTrailingSpaces
+        Strip off any illegal trailing spaces identified in LDIF entries rather
+        than rejecting those entries.
+    --strictModifications
+        Use strict mode when applying modifications to entries.  If this
+        argument is provided, then the tool will report an error when trying to
+        modify an entry to add an attribute value that already exists in the
+        entry or to remove an attribute value that does not exist in the entry.
+        By default, the tool will operate in lenient mode, and these 'no-op'
+        modifications will be permitted.
+    --ignoreDuplicateDeletes
+        Ignore subsequent deletes that target an entry that has already been
+        deleted by an earlier change.  By default, subsequent deletes that
+        target an already-deleted entry will be reported as an error.
+    --ignoreDeletesOfNonexistentEntries
+        Ignore deletes that target entries that do not exist in the source LDIF
+        file.  By default, deletes targeting nonexistent entries will be
+        reported as an error.
+    --ignoreModifiesOfNonexistentEntries
+        Ignore modifies that target entries that do not exist in the source
+        LDIF file.  By default, modifies targeting nonexistent entries will be
+        reported as an error.
+
+  Output Arguments
+
+  * -t, --targetLDIF {path}
+        The path to the file to which the updated entries will be written.
+        This argument must be provided exactly once.  If the path exists, then
+        it must reference a file rather than a directory, and that file will be
+        overwritten with the updated entries.  If the path does not exist, then
+        its parent directory must exist.
+    --compressTarget
+        GZIP-compress the data written to the target LDIF file.
+    --encryptTarget
+        Encrypt the data written to the target LDIF file.  If the
+        --targetEncryptionPassphraseFile argument is not provided to supply the
+        passphrase to use to generate the encryption key, then the tool will
+        interactively prompt for the passphrase.
+    --targetEncryptionPassphraseFile {path}
+        The path to the file containing the passphrase that will be used to
+        encrypt the data as it is written to the target file.  If this argument
+        is not provided and the output file is to be encrypted, then the tool
+        will interactively prompt for the passphrase.
+    --wrapColumn {value}
+        The column at which long lines should be wrapped.  By default, long
+        lines will be wrapped based on the terminal width (or 80 columns if the
+        terminal width cannot be determined).
+    -T, --doNotWrap
+        Do not wrap long lines as they are written.
+    --suppressComments
+        Do not include comments in the target LDIF file.  By default, each
+        entry will include a comment to indicate what changes (if any) were
+        applied to it.
+
+  Usage Arguments
+
+    --interactive
+        Launch the tool in interactive mode.
+    -H, --help
+        Display usage information for this program.
+    -V, --version
+        Display version information for this program.
+    --propertiesFilePath {path}
+        The path to a properties file used to specify default values for
+        arguments not supplied on the command line.
+    --generatePropertiesFile {path}
+        Write an empty properties file that may be used to specify default
+        values for arguments.
+    --noPropertiesFile
+        Do not obtain any argument values from a properties file.
+    --suppressPropertiesFileComment
+        Suppress output listing the arguments obtained from a properties file.
+
+  * Indicates the argument is required
+
+Examples
+
+  Apply the changes contained in LDIF file 'changes.ldif' to the entries
+  contained in LDIF file 'original.ldif' and write the updated entries to LDIF
+  file 'updated.ldif'.
+
+    ldifmodify --sourceLDIF original.ldif --changesLDIF changes.ldif \
+         --targetLDIF updated.ldif

@@ -1,0 +1,216 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>The base64 Command-Line Tool</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="../unboundid.css" type="text/css">
+    <link rel="shortcut icon" href="../images/favicon.ico">
+  </head>
+
+  <body>
+    <h1>The base64 Command-Line Tool</h1>
+
+    <p>
+      Encode raw data using the base64 algorithm or decode base64-encoded data back to its raw representation.
+    </p>
+    <h3>Usage</h3>
+    <blockquote><pre>base64 <i>{subCommand}</i> <i>{arguments}</i></pre></blockquote>
+    <p>
+      This tool uses subcommands to indicate which function you want to perform.
+      <br>
+      <a href="#available-subcommands">Jump to a list of the available subcommands.</a>
+    </p>
+    <h3>Global Arguments</h3>
+    <ul>
+      <li>
+        <tt>--interactive</tt> &mdash; Launch the tool in interactive mode.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-H</tt> / <tt>--help</tt> &mdash; Display usage information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--helpSubcommands</tt> &mdash; Display the names and descriptions of the supported subcommands.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-V</tt> / <tt>--version</tt> &mdash; Display version information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--propertiesFilePath <i>{path}</i></tt> &mdash; The path to a properties file used to specify default values for arguments not supplied on the command line.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--generatePropertiesFile <i>{path}</i></tt> &mdash; Write an empty properties file that may be used to specify default values for arguments.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--noPropertiesFile</tt> &mdash; Do not obtain any argument values from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressPropertiesFileComment</tt> &mdash; Suppress output listing the arguments obtained from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Exclusive Argument Sets</h3>
+    <ul>
+      <li>
+        The following arguments cannot be used together:  <tt>--propertiesFilePath</tt>, <tt>--noPropertiesFile</tt>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Base64-encodes the string 'Hello' and writes the result to standard output.</li>
+    </ul>
+    <blockquote><pre>    base64 encode --data Hello</pre></blockquote>
+    <ul>
+      <li>Base64-decodes the data contained in the 'encoded-data.txt' file and writes the result to the 'raw-data.txt' file.</li>
+    </ul>
+    <blockquote><pre>    base64 decode --inputFile encoded-data.txt --outputFile decoded-data.txt</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h3><a name="available-subcommands">Available Subcommands</a></h3>
+    <ul>
+      <li>
+        <a href="#subcommand-encode">encode</a> &mdash; Base64-encodes raw data.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-decode">decode</a> &mdash; Decodes base64-encoded data.
+        <br><br>
+      </li>
+    </ul>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-encode">Usage For Subcommand encode</a></h2>
+    <p>Base64-encodes raw data.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-d <i>{data}</i></tt> / <tt>--data <i>{data}</i></tt> &mdash; The raw data to be encoded.  If neither the --data nor the --inputFile argument is provided, then the data will be read from standard input.
+        <br><br>
+      </li>
+      <li>
+        <tt>-f <i>{path}</i></tt> / <tt>--inputFile <i>{path}</i></tt> &mdash; The path to a file containing the raw data to be encoded.  If neither the --data nor the --inputFile argument is provided, then the data will be read from standard input.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>-o <i>{path}</i></tt> / <tt>--outputFile <i>{path}</i></tt> &mdash; The path to a file to which the encoded data should be written.  If this is not provided, the encoded data will be written to standard output.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--url</tt> &mdash; Encode the data with the base64url mechanism rather than the standard base64 mechanism.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--ignoreTrailingLineBreak</tt> &mdash; Ignore any end-of-line marker that may be present at the end of the data to encode.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Exclusive Argument Sets</h3>
+    <ul>
+      <li>
+        The following arguments cannot be used together:  <tt>--data</tt>, <tt>--inputFile</tt>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Base64-encodes the string 'Hello' and writes the result to standard output.</li>
+    </ul>
+    <blockquote><pre>    base64 encode encode --data Hello</pre></blockquote>
+    <ul>
+      <li>Base64-encodes the data contained in the 'raw-data.txt' file and writes the result to the 'encoded-data.txt' file.</li>
+    </ul>
+    <blockquote><pre>    base64 encode encode --inputFile raw-data.txt \
+         --outputFile encoded-data.txt</pre></blockquote>
+    <ul>
+      <li>Base64-encodes data read from standard input and writes the result to standard output.</li>
+    </ul>
+    <blockquote><pre>    base64 encode encode</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-decode">Usage For Subcommand decode</a></h2>
+    <p>Decodes base64-encoded data.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-d <i>{data}</i></tt> / <tt>--data <i>{data}</i></tt> &mdash; The base64-encoded data to be decoded.  If neither the --data nor the --inputFile argument is provided, then the data will be read from standard input.
+        <br><br>
+      </li>
+      <li>
+        <tt>-f <i>{path}</i></tt> / <tt>--inputFile <i>{path}</i></tt> &mdash; The path to a file containing the base64-encoded data to be decoded.  If neither the --data nor the --inputFile argument is provided, then the data will be read from standard input.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>-o <i>{path}</i></tt> / <tt>--outputFile <i>{path}</i></tt> &mdash; The path to a file to which the decoded data should be written.  If this is not provided, the decoded data will be written to standard output.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--url</tt> &mdash; Decode the data with the base64url mechanism rather than the standard base64 mechanism.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--addTrailingLineBreak</tt> &mdash; Add a line break to the end of the decoded data.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Exclusive Argument Sets</h3>
+    <ul>
+      <li>
+        The following arguments cannot be used together:  <tt>--data</tt>, <tt>--inputFile</tt>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Base64-decodes the string 'SGVsbG8=' and writes the result to standard output.</li>
+    </ul>
+    <blockquote><pre>    base64 decode decode --data SGVsbG8=</pre></blockquote>
+    <ul>
+      <li>Base64-decodes the data contained in the 'encoded-data.txt' file and writes the result to the 'raw-data.txt' file.</li>
+    </ul>
+    <blockquote><pre>    base64 decode decode --inputFile encoded-data.txt \
+         --outputFile decoded-data.txt</pre></blockquote>
+    <ul>
+      <li>Base64-decodes data read from standard input and writes the result to standard output.</li>
+    </ul>
+    <blockquote><pre>    base64 decode decode</pre></blockquote>
+  </body>
+</html>

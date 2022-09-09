@@ -1,0 +1,187 @@
+Usage for move-subtree:
+
+Move all entries in a specified subtree from one server to another.
+
+Usage:  move-subtree {options}
+
+Available options include:
+
+  Source Connection and Authentication Arguments
+
+    --sourceHostname {host}
+        The IP address or resolvable name to use to connect to the directory
+        server.  If this is not provided, then a default value of 'localhost'
+        will be used.
+    --sourcePort {port}
+        The port to use to connect to the directory server.  If this is not
+        provided, then a default value of 389 will be used.
+    --sourceBindDN {dn}
+        The DN to use to bind to the directory server when performing simple
+        authentication.
+    --sourceBindPassword {password}
+        The password to use to bind to the directory server when performing
+        simple authentication or a password-based SASL mechanism.
+    --sourceBindPasswordFile {path}
+        The path to the file containing the password to use to bind to the
+        directory server when performing simple authentication or a
+        password-based SASL mechanism.
+    --sourceUseSSL
+        Use SSL when communicating with the directory server.
+    --sourceUseStartTLS
+        Use StartTLS when communicating with the directory server.
+    --sourceDefaultTrust
+        Use the JVM's default trust store, and optionally an additional trust
+        store specified using the --trustStorePath argument, to
+        non-interactively determine whether to trust any certificate chain
+        presented during TLS negotiation.  If the chain cannot be trusted based
+        on any of those sources, then negotiation will fail without prompting
+        about whether to trust it.
+    --sourceTrustAll
+        Trust any certificate presented by the directory server.
+    --sourceKeyStorePath {path}
+        The path to the file to use as the key store for obtaining client
+        certificates when communicating securely with the directory server.
+    --sourceKeyStorePassword {password}
+        The password to use to access the key store contents.
+    --sourceKeyStorePasswordFile {path}
+        The path to the file containing the password to use to access the key
+        store contents.
+    --sourceKeyStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store
+        file.
+    --sourceTrustStorePath {path}
+        The path to the file to use as trust store when determining whether to
+        trust a certificate presented by the directory server.
+    --sourceTrustStorePassword {password}
+        The password to use to access the trust store contents.
+    --sourceTrustStorePasswordFile {path}
+        The path to the file containing the password to use to access the trust
+        store contents.
+    --sourceTrustStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store
+        file.
+    --sourceCertNickname {nickname}
+        The nickname (alias) of the client certificate in the key store to
+        present to the directory server for SSL client authentication.
+    --sourceSASLOption {name=value}
+        A name-value pair providing information to use when performing SASL
+        authentication.
+
+  Target Connection and Authentication Arguments
+
+    --targetHostname {host}
+        The IP address or resolvable name to use to connect to the directory
+        server.  If this is not provided, then a default value of 'localhost'
+        will be used.
+    --targetPort {port}
+        The port to use to connect to the directory server.  If this is not
+        provided, then a default value of 389 will be used.
+    --targetBindDN {dn}
+        The DN to use to bind to the directory server when performing simple
+        authentication.
+    --targetBindPassword {password}
+        The password to use to bind to the directory server when performing
+        simple authentication or a password-based SASL mechanism.
+    --targetBindPasswordFile {path}
+        The path to the file containing the password to use to bind to the
+        directory server when performing simple authentication or a
+        password-based SASL mechanism.
+    --targetUseSSL
+        Use SSL when communicating with the directory server.
+    --targetUseStartTLS
+        Use StartTLS when communicating with the directory server.
+    --targetDefaultTrust
+        Use the JVM's default trust store, and optionally an additional trust
+        store specified using the --trustStorePath argument, to
+        non-interactively determine whether to trust any certificate chain
+        presented during TLS negotiation.  If the chain cannot be trusted based
+        on any of those sources, then negotiation will fail without prompting
+        about whether to trust it.
+    --targetTrustAll
+        Trust any certificate presented by the directory server.
+    --targetKeyStorePath {path}
+        The path to the file to use as the key store for obtaining client
+        certificates when communicating securely with the directory server.
+    --targetKeyStorePassword {password}
+        The password to use to access the key store contents.
+    --targetKeyStorePasswordFile {path}
+        The path to the file containing the password to use to access the key
+        store contents.
+    --targetKeyStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store
+        file.
+    --targetTrustStorePath {path}
+        The path to the file to use as trust store when determining whether to
+        trust a certificate presented by the directory server.
+    --targetTrustStorePassword {password}
+        The password to use to access the trust store contents.
+    --targetTrustStorePasswordFile {path}
+        The path to the file containing the password to use to access the trust
+        store contents.
+    --targetTrustStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store
+        file.
+    --targetCertNickname {nickname}
+        The nickname (alias) of the client certificate in the key store to
+        present to the directory server for SSL client authentication.
+    --targetSASLOption {name=value}
+        A name-value pair providing information to use when performing SASL
+        authentication.
+
+  Other Arguments
+
+    -b, --baseDN {dn}
+        The base DN of the subtree to move.
+    -f, --baseDNFile {path}
+        The path to a file containing the base DNs of the subtrees to move.
+        Each subtree base DN should be provided on a separate line.
+    -z, --sizeLimit {num}
+        The maximum number of entries to allow for the move.
+    --purpose {purpose}
+        The reason that the subtree is to be moved from the source server to
+        the target server.
+    -v, --verbose
+        Indicates that the tool should operate in verbose mode in which it will
+        output detailed information as entries are added to the target server
+        and removed from the source server.
+
+  Usage Arguments
+
+    --outputFile {path}
+        Write all standard output and standard error messages to the specified
+        file instead of to the console.
+    --appendToOutputFile
+        Indicates that the tool should append to the file specified by the
+        --outputFile argument if it already exists.  If this argument is not
+        provided and the output file already exists, it will be overwritten.
+    --teeOutput
+        Write all standard output and standard error messages to the console as
+        well as to the specified output file.  The --outputFile argument must
+        also be provided.
+    -H, --help
+        Display usage information for this program.
+    -V, --version
+        Display version information for this program.
+    --propertiesFilePath {path}
+        The path to a properties file used to specify default values for
+        arguments not supplied on the command line.
+    --generatePropertiesFile {path}
+        Write an empty properties file that may be used to specify default
+        values for arguments.
+    --noPropertiesFile
+        Do not obtain any argument values from a properties file.
+    --suppressPropertiesFileComment
+        Suppress output listing the arguments obtained from a properties file.
+
+Examples
+
+  Migrate all entries at or below 'cn=small subtree,dc=example,dc=com' from
+  source server 'ds1.example.com' to target server 'ds2.example.com'.
+
+    move-subtree --sourceHostname ds1.example.com --sourcePort 389 \
+         --sourceBindDN uid=admin,dc=example,dc=com \
+         --sourceBindPassword password --targetHostname ds2.example.com \
+         --targetPort 389 --targetBindDN uid=admin,dc=example,dc=com \
+         --targetBindPassword password \
+         --baseDN "cn=small subtree,dc=example,dc=com" --sizeLimit 100 \
+         --purpose "Migrate a small subtree from ds1 to ds2"
