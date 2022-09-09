@@ -49,3 +49,5 @@ Thumbs.db
 *.wmv
 
 /deploy/
+/.apt_generated/
+/.apt_generated_tests/
