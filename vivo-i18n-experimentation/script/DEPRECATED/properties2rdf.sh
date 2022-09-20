@@ -11,7 +11,7 @@
 ###################################################################
 export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd -P)"
 source $SCRIPT_DIR/../00-env.sh
-###################################################################
+#
 # List all predicats
 #
 export BASE_IRI="http://vivoweb.org/ontology/core/properties"
@@ -31,7 +31,7 @@ cat << EOF > $SPARQL_HEADER
 EOF
 
 
-###################################################################
+#
 # Build ontology schema
 cat << EOF > $SPARQL_CMD
     $(cat $SPARQL_HEADER)
@@ -42,22 +42,7 @@ cat << EOF > $SPARQL_CMD
             prop:PropertyKey owl:versionInfo "Created by Michel Héon Université du Québec à Montréal ; heon.michel@uqam.ca" .
     } where { } 
 EOF
-
-
-###################################################################
-# Product list
-
-
-for PRODUCTS_LIST in "${PRODUCTS[@]}"
-do
-    echo "$A_PRODUCT"
-done
-
-
-exit 0
-
 sparql --results=NTRIPLES --query $SPARQL_CMD 2>/dev/null > $TMP_ONTO_RESULT
-
 
 cd $DATA
 export PREDICATE_LIST=$TMPDIR/predicatesList.txt
