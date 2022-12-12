@@ -10,7 +10,6 @@
 # Email         : heon.michel@uqam.ca
 ###################################################################
 export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd -P)"
-unset TRANSLATOR_HOME
 source $SCRIPT_DIR/00-env.sh
 $SCRIPT_DIR/show-vars.sh
 cd $SCRIPT_DIR
