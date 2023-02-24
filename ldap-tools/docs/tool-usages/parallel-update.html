@@ -1,0 +1,505 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>The parallel-update Command-Line Tool</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="../unboundid.css" type="text/css">
+    <link rel="shortcut icon" href="../images/favicon.ico">
+  </head>
+
+  <body>
+    <h1>The parallel-update Command-Line Tool</h1>
+
+    <p>
+      Use multiple concurrent threads to apply a set of add, delete, modify, and modify DN operations read from an LDIF file.
+    </p>
+    <p>
+      As with other tools like ldapmodify, changes in the LDIF file to be processed should be ordered such that if there are any dependencies between changes (for example, if one add change record creates a parent entry and another add change record creates a child of that parent), prerequisite changes come before the changes that depend on them.  When this tool is preparing to process a change, it will determine whether the new change depends on any other changes that are currently in progress, and if so, will delay processing that change until its dependencies have been satisfied.  If a change does not depend on any other changes that are currently being processed, then it can be processed in parallel with those changes.
+    </p>
+    <p>
+      This tool will keep track of any changes that fail in a way that indicates they succeed if re-tried later (for example, an attempt to add an entry that fails because its parent does not exist, but its parent may be created later in the set of LDIF changes), and can optionally re-try those changes after processing is complete.  Any changes that are not retried, as well as changes that still fail after the retry attempts, will be written to a rejects file with information about the reason for the failure so that an administrator can take any necessary further action upon them.
+    </p>
+    <h3>Usage</h3>
+    <blockquote><pre>parallel-update <i>{arguments}</i></pre></blockquote>
+    <h3>LDAP Connection and Authentication Arguments</h3>
+    <ul>
+      <li>
+        <tt>-h <i>{host}</i></tt> / <tt>--hostname <i>{host}</i></tt> &mdash; The IP address or resolvable name to use to connect to the directory server.  If this is not provided, then a default value of 'localhost' will be used.
+        <br><br>
+      </li>
+      <li>
+        <tt>-p <i>{port}</i></tt> / <tt>--port <i>{port}</i></tt> &mdash; The port to use to connect to the directory server.  If this is not provided, then a default value of 389 will be used.
+        <br>
+        The specified value must not be less than 1 or greater than 65 535.
+        <br><br>
+      </li>
+      <li>
+        <tt>-D <i>{dn}</i></tt> / <tt>--bindDN <i>{dn}</i></tt> &mdash; The DN to use to bind to the directory server when performing simple authentication.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>-w <i>{password}</i></tt> / <tt>--bindPassword <i>{password}</i></tt> &mdash; The password to use to bind to the directory server when performing simple authentication or a password-based SASL mechanism.
+        <br><br>
+      </li>
+      <li>
+        <tt>-j <i>{path}</i></tt> / <tt>--bindPasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to bind to the directory server when performing simple authentication or a password-based SASL mechanism.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForBindPassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the bind password.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-Z</tt> / <tt>--useSSL</tt> &mdash; Use SSL when communicating with the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-q</tt> / <tt>--useStartTLS</tt> &mdash; Use StartTLS when communicating with the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--defaultTrust</tt> &mdash; Use the JVM's default trust store, and optionally an additional trust store specified using the --trustStorePath argument, to non-interactively determine whether to trust any certificate chain presented during TLS negotiation.  If the chain cannot be trusted based on any of those sources, then negotiation will fail without prompting about whether to trust it.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-X</tt> / <tt>--trustAll</tt> &mdash; Trust any certificate presented by the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-K <i>{path}</i></tt> / <tt>--keyStorePath <i>{path}</i></tt> &mdash; The path to the file to use as the key store for obtaining client certificates when communicating securely with the directory server.
+        <br><br>
+      </li>
+      <li>
+        <tt>-W <i>{password}</i></tt> / <tt>--keyStorePassword <i>{password}</i></tt> &mdash; The password to use to access the key store contents.
+        <br><br>
+      </li>
+      <li>
+        <tt>-u <i>{path}</i></tt> / <tt>--keyStorePasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to access the key store contents.
+        <br>
+        The specified path must refer to a file that may or may not exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForKeyStorePassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the password to use to access the key store contents.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--keyStoreFormat <i>{format}</i></tt> &mdash; The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store file.
+        <br><br>
+      </li>
+      <li>
+        <tt>-P <i>{path}</i></tt> / <tt>--trustStorePath <i>{path}</i></tt> &mdash; The path to the file to use as trust store when determining whether to trust a certificate presented by the directory server.
+        <br><br>
+      </li>
+      <li>
+        <tt>-T <i>{password}</i></tt> / <tt>--trustStorePassword <i>{password}</i></tt> &mdash; The password to use to access the trust store contents.
+        <br><br>
+      </li>
+      <li>
+        <tt>-U <i>{path}</i></tt> / <tt>--trustStorePasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to access the trust store contents.
+        <br>
+        The specified path must refer to a file that may or may not exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForTrustStorePassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the password to use to access the trust store contents.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--trustStoreFormat <i>{format}</i></tt> &mdash; The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store file.
+        <br><br>
+      </li>
+      <li>
+        <tt>-N <i>{nickname}</i></tt> / <tt>--certNickname <i>{nickname}</i></tt> &mdash; The nickname (alias) of the client certificate in the key store to present to the directory server for SSL client authentication.
+        <br><br>
+      </li>
+      <li>
+        <tt>--enableSSLDebugging</tt> &mdash; Enable Java's low-level support for debugging SSL/TLS communication.  This is equivalent to setting the 'javax.net.debug' property to 'all'.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-o <i>{name=value}</i></tt> / <tt>--saslOption <i>{name=value}</i></tt> &mdash; A name-value pair providing information to use when performing SASL authentication.
+        <br><br>
+      </li>
+      <li>
+        <tt>--useSASLExternal</tt> &mdash; Use the SASL EXTERNAL mechanism to authenticate.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--helpSASL</tt> &mdash; Provide information about the supported SASL mechanisms, including the properties available for use with each.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Change Processing Arguments</h3>
+    <ul>
+      <li>
+        <tt>-l <i>{path}</i></tt> / <tt>--ldifFile <i>{path}</i></tt> &mdash; The path to the LDIF file containing the changes to process.  This must be specified, and the file must exist.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>-c</tt> / <tt>--isCompressed</tt> &mdash; Indicates that the LDIF file is gzip-compressed.  This argument is no longer required, as the tool will automatically detect whether the LDIF file is compressed or encrypted.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--encryptionPassphraseFile <i>{path}</i></tt> &mdash; The path to a file containing the passphrase needed to decrypt the contents of the LDIF file.  If this argument is not provided and the LDIF file is encrypted, then the tool may interactively prompt for the encryption passphrase.  If this argument is provided, then the file must exist and it must contain exactly one line that is comprised only of the encryption passphrase.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>-R <i>{path}</i></tt> / <tt>--rejectFile <i>{path}</i></tt> &mdash; The path to a file that will be written with a record of all operations that could not be completed successfully, even after all retry attempts.  This must be specified, and the file does not need to exist, but the parent directory must exist.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--useFirstRejectResultCodeAsExitCode</tt> &mdash; Indicates that the tool should use the result code for the first rejected operation (if any) as the exit code.  By default, the tool will use an exit code of zero if all changes were attempted, even if some of those changes were rejected.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-r</tt> / <tt>--neverRetry</tt> &mdash; Indicates that the tool should never attempt to retry any failed operations.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-L <i>{path}</i></tt> / <tt>--logFile <i>{path}</i></tt> &mdash; The path to a log file that will be written with a record of all operations attempted during processing.  If this is specified, then the file does not need to exist, but the parent directory must exist.  If this is not specified, then no log file will be kept.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>-a</tt> / <tt>--defaultAdd</tt> &mdash; Indicates that any LDIF records without a changetype should be treated as add requests.  If this is not provided, then LDIF records without a changetype will be rejected.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--followReferrals</tt> &mdash; Indicates that the tool should attempt to follow any referrals that the server returns.  If this is not provided, then referral results will be treated as failures.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-t <i>{value}</i></tt> / <tt>--numThreads <i>{value}</i></tt> &mdash; The number of threads to use when processing operations in parallel.  The value must be greater than or equal to one, with a value of one indicating that processing should be performed in a single thread (without any parallelism).  If this is not specified, a default of eight threads will be used.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>-s <i>{value}</i></tt> / <tt>--ratePerSecond <i>{value}</i></tt> &mdash; The maximum rate (in number of requests per second) at which the tool should attempt to process requests.  If this is specified, the value must be greater than or equal to one.  If this is not specified, then no rate limiting will be performed.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Request Control Arguments</h3>
+    <ul>
+      <li>
+        <tt>-M</tt> / <tt>--usePermissiveModify</tt> &mdash; Include the permissive modify request control in all modify requests.  This control indicates that the server should not reject attempts to add attribute values that already exist in the entry or attempts to remove attribute values that do not exist in the entry.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--ignoreNoUserModification</tt> &mdash; Include the proprietary ignore NO-USER-MODIFICATION request control in all add and modify requests.  This control indicates that the server should not reject requests in which the client attempts to set values for attribute types declared with the NO-USER-MODIFICATION constraint in the schema.  This control primarily applies to add operations, but the server can be configured to allow it for a limited set of attributes in modify operation.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-Y <i>{authzID}</i></tt> / <tt>--proxyAs <i>{authzID}</i></tt> &mdash; Include the proxied authorization request control (as described in RFC 4370, also known as the proxied authorization v2 request control) in all add, delete, modify, and modify DN requests.  This control indicates that the operation should be processed under the authority of an alternate authorization identity.  That authorization identity should generally be specified as either the string 'dn:' followed by the DN of the entry for the target user or 'u:' followed by the username for the target user.
+        <br><br>
+      </li>
+      <li>
+        <tt>--proxyV1As <i>{dn}</i></tt> &mdash; Include the proxied authorization v1 request control (as described in draft-weltman-ldapv3-proxy-04) in all add, delete, modify, and modify DN requests.  This control indicates that the operation should be processed under the authority of an alternate authorization identity, specified as the DN of the entry for the target user.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>--passwordUpdateBehavior <i>{name=value}</i></tt> &mdash; Include the proprietary password update behavior request control in all add and modify requests.  This control may be used to customize the server's treatment of any passwords contained in the request.  Values for this argument must be provided in the form 'name=value', where the property can be any of the following:  is-self-change, allow-pre-encoded-password, skip-password-validation, ignore-password-history, ignore-minimum-password-age, password-storage-scheme, and must-change-password.  The value for the password-storage-scheme property should be the name of the desired scheme, and the value for all other properties should be either 'true' or 'false'.  This argument can be provided multiple times to specify multiple password update behaviors.
+        <br><br>
+      </li>
+      <li>
+        <tt>--operationPurpose <i>{purpose}</i></tt> &mdash; Include the proprietary operation purpose request control in all requests.  This control provides a human-readable reason for the associated operation.
+        <br><br>
+      </li>
+      <li>
+        <tt>--useManageDsaIT</tt> &mdash; Include the manageDsaIT request control in all add, delete, modify, and modify DN request.  This control indicates that the server should treat referral entries as regular entries, and that the server should attempt to process that change directly against the referral entry rather generating a referral to indicate that the change should be sent to another server or to a different location in the same server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--nameWithEntryUUID</tt> &mdash; Include the UnboundID-proprietary name with entryUUID request control in all add requests sent to the server to indicate that the server should use the entryUUID operational attribute as the naming attribute for the resulting entry instead of the provided RDN.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--useSoftDelete</tt> &mdash; Include the proprietary soft delete request control in all delete requests.  This control indicates that the server should hide the target entry for a period of time before actually removing it so that it may be restored with an undelete operation if the delete should be reverted.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--useHardDelete</tt> &mdash; Include the proprietary hard delete request control in all delete requests.  This control indicates that the server should completely remove the target entry, even if it would have otherwise automatically processed the operation as a soft delete.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--allowUndelete</tt> &mdash; Include the proprietary undelete request control in all add requests that include the 'ds-undelete-from-dn' attribute.  This control indicates that the server should un-delete the target soft-deleted entry rather than creating a new entry.  The server must be configured to allow soft delete operations, and the requester must hav ethe soft-delete-read privilege.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--useAssuredReplication</tt> &mdash; Include the UnboundID-proprietary assured replication request control to indicate that the update response should be delayed until the change has been sufficiently replicated to other servers.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--assuredReplicationLocalLevel <i>{none|received-any-server|processed-all-servers}</i></tt> &mdash; The replication assurance level that should be used for servers in the same location as the server that originally processed the change.  The value must be one of 'none', 'received-any-server', or 'processed-all-servers'.  If this is not provided, the server will determine an appropriate local assurance level.
+        <br>
+        A provided value should be one of the following:  'received-any-server', 'processed-all-servers', 'none'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--assuredReplicationRemoteLevel <i>{level}</i></tt> &mdash; The assurance level to request when replicating changes to other servers in a different location from the server that originally received the change.  The value should be one of 'none', 'received-any-remote-location', 'received-all-remote-locations', or 'processed-all-remote-servers'.  If this is not specified, then the server will determine an appropriate remote assurance level.
+        <br>
+        A provided value should be one of the following:  'processed-all-remote-servers', 'none', 'received-any-remote-location', 'received-all-remote-locations'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--assuredReplicationTimeout <i>{duration}</i></tt> &mdash; The timeout to use for assured replication processing.  If provided, the value should be in the form of an integer followed by a time unit that is one of 'nanosecond', 'microsecond', 'millisecond', 'second', 'minute', 'hour', 'day', or 'week' (or one of their plurals or abbreviations).  For example, values of '500 milliseconds', '500 ms', and '500ms' all specify a timeout of 500 milliseconds.  If this is not specified, then the server will select an appropriate timeout.
+        <br>
+        The provided value must contain an integer followed by a unit of 'ns' (for nanoseconds), 'us' (for microseconds), 'ms' (for milliseconds), 's' (for seconds), 'm' (for minutes), 'h' (for hours), 'd' (for days), or 'w' (for weeks).  The specified duration must not be less than 0ns or greater than 9223372036854775807ns.
+        <br><br>
+      </li>
+      <li>
+        <tt>--replicationRepair</tt> &mdash; Include the proprietary replication repair request control in all add, delete, modify, and modify DN requests.  This control indicates that the requested operation should only be processed in the server instance that originally received the change, and it should not be replicated to other servers in the topology.  This should generally only be used under the direction of support personnel.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressOperationalAttributeUpdates <i>{attr}</i></tt> &mdash; Include the proprietary suppress operational attribute update request control in all add, bind, delete, modify, and modify DN requests.  This control indicates that the server should not update the specified operational attribute in the course of processing the operation.  The value may be one of 'last-access-time', 'last-login-time', 'last-login-ip', or 'lastmod'.  This argument may be provided multiple times to suppress updates to multiple operational attributes.
+        <br>
+        A provided value should be one of the following:  'last-access-time', 'last-login-ip', 'last-login-time', 'lastmod'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressReferentialIntegrityUpdates</tt> &mdash; Include the proprietary suppress referential integrity updates request control in all delete and modify DN requests.  This control indicates that the server should not perform any referential integrity processing for the associated operation.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--addControl <i>{oid}[:{criticality}[:{stringValue}|::{base64Value}]]</i></tt> &mdash; Include the specified control in all add requests.
+        <br>
+        A provided value must be a string representation of a valid LDAP control in the form {oid}[:{criticality}[:{stringValue}|::{base64Value}]].
+        <br><br>
+      </li>
+      <li>
+        <tt>--bindControl <i>{oid}[:{criticality}[:{stringValue}|::{base64Value}]]</i></tt> &mdash; Include the specified control in all bind requests.
+        <br>
+        A provided value must be a string representation of a valid LDAP control in the form {oid}[:{criticality}[:{stringValue}|::{base64Value}]].
+        <br><br>
+      </li>
+      <li>
+        <tt>--deleteControl <i>{oid}[:{criticality}[:{stringValue}|::{base64Value}]]</i></tt> &mdash; Include the specified control in all delete requests.
+        <br>
+        A provided value must be a string representation of a valid LDAP control in the form {oid}[:{criticality}[:{stringValue}|::{base64Value}]].
+        <br><br>
+      </li>
+      <li>
+        <tt>--modifyControl <i>{oid}[:{criticality}[:{stringValue}|::{base64Value}]]</i></tt> &mdash; Include the specified control in all modify requests.
+        <br>
+        A provided value must be a string representation of a valid LDAP control in the form {oid}[:{criticality}[:{stringValue}|::{base64Value}]].
+        <br><br>
+      </li>
+      <li>
+        <tt>--modifyDNControl <i>{oid}[:{criticality}[:{stringValue}|::{base64Value}]]</i></tt> &mdash; Include the specified control in all modify DN requests.
+        <br>
+        A provided value must be a string representation of a valid LDAP control in the form {oid}[:{criticality}[:{stringValue}|::{base64Value}]].
+        <br><br>
+      </li>
+    </ul>
+    <h3>Additional Arguments</h3>
+    <ul>
+      <li>
+        <tt>--interactive</tt> &mdash; Launch the tool in interactive mode.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-H</tt> / <tt>--help</tt> &mdash; Display usage information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-V</tt> / <tt>--version</tt> &mdash; Display version information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--propertiesFilePath <i>{path}</i></tt> &mdash; The path to a properties file used to specify default values for arguments not supplied on the command line.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--generatePropertiesFile <i>{path}</i></tt> &mdash; Write an empty properties file that may be used to specify default values for arguments.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--noPropertiesFile</tt> &mdash; Do not obtain any argument values from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressPropertiesFileComment</tt> &mdash; Suppress output listing the arguments obtained from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Dependent Argument Sets</h3>
+    <ul>
+      <li>
+        If the <tt>--keyStorePassword</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--keyStorePasswordFile</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--promptForKeyStorePassword</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--trustStorePassword</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--trustStorePasswordFile</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--promptForTrustStorePassword</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--keyStorePath</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--trustStorePath</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--defaultTrust</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--trustAll</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--bindPassword</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--bindPasswordFile</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--promptForBindPassword</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--assuredReplicationLocalLevel</tt> argument is provided, then the <tt>--useAssuredReplication</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--assuredReplicationRemoteLevel</tt> argument is provided, then the <tt>--useAssuredReplication</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--assuredReplicationTimeout</tt> argument is provided, then the <tt>--useAssuredReplication</tt> argument must also be provided.
+      </li>
+    </ul>
+    <h3>Exclusive Argument Sets</h3>
+    <ul>
+      <li>
+        The following arguments cannot be used together:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--keyStorePassword</tt>, <tt>--keyStorePasswordFile</tt>, <tt>--promptForKeyStorePassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--trustStorePassword</tt>, <tt>--trustStorePasswordFile</tt>, <tt>--promptForTrustStorePassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--defaultTrust</tt>, <tt>--trustAll</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--trustAll</tt>, <tt>--trustStorePath</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--bindDN</tt>, <tt>--saslOption</tt>, <tt>--useSASLExternal</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--bindPassword</tt>, <tt>--bindPasswordFile</tt>, <tt>--promptForBindPassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--followReferrals</tt>, <tt>--useManageDsaIT</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--proxyAs</tt>, <tt>--proxyV1As</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--useSoftDelete</tt>, <tt>--useHardDelete</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--useAssuredReplication</tt>, <tt>--replicationRepair</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--propertiesFilePath</tt>, <tt>--noPropertiesFile</tt>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Uses ten concurrent threads to apply the changes read from the changes.ldif file against the LDAP server at server.example.com:636 over a TLS-encrypted connection.  Any rejected changes will be written to the rejects.ldif file, and processing will be limited to a rate of 5000 attempts per second.</li>
+    </ul>
+    <blockquote><pre>    parallel-update --hostname server.example.com --port 636 --useSSL \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --ldifFile changes.ldif --rejectFile rejects.ldif --defaultAdd \
+         --numThreads 10 --ratePerSecond 5000</pre></blockquote>
+  </body>
+</html>

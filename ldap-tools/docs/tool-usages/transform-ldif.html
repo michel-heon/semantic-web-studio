@@ -1,0 +1,493 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>The transform-ldif Command-Line Tool</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="../unboundid.css" type="text/css">
+    <link rel="shortcut icon" href="../images/favicon.ico">
+  </head>
+
+  <body>
+    <h1>The transform-ldif Command-Line Tool</h1>
+
+    <p>
+      Apply one or more changes to entries or change records read from an LDIF file, writing the updating records to a new file.  This tool can apply a variety of transformations, including scrambling attribute values, redacting attribute values, excluding attributes or entries, replacing existing attributes, adding new attributes, renaming attributes, and moving entries from one subtree to another.
+    </p>
+    <h3>Usage</h3>
+    <blockquote><pre>transform-ldif <i>{arguments}</i></pre></blockquote>
+    <h3>Arguments for Configuring Input and Output LDIF Files</h3>
+    <ul>
+      <li>
+        <tt>-l <i>{path}</i></tt> / <tt>--sourceLDIF <i>{path}</i></tt> &mdash; The path to an LDIF file containing the entries or change records to transform.  This argument may be provided multiple times to transform data contained in multiple files, and if multiple source LDIF files are specified, they will be processed in the order listed on the command line.  Either the --sourceLDIF or the --sourceFromStandardInput argument (but not both) must be provided.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceFromStandardInput</tt> &mdash; Indicates that the source data will be read from standard input rather than from one or more LDIF files.  This option is primarily intended for use when piping the output of another tool (perhaps even another invocation of the transform-ldif tool) into this tool.  Either the --sourceLDIF or the --sourceFromStandardInput argument (but not both) must be provided.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-o <i>{path}</i></tt> / <tt>--targetLDIF <i>{path}</i></tt> &mdash; The path to the LDIF file to which the transformed entries and change records will be written.  This argument must be provided at most once.  Even if multiple source LDIF files were provided, all of the transformed entries and change records will be written to the same destination.  Either the --targetLDIF or the --targetToStandardOutput argument (but not both) must be provided.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetToStandardOutput</tt> &mdash; Indicates that the transformed entries and change records should be written to standard output rather than to an LDIF file.  This option is primarily intended to allow the transformed output to be piped into another tool (perhaps even another invocation of the transform-ldif tool) for further processing, but it can also be used to write the output to the terminal for visual inspection.  If this argument is provided, then progress messages will not be written to standard output.  Either the --targetLDIF or the --targetToStandardOutput argument (but not both) must be provided.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceContainsChangeRecords</tt> &mdash; Indicates that the source LDIF files may contain LDIF change records.  Note that some types of transformations are not supported for use with LDIF change records.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--appendToTargetLDIF</tt> &mdash; Indicates that, if the target LDIF file already exists, the tool should append to that file rather than overwriting it.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--wrapColumn <i>{value}</i></tt> &mdash; The column at which lines should be wrapped when writing to the target LDIF file.  If this is not provided, then no line wrapping will be performed.
+        <br>
+        The specified value must not be less than 5 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>-C</tt> / <tt>--sourceCompressed</tt> &mdash; Indicates that the source LDIF files are gzip-compressed.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-c</tt> / <tt>--compressTarget</tt> &mdash; Indicates that the target LDIF file should be gzip-compressed.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--encryptTarget</tt> &mdash; Indicates that the target LDIF file should be encrypted with a key generated from a provided passphrase.  If the --encryptionPassphraseFile argument is provided, then the passphrase will be read from that file; otherwise, it will be interactively requested.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--encryptionPassphraseFile <i>{path}</i></tt> &mdash; The path to a file that contains the passphrase that should be used to generate the encryption key, and also to decrypt the input if it happens to be encrypted.  If the --encryptTarget argument is provided and no passphrase file is given, then the passphrase will be interactively requested.  If an encryption passphrase file is specified, then it must contain exactly one line, and that line must be comprised entirely of the passphrase.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Arguments for Scrambling Attribute Values</h3>
+    <ul>
+      <li>
+        <tt>-a <i>{attributeName}</i></tt> / <tt>--scrambleAttribute <i>{attributeName}</i></tt> &mdash; The name or OID of an attribute whose values should be scrambled.  Scrambling will be performed in a manner that attempts to preserve the associated attribute syntax and that will generally try to ensure that a given input value will consistently yield the same scrambled output.  This argument may be provided multiple times to indicate that multiple attributes should have their values scrambled.
+        <br><br>
+      </li>
+      <li>
+        <tt>--scrambleJSONField <i>{fieldName}</i></tt> &mdash; The name of a JSON field whose values should be scrambled.  If the --scrambleAttribute argument is used to scramble any attributes whose values may be JSON objects, then all JSON field names will be preserved and only the values will be scrambled.  If this argument is given (and it may be provided multiple times to target multiple JSON fields), then only the specified JSON fields will have their values scrambled.  If this argument is not given, then any JSON objects contained in any of the attributes to scramble will have all values of all fields scrambled.  JSON field names will be treated in a case-insensitive manner.
+        <br><br>
+      </li>
+      <li>
+        <tt>-s <i>{value}</i></tt> / <tt>--randomSeed <i>{value}</i></tt> &mdash; The seed to provided to the random number generators that will be used when scrambling values.  If a random seed is provided, then running this tool multiple times with the same seed on the same source LDIF files should yield the same scrambled representations for most types of attributes.  If no random seed is given, an appropriate seed will be automatically selected.
+        <br>
+        The specified value must not be less than -2 147 483 648 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Arguments for Replacing Attribute Values with a Sequential Counter</h3>
+    <ul>
+      <li>
+        <tt>-S <i>{attributeName}</i></tt> / <tt>--sequentialAttribute <i>{attributeName}</i></tt> &mdash; The name or OID of an attribute whose values should be replaced with a generated value that contains a numeric counter that will be incremented for each entry containing this attribute.  The counter will only be incremented for entries that contain the specified attribute.  This argument may be provided multiple times to indicate that multiple attributes should include generated values that contain counters, with a separate counter maintained for each attribute.  This argument cannot be used in conjunction with the --sourceContainsChangeRecords argument.
+        <br><br>
+      </li>
+      <li>
+        <tt>-i <i>{value}</i></tt> / <tt>--initialSequentialValue <i>{value}</i></tt> &mdash; The initial value for the counter used to generate values for attributes targeted by the --sequentialAttribute argument.  This argument may be provided at most once, with all configured sequential attributes using the same initial counter value.  If this argument is not provided, a default initial counter value of zero will be used.
+        <br>
+        The specified value must not be less than -2 147 483 648 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sequentialValueIncrement <i>{value}</i></tt> &mdash; The amount by which to increment the counter for each entry containing an attribute targeted by the --sequentialAttribute argument.  This argument may be provided at most once, with all configured sequential attributes using the same increment.  If this argument is not provided, a default increment of one will be used.
+        <br>
+        The specified value must not be less than -2 147 483 648 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--textBeforeSequentialValue <i>{value}</i></tt> &mdash; An optional string that will appear immediately before the numeric counter in values generated for attributes targeted by the --sequentialAttribute argument.  This argument may be provided at most once, with all configured sequential attributes starting with the same initial text.  If this argument is not provided, the generated values will not include any text before the counter.
+        <br><br>
+      </li>
+      <li>
+        <tt>--textAfterSequentialValue <i>{value}</i></tt> &mdash; An optional string that will appear immediately after the numeric counter in values generated for attributes targeted by the --sequentialAttribute argument.  This argument may be provided at most once, with all configured sequential attributes ending with the same final text.  If this argument is not provided, the generated values will not include any text after the counter.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Arguments for Replacing Values of Existing Attributes</h3>
+    <ul>
+      <li>
+        <tt>--replaceValuesAttribute <i>{attributeName}</i></tt> &mdash; The name or OID of an attribute whose values should be replaced with the value(s) specified using the --replacementValue argument.  The values will only be set in entries that already contain the specified attribute; the attribute will not be added to any entries that do not already contain it (although the --addMissingAttributeName and --addMissingAttributeValue arguments may be used to accomplish that).  This argument may be provided at most once, and it cannot be used in conjunction with the --sourceContainsChangeRecords argument.
+        <br><br>
+      </li>
+      <li>
+        <tt>--replacementValue <i>{value}</i></tt> &mdash; A value that should be used to replace the existing values of the attribute targeted by the --replaceValuesAttribute argument.  This argument may be provided multiple times to specify multiple replacement values.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Arguments for Adding Attribute Values</h3>
+    <ul>
+      <li>
+        <tt>--addAttributeName <i>{attributeName}</i></tt> &mdash; The name or OID of an attribute for which to add a set of attribute values specified using the --addAttributeValue argument.  The values will only be added to entries that match the associated base DN, scope, and filter criteria, and may optionally only be added to entries that do not already contain one or more values for this attribute.  This argument may be provided at most once, and it cannot be used in conjunction with the --sourceContainsChangeRecords argument.
+        <br><br>
+      </li>
+      <li>
+        <tt>--addAttributeValue <i>{value}</i></tt> &mdash; A value that should be added to the attribute targeted by the --addAttributeName argument.  This argument may be provided multiple times to specify multiple values to add for that attribute.
+        <br><br>
+      </li>
+      <li>
+        <tt>--addToExistingValues</tt> &mdash; Indicates that the attribute values specified with the --addAttributeName and --addAttributeValue arguments should be added to entries that already contain the specified attribute (as long as those entries also match the base DN, scope, and filter criteria).  If this argument is not provided, then the attribute values will only be added to entries that do not already contain one or more values for the target attribute (and that match the base DN, scope, and filter criteria).
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--addAttributeBaseDN <i>{dn}</i></tt> &mdash; The base DN for the subtree in which the attribute targeted by the --addAttributeName argument should be added to entries that do not already contain it.  This argument may be provided at most once, but if it is not provided then a default base DN of the null DN (which will be considered an ancestor of all entries) will be used.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>--addAttributeScope <i>{base|one|sub|subordinates}</i></tt> &mdash; The scope to use in conjunction with the value of the --addAttributeBaseDN argument to identify the portion of the hierarchy in which to add values for the attribute targeted by the --addAttributeName argument.  This argument may be provided at most once, but if it is not provided then a default scope of 'sub' (which will include all entries at and below the specified base DN) will be used.
+        <br>
+        The provided value should be one of 'base', 'one', 'sub', or 'subordinate'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--addAttributeFilter <i>{filter}</i></tt> &mdash; The filter to use to identify entries in which the attribute specified by the --addAttributeName argument should be added.  This argument may be provided at most once, but if it is not provided then a default filter of '(&amp;)' (which is the LDAP true filter and will match any entry) will be used.
+        <br>
+        A provided value must be able to be parsed as an LDAP search filter as described in RFC 4515.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Arguments for Renaming Attributes</h3>
+    <ul>
+      <li>
+        <tt>--renameAttributeFrom <i>{attributeName}</i></tt> &mdash; The name or OID of an attribute to rename to the value specified by the --renameAttributeTo argument.  This argument may be specified multiple times to specify multiple attributes to rename, as long as the --renameAttributeTo argument is specified the same number of times (and the order in which these arguments are provided will be used to correlate the source and target attribute names).
+        <br><br>
+      </li>
+      <li>
+        <tt>--renameAttributeTo <i>{attributeName}</i></tt> &mdash; The new name or OID for an attribute to be renamed.  This argument must be specified the same number of times as the --renameAttributeFrom argument.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Arguments for Flattening DITs</h3>
+    <ul>
+      <li>
+        <tt>--flattenBaseDN <i>{dn}</i></tt> &mdash; The base DN below which the DIT should be flattened.  Any entries more than one level below this base DN will be renamed so that they are exactly one level below this base DN.  By default, the flattening process will create a new DN that is simply the original RDN followed by a comma and the flatten base DN (so that all DN components between the RDN and the flatten base DN will simply be stripped from the DN).  This flattening will also be applied to all attribute values that represent DNs that are more than one level below this flatten base DN.  All DNs that are not more than one level below the flatten base DN will be left unchanged.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>--flattenAddOmittedRDNAttributesToEntry</tt> &mdash; Indicates that all name-value pairs contained in DN components omitted from a flattened DN should be added as attribute values to the entry.  For example, if the flatten base DN is 'ou=People,dc=example,dc=com', the DN 'uid=john.doe,ou=New York,ou=East,ou=People,dc=example,dc=com' will be flattened to simply 'uid=john.doe,ou=People,dc=example,dc=com' and the 'ou=New York' and 'ou=East' components will be omitted.  If this argument is provided, then ou values of 'New York' and 'East' will be added to the entry during the flattening process.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--flattenAddOmittedRDNAttributesToRDN</tt> &mdash; Indicates that all name-value pairs contained in DN components omitted from a flattened DN should be added to the original RDN (making it a multivalued RDN if it wasn't already).  For example, if this argument is provided and the flatten base DN is 'ou=People,dc=Example,dc=com', the DN 'uid=john.doe,ou=New York,ou=East,ou=People,dc=example,dc=com' will be flattened to 'uid=john.doe+ou=New York+ou=East,ou=People,dc=example,dc=com'.  This will help ensure that all flattened DNs are unique in the event that the same RDN might exist in different branches below the flatten base DN.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--flattenExcludeFilter <i>{filter}</i></tt> &mdash; Provides a filter that can be used to identify entries below the flatten base DN that should be excluded from the resulting LDIF file.  This can be used to exclude non-leaf 'container' entries that were only present to provide hierarchy in the previous non-flattened DIT and are no longer needed in the flattened representation of the DIT.  This argument will not exclude any entries that are at or outside the flatten base DN.
+        <br>
+        A provided value must be able to be parsed as an LDAP search filter as described in RFC 4515.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Arguments for Moving Subtrees</h3>
+    <ul>
+      <li>
+        <tt>--moveSubtreeFrom <i>{dn}</i></tt> &mdash; The base DN for a subtree to be moved to another location in the DIT, with this source base DN being replaced with the base DN specified using the --moveSubtreeTo argument.  This argument may be specified multiple times to rename multiple subtrees as long as the source subtrees are not hierarchically related, and as long as the --moveSubtreeTo argument is specified the same number of times (and the order in which these arguments are provided will be used to correlate the source and target subtree base DNs).
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>--moveSubtreeTo <i>{dn}</i></tt> &mdash; The new base DN for a subtree to be moved.  This argument must be specified the same number of times as the --moveSubtreeFrom argument.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Arguments for Redacting Attribute Values</h3>
+    <ul>
+      <li>
+        <tt>--redactAttribute <i>{attributeName}</i></tt> &mdash; The name or OID of an attribute whose values should be redacted so that it is possible to determine that the specified attribute is present in an entry without exposing the values for that attribute.  This argument may be provided multiple times to specify multiple attributes whose values should be redacted.
+        <br><br>
+      </li>
+      <li>
+        <tt>--hideRedactedValueCount</tt> &mdash; Indicates that the number of values contained in a redacted attribute should be hidden so that it is no longer possible to determine the original number of values.  If this argument is provided, then any redacted attribute that originally had one or more values will be updated so that it only has a single value of '***REDACTED***'.  If this argument is not provided, then any redacted attribute that had a single value will have that value replaced with '***REDACTED***', but any redacted attribute that had multiple values will still have that same number of values, with each replacement containing a counter (e.g., '***REDACTED1***', '***REDACTED2***', etc.).
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Arguments for Excluding Attributes, Entries, and Changes</h3>
+    <ul>
+      <li>
+        <tt>--excludeAttribute <i>{attributeName}</i></tt> &mdash; The name or OID of an attribute to exclude from the output.  This argument may be provided multiple times to specify multiple attributes to be excluded.
+        <br><br>
+      </li>
+      <li>
+        <tt>--excludeEntryBaseDN <i>{dn}</i></tt> &mdash; The base DN to use to identify entries to exclude from the output if at least one of the --excludeEntryBaseDN, --excludeEntryScope, or --excludeEntryFilter arguments is provided.  If this argument is not provided, a default base DN of the null DN (which will be considered an ancestor of every other entry) will be used.  This argument cannot be used in conjunction with the --sourceContainsChangeRecords argument.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>--excludeEntryScope <i>{base|one|sub|subordinates}</i></tt> &mdash; The scope to use to identify entries to exclude from the output if at least one of the --excludeEntryBaseDN, --excludeEntryScope, or --excludeEntryFilter arguments is provided.  If this argument is not provided, a default scope of 'sub' (which will include all entries at or below the base DN) will be used.  This argument cannot be used in conjunction with the --sourceContainsChangeRecords argument.
+        <br>
+        The provided value should be one of 'base', 'one', 'sub', or 'subordinate'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--excludeEntryFilter <i>{filter}</i></tt> &mdash; The filter to use to identify entries to exclude from the output if at least one of the --excludeEntryBaseDN, --excludeEntryScope, or --excludeEntryFilter arguments is provided.  If this argument is not provided, a default filter of '(&amp;)' (which is the LDAP true filter and will match any entry) will be used.  This argument cannot be used in conjunction with the --sourceContainsChangeRecords argument.
+        <br>
+        A provided value must be able to be parsed as an LDAP search filter as described in RFC 4515.
+        <br><br>
+      </li>
+      <li>
+        <tt>--excludeNonMatchingEntries</tt> &mdash; Indicates that entries that do not match the criteria specified using the --excludeEntryBaseDN, --excludeEntryScope, and --excludeEntryFilter arguments should be excluded from the output, and entries that do match the criteria will be preserved.  If this argument is not provided, then entries that do match the criteria will be excluded and entries that do not match the criteria will be preserved.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--excludeChangeType <i>{add|delete|modify|moddn}</i></tt> &mdash; Indicates that LDIF change records with the specified change type should be excluded from the output.  Allowed values include 'add', 'delete', 'modify', and 'moddn'.  This argument may be provided multiple times to exclude multiple types of changes.  Note that this argument will not exclude LDIF records that do not include a change type (which will be interpreted as entries rather than change records), but the --excludeRecordsWithoutChangeType argument may be used for that purpose.
+        <br>
+        A provided value should be one of the following:  'add', 'modify', 'delete', 'moddn'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--excludeRecordsWithoutChangeType</tt> &mdash; Indicates that LDIF records without a change type (which will be interpreted as entries rather than change records) should be excluded from the output.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Additional Arguments</h3>
+    <ul>
+      <li>
+        <tt>--schemaPath <i>{path}</i></tt> &mdash; The path to a file or directory from which to read schema definitions to use to improve the accuracy and flexibility of the processing performed by this tool (including identifying alternate names that may be used to reference attributes, and identifying the expected syntax for attribute values).  If the specified path is a file, then that file must be an LDIF file containing the schema definitions to read.  If the specified path is a directory, then all files in that directory that have a '.ldif' extension will be read (in alphabetical order by filename) to obtain schema definitions.  This argument may be provided multiple times to specify multiple schema file or directory paths.  If this argument is not provided, then a default schema will be used containing a number of standard attribute type and object class definitions.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>-t <i>{value}</i></tt> / <tt>--numThreads <i>{value}</i></tt> &mdash; The number of concurrent threads to use when processing.  If this is not specified, only a single thread will be used.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>-d</tt> / <tt>--processDNs</tt> &mdash; Indicates that transformations performed may be allowed to alter the DNs of entries read from the source LDIF files to make any appropriate changes (e.g., to scramble or redact RDN attribute values or to rename RDN attributes).  If this argument is not provided, then the original entry DNs will be preserved.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--interactive</tt> &mdash; Launch the tool in interactive mode.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-H</tt> / <tt>--help</tt> &mdash; Display usage information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-V</tt> / <tt>--version</tt> &mdash; Display version information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--propertiesFilePath <i>{path}</i></tt> &mdash; The path to a properties file used to specify default values for arguments not supplied on the command line.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--generatePropertiesFile <i>{path}</i></tt> &mdash; Write an empty properties file that may be used to specify default values for arguments.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--noPropertiesFile</tt> &mdash; Do not obtain any argument values from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressPropertiesFileComment</tt> &mdash; Suppress output listing the arguments obtained from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Required Argument Sets</h3>
+    <ul>
+      <li>
+        At least one of the following arguments must be provided:  <tt>--sourceLDIF</tt>, <tt>--sourceFromStandardInput</tt>
+      </li>
+      <li>
+        At least one of the following arguments must be provided:  <tt>--scrambleAttribute</tt>, <tt>--sequentialAttribute</tt>, <tt>--replaceValuesAttribute</tt>, <tt>--addAttributeName</tt>, <tt>--renameAttributeFrom</tt>, <tt>--flattenBaseDN</tt>, <tt>--moveSubtreeFrom</tt>, <tt>--redactAttribute</tt>, <tt>--excludeAttribute</tt>, <tt>--excludeEntryBaseDN</tt>, <tt>--excludeEntryScope</tt>, <tt>--excludeEntryFilter</tt>, <tt>--excludeChangeType</tt>, <tt>--excludeRecordsWithoutChangeType</tt>
+      </li>
+    </ul>
+    <h3>Dependent Argument Sets</h3>
+    <ul>
+      <li>
+        If the <tt>--scrambleJSONField</tt> argument is provided, then the <tt>--scrambleAttribute</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--initialSequentialValue</tt> argument is provided, then the <tt>--sequentialAttribute</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--sequentialValueIncrement</tt> argument is provided, then the <tt>--sequentialAttribute</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--textBeforeSequentialValue</tt> argument is provided, then the <tt>--sequentialAttribute</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--textAfterSequentialValue</tt> argument is provided, then the <tt>--sequentialAttribute</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--replaceValuesAttribute</tt> argument is provided, then the <tt>--replacementValue</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--replacementValue</tt> argument is provided, then the <tt>--replaceValuesAttribute</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--addAttributeName</tt> argument is provided, then the <tt>--addAttributeValue</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--addAttributeValue</tt> argument is provided, then the <tt>--addAttributeName</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--addToExistingValues</tt> argument is provided, then the <tt>--addAttributeName</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--addAttributeBaseDN</tt> argument is provided, then the <tt>--addAttributeName</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--addAttributeScope</tt> argument is provided, then the <tt>--addAttributeName</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--addAttributeFilter</tt> argument is provided, then the <tt>--addAttributeName</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--renameAttributeFrom</tt> argument is provided, then the <tt>--renameAttributeTo</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--renameAttributeTo</tt> argument is provided, then the <tt>--renameAttributeFrom</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--flattenAddOmittedRDNAttributesToEntry</tt> argument is provided, then the <tt>--flattenBaseDN</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--flattenAddOmittedRDNAttributesToRDN</tt> argument is provided, then the <tt>--flattenBaseDN</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--flattenExcludeFilter</tt> argument is provided, then the <tt>--flattenBaseDN</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--moveSubtreeFrom</tt> argument is provided, then the <tt>--moveSubtreeTo</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--moveSubtreeTo</tt> argument is provided, then the <tt>--moveSubtreeFrom</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--hideRedactedValueCount</tt> argument is provided, then the <tt>--redactAttribute</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--excludeNonMatchingEntries</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--excludeEntryBaseDN</tt>, <tt>--excludeEntryScope</tt>, <tt>--excludeEntryFilter</tt>
+      </li>
+    </ul>
+    <h3>Exclusive Argument Sets</h3>
+    <ul>
+      <li>
+        The following arguments cannot be used together:  <tt>--sourceLDIF</tt>, <tt>--sourceFromStandardInput</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--targetLDIF</tt>, <tt>--targetToStandardOutput</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--targetToStandardOutput</tt>, <tt>--appendToTargetLDIF</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--sourceContainsChangeRecords</tt>, <tt>--sequentialAttribute</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--sourceContainsChangeRecords</tt>, <tt>--replaceValuesAttribute</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--sourceContainsChangeRecords</tt>, <tt>--addAttributeName</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--sourceContainsChangeRecords</tt>, <tt>--flattenBaseDN</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--sourceContainsChangeRecords</tt>, <tt>--excludeEntryBaseDN</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--sourceContainsChangeRecords</tt>, <tt>--excludeEntryScope</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--sourceContainsChangeRecords</tt>, <tt>--excludeEntryFilter</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--propertiesFilePath</tt>, <tt>--noPropertiesFile</tt>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Transform the data contained in file 'input.ldif' to scramble the values of the givenName, sn, and cn attributes and write the result to the 'scrambled.ldif' file.  Ten concurrent threads will be used to perform the processing, it will use the schema defined in the files in the '/ds/config/schema' directory, and the values of attributes that appear in entry DNs may be scrambled.</li>
+    </ul>
+    <blockquote><pre>    transform-ldif --sourceLDIF input.ldif --targetLDIF scrambled.ldif \
+         --scrambleAttribute givenName --scrambleAttribute sn \
+         --scrambleAttribute cn --numThreads 10 \
+         --schemaPath /ds/config/schema --processDNs</pre></blockquote>
+    <ul>
+      <li>Transform the data contained in file 'input.ldif' to replace the value of the uid attribute with a dynamically-generated value consisting of the string 'user.' followed by a sequentially-incrementing counter that starts at 1 and increases by 1 for each entry that has a uid attribute.  Entry DNs containing the uid attribute will be updated, and the output will be written to the 'sequential.ldif' file.</li>
+    </ul>
+    <blockquote><pre>    transform-ldif --sourceLDIF input.ldif --targetLDIF sequential.ldif \
+         --sequentialAttribute uid --initialSequentialValue 1 \
+         --sequentialValueIncrement 1 --textBeforeSequentialValue user. \
+         --numThreads 10 --schemaPath /ds/config/schema --processDNs</pre></blockquote>
+    <ul>
+      <li>Transform the data contained in file 'input.ldif' to add an 'o' attribute with a value of 'Example Corp.' to any entry that matches filter '(objectClass=person)' and does not already have an 'o' attribute.  The output will be written to the 'added-organization.ldif' file.</li>
+    </ul>
+    <blockquote><pre>    transform-ldif --sourceLDIF input.ldif \
+         --targetLDIF added-organization.ldif --addAttributeName o \
+         --addAttributeValue "Example Corp." \
+         --addAttributeFilter "(objectClass=person)" --numThreads 10 \
+         --schemaPath /ds/config/schema</pre></blockquote>
+    <ul>
+      <li>Transform the data contained in file 'input.ldif' to move all entries at or below 'o=example.com' so that they will instead be below 'dc=example,dc=com'.  The output will be written to the 'rebased.ldif' file.</li>
+    </ul>
+    <blockquote><pre>    transform-ldif --sourceLDIF input.ldif --targetLDIF rebased.ldif \
+         --moveSubtreeFrom o=example.com --moveSubtreeTo dc=example,dc=com \
+         --numThreads 10 --schemaPath /ds/config/schema</pre></blockquote>
+  </body>
+</html>

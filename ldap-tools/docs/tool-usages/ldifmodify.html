@@ -1,0 +1,214 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>The ldifmodify Command-Line Tool</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="../unboundid.css" type="text/css">
+    <link rel="shortcut icon" href="../images/favicon.ico">
+  </head>
+
+  <body>
+    <h1>The ldifmodify Command-Line Tool</h1>
+
+    <p>
+      Apply a set of changes (including add, delete, modify, and modify DN operations) to a set of entries contained in an LDIF file.  The changes will be read from a second file (containing change records rather than entries), and the updated entries will be written to a third LDIF file.  Unlike ldapmodify, the ldifmodify cannot read the changes to apply from standard input.
+    </p>
+    <p>
+      All of the change records will be read into memory before processing begins, so it is important to ensure that the tool is given enough memory to hold those change records.  However, it will only operate on a single source entry at a time, so the size of the source LDIF file does not significantly impact the amount of memory that the tool requires.
+    </p>
+    <p>
+      Note that the tool will attempt to correctly handle multiple changes affecting the same entry.  However, because it only operates on one entry at a time, it cannot always behave in exactly the same way as if it were applying the changes over LDAP to a server populated with the source LDIF file.  For example, it is not possible to reject an attempt to delete an entry that has subordinates, so any delete will be treated as a subtree delete.
+    </p>
+    <p>
+      Further, not all types of modify DN change records are supported.  In particular, modify DN change records are not permitted if they target any entry that has been targeted by a previous change record (for example, renaming an entry that was created by a previous add change record).
+    </p>
+    <p>
+      Finally, it cannot perform other types of validation, like ensuring that all of the necessary superior entries exist when adding a new entry, or ensuring that a modify DN will not introduce a conflict with an existing entry.
+    </p>
+    <h3>Usage</h3>
+    <blockquote><pre>ldifmodify <i>{arguments}</i></pre></blockquote>
+    <h3>Input Arguments</h3>
+    <ul>
+      <li>
+        <tt>-s <i>{path}</i></tt> / <tt>--sourceLDIF <i>{path}</i></tt> &mdash; The path to an LDIF file containing the source entries to be updated.  This argument must be provided exactly once, and the file must exist.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceEncryptionPassphraseFile <i>{path}</i></tt> &mdash; The path to the file containing the passphrase needed to decrypt the contents of the source LDIF file (if it is encrypted).  If this argument is provided, the file must exist and must contain exactly one line that contains only the encryption passphrase.  If the source LDIF file is encrypted but this argument is not provided, then the tool will interactively prompt for the passphrase.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>-m <i>{path}</i></tt> / <tt>--changesLDIF <i>{path}</i></tt> &mdash; The path to the file containing the LDIF change records that represent the changes to apply.  This argument must be provided exactly once, and the file must exist.  The entire contents of the file will be read into memory so that all changes will be available when processing entries in the source LDIF file.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--changesEncryptionPassphraseFile <i>{path}</i></tt> &mdash; The path to the file containing the passphrase needed to decrypt the contents of the changes LDIF file (if it is encrypted).  If this argument is provided, the file must exist and must contain exactly one line that contains only the encryption passphrase.  If the changes LDIF file is encrypted but this argument is not provided, then the tool will interactively prompt for the passphrase.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--stripTrailingSpaces</tt> &mdash; Strip off any illegal trailing spaces identified in LDIF entries rather than rejecting those entries.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--lenientModifications</tt> &mdash; Be lenient when applying modifications.  If this argument is provided, then neither attempts to add an attribute value that already exists nor attempts to remove an attribute value that does not exist will be considered an error.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--strictModifications</tt> &mdash; Use strict mode when applying modifications to entries.  If this argument is provided, then the tool will report an error when trying to modify an entry to add an attribute value that already exists in the entry or to remove an attribute value that does not exist in the entry.  By default, the tool will operate in lenient mode, and these 'no-op' modifications will be permitted.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--ignoreDuplicateDeletes</tt> &mdash; Ignore subsequent deletes that target an entry that has already been deleted by an earlier change.  By default, subsequent deletes that target an already-deleted entry will be reported as an error.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--ignoreDeletesOfNonexistentEntries</tt> &mdash; Ignore deletes that target entries that do not exist in the source LDIF file.  By default, deletes targeting nonexistent entries will be reported as an error.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--ignoreModifiesOfNonexistentEntries</tt> &mdash; Ignore modifies that target entries that do not exist in the source LDIF file.  By default, modifies targeting nonexistent entries will be reported as an error.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Output Arguments</h3>
+    <ul>
+      <li>
+        <tt>-t <i>{path}</i></tt> / <tt>--targetLDIF <i>{path}</i></tt> &mdash; The path to the file to which the updated entries will be written.  This argument must be provided exactly once.  If the path exists, then it must reference a file rather than a directory, and that file will be overwritten with the updated entries.  If the path does not exist, then its parent directory must exist.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--compressTarget</tt> &mdash; GZIP-compress the data written to the target LDIF file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--encryptTarget</tt> &mdash; Encrypt the data written to the target LDIF file.  If the --targetEncryptionPassphraseFile argument is not provided to supply the passphrase to use to generate the encryption key, then the tool will interactively prompt for the passphrase.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetEncryptionPassphraseFile <i>{path}</i></tt> &mdash; The path to the file containing the passphrase that will be used to encrypt the data as it is written to the target file.  If this argument is not provided and the output file is to be encrypted, then the tool will interactively prompt for the passphrase.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--wrapColumn <i>{value}</i></tt> &mdash; The column at which long lines should be wrapped.  By default, long lines will be wrapped based on the terminal width (or 80 columns if the terminal width cannot be determined).
+        <br>
+        The specified value must not be less than 5 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>-T</tt> / <tt>--doNotWrap</tt> &mdash; Do not wrap long lines as they are written.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressComments</tt> &mdash; Do not include comments in the target LDIF file.  By default, each entry will include a comment to indicate what changes (if any) were applied to it.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Additional Arguments</h3>
+    <ul>
+      <li>
+        <tt>--noSchemaCheck</tt> &mdash; Do not perform schema checking while applying changes to entries.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--interactive</tt> &mdash; Launch the tool in interactive mode.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-H</tt> / <tt>--help</tt> &mdash; Display usage information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-V</tt> / <tt>--version</tt> &mdash; Display version information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--propertiesFilePath <i>{path}</i></tt> &mdash; The path to a properties file used to specify default values for arguments not supplied on the command line.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--generatePropertiesFile <i>{path}</i></tt> &mdash; Write an empty properties file that may be used to specify default values for arguments.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--noPropertiesFile</tt> &mdash; Do not obtain any argument values from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressPropertiesFileComment</tt> &mdash; Suppress output listing the arguments obtained from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Dependent Argument Sets</h3>
+    <ul>
+      <li>
+        If the <tt>--targetEncryptionPassphraseFile</tt> argument is provided, then the <tt>--encryptTarget</tt> argument must also be provided.
+      </li>
+    </ul>
+    <h3>Exclusive Argument Sets</h3>
+    <ul>
+      <li>
+        The following arguments cannot be used together:  <tt>--lenientModifications</tt>, <tt>--strictModifications</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--wrapColumn</tt>, <tt>--doNotWrap</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--propertiesFilePath</tt>, <tt>--noPropertiesFile</tt>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Apply the changes contained in LDIF file 'changes.ldif' to the entries contained in LDIF file 'original.ldif' and write the updated entries to LDIF file 'updated.ldif'.</li>
+    </ul>
+    <blockquote><pre>    ldifmodify --sourceLDIF original.ldif --changesLDIF changes.ldif \
+         --targetLDIF updated.ldif</pre></blockquote>
+  </body>
+</html>

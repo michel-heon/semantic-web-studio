@@ -1,0 +1,350 @@
+The split-ldif Command-Line Tool
+
+Global Usage:
+
+Splits a single LDIF file into multiple sets by separating entries below a
+specified base DN into different mutually-exclusive collections of entries.  A
+number of algorithms are available to determine how entries should be split,
+and entries outside the split base DN may be included in all sets or added to a
+dedicated LDIF file.
+
+Subcommands:
+
+  split-using-hash-on-rdn
+    Splits the data by computing a hash on the normalized representation of the
+    DN component immediately below the split base DN, and using a modulus
+    operation to determine the set in which to place the entry.  This split
+    algorithm does not require any caching to ensure that a subordinate entry
+    is placed in the same set as its parent.
+
+  split-using-hash-on-attribute
+    Splits the data by computing a hash on the value(s) of a specified
+    attribute in entries immediately below the split base DN, and using a
+    modulus operation to determine the set in which to place the entry.  If an
+    entry does not contain the target attribute, the set will be chosen based
+    on a hash of the DN component immediately below the split base DN.  Unless
+    the --assumeFlatDIT argument is provided, a cache will be used to ensure
+    that subordinate entries are added into the same set as their parents.
+
+  split-using-fewest-entries
+    Splits the data by selecting the set with the fewest number of entries.
+    When processing data in a flat DIT, this will essentially be a round-robin
+    distribution.  When processing data in a DIT with branches of varying
+    sizes, this can help ensure that the resulting LDIF files will have roughly
+    the same number of entries (although running the tool with multiple threads
+    may make this less accurate).  Unless the --assumeFlatDIT argument is
+    provided, a cache will be used to ensure that subordinate entries are added
+    into the same set as their parents.
+
+  split-using-filter
+    Splits the data by using search filters to select the appropriate set.  The
+    filters will be evaluated in the order they were provided on the command
+    line, and the entry will be added to the first set for which a matching
+    filter is found.  If the entry doesn't match any of the provided filters,
+    then the appropriate set will be determined by computing a hash on the RDN.
+    Unless the --assumeFlatDIT argument is provided, a cache will be used to
+    ensure that subordinate entries are added into the same set as their
+    parents.
+
+Usage:  split-ldif {subcommand} {options}
+
+Available options include:
+* -l, --sourceLDIF {path}
+    The path to an LDIF file containing the data to be split into multiple
+    sets.  This argument may be provided multiple times to specify multiple
+    LDIF files, and the files will be processed in the order they were provided
+    on the command line.
+-C, --sourceCompressed
+    Indicates that the source LDIF files are gzip-compressed.
+-o, --targetLDIFBasePath {path}
+    The path and base name to use for the LDIF files containing the data that
+    has been split.  The resulting LDIF files will use this path with different
+    extensions ('.set1' for the first set, '.set2' for the second set, and so
+    on, and '.outside-split-base-dn' if a file is to be created to hold entries
+    that exist outside of the split base DN).  If this is not provided, then
+    the source LDIF path will be used as the base name.
+-c, --compressTarget
+    Indicates that the target LDIF files should be gzip-compressed.
+--encryptTarget
+    Indicates that the target LDIF files should be encrypted with a key
+    generated from a provided passphrase.  If the --encryptionPassphraseFile
+    argument is provided, then the passphrase will be read from the specified
+    file.  Otherwise, it will be interactively requested from the user.
+--encryptionPassphraseFile {path}
+    The path to the file containing the passphrase to use to generate the
+    encryption key.  This passphrase will be used to decrypt the input (if it
+    is encrypted) and to encrypt the output (if it is to be encrypted).  If
+    this is not provided and either the input or output is encrypted, then the
+    passphrase will be interactively requested.  If it is provided, then the
+    specified file must exist and must contain exactly one line that is
+    comprised entirely of the encryption passphrase.
+* -b, --splitBaseDN {dn}
+    The base DN below which entries should be split.  The entry with this DN
+    will appear in all sets, but each entry below this base DN will appear in
+    exactly one set.  This must be provided.
+--addEntriesOutsideSplitBaseDNToAllSets
+    Indicates that entries outside the split base DN should be added to all
+    sets containing split data.
+--addEntriesOutsideSplitBaseDNToDedicatedSet
+    Indicates that entries outside the split base DN should be added to a
+    dedicated set in its own file.
+--schemaPath {path}
+    The path to a file or directory from which to read schema definitions to
+    use when processing.  If the provided path is a file, then it must be an
+    LDIF file containing the definitions to read.  If the provided path is a
+    directory, then schema definitions will be read from all files with an
+    extension of '.ldif' in that directory.  If this argument is provided
+    multiple times, then the paths will be processed in the order they were
+    provided on the command line.  If this argument is not provided, then a
+    default standard schema will be used.
+-t, --numThreads {value}
+    The number of threads to use when processing.  If this is not specified, a
+    single thread will be used.
+--interactive
+    Launch the tool in interactive mode.
+-H, --help
+    Display usage information for this program.
+--helpSubcommands
+    Display the names and descriptions of the supported subcommands.
+-V, --version
+    Display version information for this program.
+--propertiesFilePath {path}
+    The path to a properties file used to specify default values for arguments
+    not supplied on the command line.
+--generatePropertiesFile {path}
+    Write an empty properties file that may be used to specify default values
+    for arguments.
+--noPropertiesFile
+    Do not obtain any argument values from a properties file.
+--suppressPropertiesFileComment
+    Suppress output listing the arguments obtained from a properties file.
+
+* Indicates the argument is required
+
+Examples
+
+  Splits LDIF file 'whole.ldif' so that entries below
+  'ou=People,dc=example,dc=com' will be split into four sets, selected by
+  computing a digest of the RDN component immediately below
+  'ou=People,dc=example,dc=com', with names starting with 'split.ldif'.
+
+    split-ldif split-using-hash-on-rdn --sourceLDIF whole.ldif \
+         --targetLDIFBasePath split.ldif \
+         --splitBaseDN ou=People,dc=example,dc=com --numSets 4 \
+         --schemaPath config/schema --addEntriesOutsideSplitBaseDNToAllSets
+
+  Splits LDIF file 'whole.ldif' so that entries below
+  'ou=People,dc=example,dc=com' will be split into four sets, selected by
+  computing a digest of the first value of the 'uid' attribute, with names
+  starting with 'split.ldif'.
+
+    split-ldif split-using-hash-on-attribute --sourceLDIF whole.ldif \
+         --targetLDIFBasePath split.ldif \
+         --splitBaseDN ou=People,dc=example,dc=com --attributeName uid \
+         --numSets 4 --schemaPath config/schema \
+         --addEntriesOutsideSplitBaseDNToAllSets
+
+  Splits LDIF file 'whole.ldif' into four sets, with names starting with
+  'split.ldif', so that each entry immediately below
+  'ou=People,dc=example,dc=com' will be placed in the set that currently has
+  the fewest entries.
+
+    split-ldif split-using-fewest-entries --sourceLDIF whole.ldif \
+         --targetLDIFBasePath split.ldif \
+         --splitBaseDN ou=People,dc=example,dc=com --numSets 4 \
+         --schemaPath config/schema --addEntriesOutsideSplitBaseDNToAllSets
+
+  Splits LDIF file 'whole.ldif' into four sets, with names starting with
+  'split.ldif', so that each entry immediately below
+  'ou=People,dc=example,dc=com' will be selected by matching that entry against
+  a search filter.  Entries matching '(timeZone=Eastern)' will go into the
+  first set, entries matching '(timeZone=Central)' into the second set,
+  '(timeZone=Mountain)' into the third set, and '(timeZone=Pacific)' into the
+  fourth.  Any entries not matching any of those filters will be placed by
+  computing a hash on its RDN.
+
+    split-ldif split-using-filter --sourceLDIF whole.ldif \
+         --targetLDIFBasePath split.ldif \
+         --splitBaseDN ou=People,dc=example,dc=com \
+         --filter "(timeZone=Eastern)" --filter "(timeZone=Central)" \
+         --filter "(timeZone=Mountain)" --filter "(timeZone=Pacific)" \
+         --schemaPath config/schema --addEntriesOutsideSplitBaseDNToAllSets
+
+
+
+Available Subcommands:
+* split-using-hash-on-rdn
+* split-using-hash-on-attribute
+* split-using-fewest-entries
+* split-using-filter
+
+
+
+Usage for subcommand split-using-hash-on-rdn:
+
+Splits the data by computing a hash on the normalized representation of the DN
+component immediately below the split base DN, and using a modulus operation to
+determine the set in which to place the entry.  This split algorithm does not
+require any caching to ensure that a subordinate entry is placed in the same
+set as its parent.
+
+Usage:  split-using-hash-on-rdn {options}
+
+Available options include:
+* --numSets {value}
+    The number of sets into which the data should be split.  This must be
+    provided, and the value must be greater than or equal to two.
+
+* Indicates the argument is required
+
+Examples
+
+  Splits LDIF file 'whole.ldif' so that entries below
+  'ou=People,dc=example,dc=com' will be split into four sets, selected by
+  computing a digest of the RDN component immediately below
+  'ou=People,dc=example,dc=com', with names starting with 'split.ldif'.
+
+    split-ldif split-using-hash-on-rdn split-using-hash-on-rdn \
+         --sourceLDIF whole.ldif --targetLDIFBasePath split.ldif \
+         --splitBaseDN ou=People,dc=example,dc=com --numSets 4 \
+         --schemaPath config/schema --addEntriesOutsideSplitBaseDNToAllSets
+
+
+
+Usage for subcommand split-using-hash-on-attribute:
+
+Splits the data by computing a hash on the value(s) of a specified attribute in
+entries immediately below the split base DN, and using a modulus operation to
+determine the set in which to place the entry.  If an entry does not contain
+the target attribute, the set will be chosen based on a hash of the DN
+component immediately below the split base DN.  Unless the --assumeFlatDIT
+argument is provided, a cache will be used to ensure that subordinate entries
+are added into the same set as their parents.
+
+Usage:  split-using-hash-on-attribute {options}
+
+Available options include:
+* --attributeName {attr}
+    The name or OID of the attribute for which to compute the hash.  This must
+    be provided.
+* --numSets {value}
+    The number of sets into which the data should be split.  This must be
+    provided, and the value must be greater than or equal to two.
+--useAllValues
+    Indicates that the hashing process should examine all values for the target
+    attribute.  If this argument is not provided, then only the first value for
+    the attribute will be used to determine the set in which an entry should be
+    placed.
+--assumeFlatDIT
+    Indicates that the tool should assume that all entries below the split base
+    DN will be exactly one level below that entry, so that it is not necessary
+    to maintain a cache to determine where a subordinate entry's parent
+    resides.  If this argument is provided but one or more subordinate entries
+    are found, then they will be added to a separate file so the appropriate
+    set can be manually identified.
+
+* Indicates the argument is required
+
+Examples
+
+  Splits LDIF file 'whole.ldif' so that entries below
+  'ou=People,dc=example,dc=com' will be split into four sets, selected by
+  computing a digest of the first value of the 'uid' attribute, with names
+  starting with 'split.ldif'.
+
+    split-ldif split-using-hash-on-attribute split-using-hash-on-attribute \
+         --sourceLDIF whole.ldif --targetLDIFBasePath split.ldif \
+         --splitBaseDN ou=People,dc=example,dc=com --attributeName uid \
+         --numSets 4 --schemaPath config/schema \
+         --addEntriesOutsideSplitBaseDNToAllSets
+
+
+
+Usage for subcommand split-using-fewest-entries:
+
+Splits the data by selecting the set with the fewest number of entries.  When
+processing data in a flat DIT, this will essentially be a round-robin
+distribution.  When processing data in a DIT with branches of varying sizes,
+this can help ensure that the resulting LDIF files will have roughly the same
+number of entries (although running the tool with multiple threads may make
+this less accurate).  Unless the --assumeFlatDIT argument is provided, a cache
+will be used to ensure that subordinate entries are added into the same set as
+their parents.
+
+Usage:  split-using-fewest-entries {options}
+
+Available options include:
+* --numSets {value}
+    The number of sets into which the data should be split.  This must be
+    provided, and the value must be greater than or equal to two.
+--assumeFlatDIT
+    Indicates that the tool should assume that all entries below the split base
+    DN will be exactly one level below that entry, so that it is not necessary
+    to maintain a cache to determine where a subordinate entry's parent
+    resides.  If this argument is provided but one or more subordinate entries
+    are found, then they will be added to a separate file so the appropriate
+    set can be manually identified.
+
+* Indicates the argument is required
+
+Examples
+
+  Splits LDIF file 'whole.ldif' into four sets, with names starting with
+  'split.ldif', so that each entry immediately below
+  'ou=People,dc=example,dc=com' will be placed in the set that currently has
+  the fewest entries.
+
+    split-ldif split-using-fewest-entries split-using-fewest-entries \
+         --sourceLDIF whole.ldif --targetLDIFBasePath split.ldif \
+         --splitBaseDN ou=People,dc=example,dc=com --numSets 4 \
+         --schemaPath config/schema --addEntriesOutsideSplitBaseDNToAllSets
+
+
+
+Usage for subcommand split-using-filter:
+
+Splits the data by using search filters to select the appropriate set.  The
+filters will be evaluated in the order they were provided on the command line,
+and the entry will be added to the first set for which a matching filter is
+found.  If the entry doesn't match any of the provided filters, then the
+appropriate set will be determined by computing a hash on the RDN.  Unless the
+--assumeFlatDIT argument is provided, a cache will be used to ensure that
+subordinate entries are added into the same set as their parents.
+
+Usage:  split-using-filter {options}
+
+Available options include:
+* --filter {filter}
+    A filter to evaluate against entries exactly one level below the split base
+    DN to determine which set should be used to hold the entry.  This argument
+    should be provided multiple times, once for each set into which the data
+    should be split, and the filters will be evaluated in the order they were
+    provided on the command line until one is found that matches the target
+    entry.
+--assumeFlatDIT
+    Indicates that the tool should assume that all entries below the split base
+    DN will be exactly one level below that entry, so that it is not necessary
+    to maintain a cache to determine where a subordinate entry's parent
+    resides.  If this argument is provided but one or more subordinate entries
+    are found, then they will be added to a separate file so the appropriate
+    set can be manually identified.
+
+* Indicates the argument is required
+
+Examples
+
+  Splits LDIF file 'whole.ldif' into four sets, with names starting with
+  'split.ldif', so that each entry immediately below
+  'ou=People,dc=example,dc=com' will be selected by matching that entry against
+  a search filter.  Entries matching '(timeZone=Eastern)' will go into the
+  first set, entries matching '(timeZone=Central)' into the second set,
+  '(timeZone=Mountain)' into the third set, and '(timeZone=Pacific)' into the
+  fourth.  Any entries not matching any of those filters will be placed by
+  computing a hash on its RDN.
+
+    split-ldif split-using-filter split-using-filter --sourceLDIF whole.ldif \
+         --targetLDIFBasePath split.ldif \
+         --splitBaseDN ou=People,dc=example,dc=com \
+         --filter "(timeZone=Eastern)" --filter "(timeZone=Central)" \
+         --filter "(timeZone=Mountain)" --filter "(timeZone=Pacific)" \
+         --schemaPath config/schema --addEntriesOutsideSplitBaseDNToAllSets

@@ -1,0 +1,353 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>The in-memory-directory-server Command-Line Tool</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="../unboundid.css" type="text/css">
+    <link rel="shortcut icon" href="../images/favicon.ico">
+  </head>
+
+  <body>
+    <h1>The in-memory-directory-server Command-Line Tool</h1>
+
+    <p>
+      A simple LDAP directory server which holds all of its information in memory and can be used for basic testing purposes.  It can be created and managed programmatically using the com.unboundid.ldap.listener.InMemoryDirectoryServer class.
+    </p>
+    <h3>Usage</h3>
+    <blockquote><pre>in-memory-directory-server <i>{arguments}</i></pre></blockquote>
+    <h3>Connectivity Arguments</h3>
+    <ul>
+      <li>
+        <tt>-p <i>{port}</i></tt> / <tt>--port <i>{port}</i></tt> &mdash; The port on which the server should listen for client requests.  If a value is specified, then it must be an integer between 1 and 65535.  If no port is specified, then the server will automatically select a free port to use.
+        <br>
+        The specified value must not be less than 0 or greater than 65 535.
+        <br><br>
+      </li>
+      <li>
+        <tt>-Z</tt> / <tt>--useSSL</tt> &mdash; Indicates that the server should encrypt all communication using SSL.  If this argument is provided, then the '--keyStorePath' and '--keyStorePassword' arguments must also be given, and the '--useStartTLS' argument must not be given.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-q</tt> / <tt>--useStartTLS</tt> &mdash; Indicates that the server should support the use of the StartTLS extended operation to encrypt all subsequent communication.  If this argument is provided, then the '--keyStorePath' and '--keyStorePassword' arguments must also be given, and the '--useSSL' argument must not be given.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-K <i>{path}</i></tt> / <tt>--keyStorePath <i>{path}</i></tt> &mdash; The path to the Java key store file that will be used to obtain the certificate to use for SSL communication.  This may only be provided if either the '--useSSL' or '--useStartTLS' argument is also given, and cannot be provided if the '--generateSelfSignedCertificate' argument is given.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>-W <i>{password}</i></tt> / <tt>--keyStorePassword <i>{password}</i></tt> &mdash; The password to use to access the contents of the SSL key store.  This may only be provided if either the '--useSSL' or '--useStartTLS' argument is also given.
+        <br><br>
+      </li>
+      <li>
+        <tt>--keyStoreType <i>{type}</i></tt> &mdash; The key store type.
+        <br><br>
+      </li>
+      <li>
+        <tt>--generateSelfSignedCertificate</tt> &mdash; Generate a self-signed certificate instead of using a certificate from a key store.  This may only be provided if either the '--useSSL' or '--useStartTLS' argument is also given, and cannot be provided if the '--keyStorePath' argument is given.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-P <i>{path}</i></tt> / <tt>--trustStorePath <i>{path}</i></tt> &mdash; The path to the Java trust store file that will be used to determine whether to trust any client certificates presented to the server.  This may only be provided if either the '--useSSL' or '--useStartTLS' argument is given, but if SSL or StartTLS is to be used and no trust store path is specified, then the server will automatically trust any client certificate presented to it.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>-T <i>{password}</i></tt> / <tt>--trustStorePassword <i>{password}</i></tt> &mdash; The password to use to access the contents of the SSL trust store.  This may only be provided if the '--trustStorePath' argument is also given.  If a trust store path is specified but no trust store password is given, then the server will attempt to access the trust store contents without a password.
+        <br><br>
+      </li>
+      <li>
+        <tt>--trustStoreType <i>{type}</i></tt> &mdash; The trust store type.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sslClientAuthPolicy <i>{prohibited|optional|required}</i></tt> &mdash; The policy that the server should use for requesting client certificates during TLS negotiation.  If this is 'prohibited' (or not specified), then the server will not ask clients to present a certificate chain.  If this is 'optional', then the server will ask clients to present a certificate chain but will continue with TLS negotiation if the client does not present one.  If this is 'required', then the server will ask clients to present a certificate chain and will abort TLS negotiation if the client does not present one.
+        <br>
+        A provided value should be one of the following:  'optional', 'prohibited', 'required'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--maxConcurrentConnections <i>{value}</i></tt> &mdash; The maximum number of concurrent connections that the server will allow at any time.  If this is not provided, then the server will not impose any limit on the number of concurrent connections.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--dontStart</tt> &mdash; Indicates that the server should not be started.  This is only intended for internal testing purposes, since a command-line server that can't be started isn't very useful.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Data Arguments</h3>
+    <ul>
+      <li>
+        <tt>-b <i>{baseDN}</i></tt> / <tt>--baseDN <i>{baseDN}</i></tt> &mdash; The base DN to use for the server.  Only entries at or below one of the defined base DNs may be created in the server.  At least one base DN must be defined, but multiple base DNs may be specified as separate arguments.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>-l <i>{path}</i></tt> / <tt>--ldifFile <i>{path}</i></tt> &mdash; The path to an LDIF file containing an initial set of data to use to populate the server.  If this is not provided, then the server will initially be empty.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>-D <i>{bindDN}</i></tt> / <tt>--additionalBindDN <i>{bindDN}</i></tt> &mdash; An additional DN that may be used to bind to the server even if the specified user does not exist in the data set.  If this is provided, then the '--additionalBindPassword' argument must also be given.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>-w <i>{password}</i></tt> / <tt>--additionalBindPassword <i>{password}</i></tt> &mdash; The password that should be used to authenticate when using the DN specified with the '--additionalBindDN' argument.
+        <br><br>
+      </li>
+      <li>
+        <tt>-s</tt> / <tt>--useDefaultSchema</tt> &mdash; Indicates that the server should use a default set of standard schema.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-S <i>{path}</i></tt> / <tt>--useSchemaFile <i>{path}</i></tt> &mdash; The path to a file or directory containing schema definitions to use for the server.  If the path specified is a file, then it must be an LDIF file containing a single entry that is a valid LDAP subschema subentry.  If the path specified is a directory, then any files contained in it will be examined in lexicographic order by name to create an aggregate schema.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--doNotValidateSchemaDefinitions</tt> &mdash; Do not attempt to validate any custom schema definitions provided using the --useSchemaFile argument.  By default, the server will examine custom schema definitions and report any issues that it identifies.  Note that even if the server does identify one or more issues with the provided schema, it will still attempt to use that schema to the best of its ability.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--doNotGenerateOperationalAttributes</tt> / <tt>--do-not-generate-operational-attributes</tt> &mdash; Do not automatically maintain any operational attributes (including entryDN, entryUUID, subschemaSubentry, creatorsName, createTimestamp, modifiersName, and modifyTimestamp) in entries.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-I <i>{attr}</i></tt> / <tt>--equalityIndex <i>{attr}</i></tt> &mdash; Maintain an equality index for the specified attribute.  The server must be configured to use a schema (which may optionally be the default standard schema), and the specified attribute type must be defined in the schema.
+        <br><br>
+      </li>
+      <li>
+        <tt>-c <i>{count}</i></tt> / <tt>--maxChangeLogEntries <i>{count}</i></tt> &mdash; The maximum number of LDAP changelog entries that should be maintained by the server.  If this is not provided, then the server will not maintain a changelog.
+        <br>
+        The specified value must not be less than 0 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sizeLimit <i>{value}</i></tt> &mdash; The maximum number of entries that the server may return to a single search request.  If this is not provided, then the server will not impose any size limit for search operations.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--passwordAttribute <i>{attr}</i></tt> &mdash; The name or OID of an attribute type that will hold user passwords for authentication.  If this is not provided, then a default of 'userPassword' will be used.  This may be provided multiple times to specify multiple password attributes.
+        <br><br>
+      </li>
+      <li>
+        <tt>--defaultPasswordEncoding <i>{scheme}</i></tt> &mdash; The default scheme that should be used for encoding new passwords.  Allowed values include MD5, SMD5, SHA, SSHA, SHA256, SSHA256, SHA384, SSHA384, SHA512, SSHA512, CLEAR, BASE64, and HEX.  If this is not specified, then clear-text passwords will not be encoded.
+        <br>
+        A provided value should be one of the following:  'sha384', 'sha256', 'ssha384', 'clear', 'base64', 'sha512', 'ssha256', 'sha', 'ssha512', 'ssha', 'hex', 'smd5', 'md5'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--allowedOperationType <i>{type}</i></tt> &mdash; A type of operation that the server will allow.  Allowed values include add, bind, compare, delete, extended, modify, modify-dn, and search.  This may be provided multiple times to specify multiple allowed operation types.  If this is not provided, then all types of operations will be allowed.
+        <br>
+        A provided value should be one of the following:  'add', 'modify', 'compare', 'search', 'bind', 'modify-dn', 'delete', 'extended'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--authenticationRequiredOperationType <i>{type}</i></tt> &mdash; A type of operation that the server will only allow on connections that are authenticated.  Allowed values include add, compare, delete, extended, modify, modify-dn, and search.  This may be provided multiple times to specify multiple authentication required operation types.  If this is not provided, then authentication will not be required for any type of operation.
+        <br>
+        A provided value should be one of the following:  'add', 'modify', 'compare', 'search', 'modify-dn', 'delete', 'extended'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--vendorName <i>{value}</i></tt> &mdash; The value to include in the vendorName argument of the server root DSE.
+        <br><br>
+      </li>
+      <li>
+        <tt>--vendorVersion <i>{value}</i></tt> &mdash; The value to include in the vendorVersion argument of the server root DSE.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Logging Arguments</h3>
+    <ul>
+      <li>
+        <tt>-A</tt> / <tt>--accessLogToStandardOut</tt> &mdash; Indicates that access log information should be written to standard output.  This cannot be used in conjunction with the '--accessLogFile' argument.  If neither argument is provided, then no access logging will be performed.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-a <i>{path}</i></tt> / <tt>--accessLogFile <i>{path}</i></tt> &mdash; The path to a file to which access log information should be written about operations processed by the server.  This cannot be used in conjunction with the '--accessLogToStandardOut' argument.  If neither argument is provided, then no access logging will be performed.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--jsonAccessLogToStandardOut</tt> &mdash; Indicates that JSON-formatted access log information should be written to standard output.  This cannot be used in conjunction with the '--jsonAccessLogFile' argument.  If neither argument is provided, then no access logging will be performed.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--jsonAccessLogFile <i>{path}</i></tt> &mdash; The path to a file to which JSON-formatted access log information should be written about operations processed by the server.  This cannot be used in conjunction with the '--jsonAccessLogToStandardOut' argument.  If neither argument is provided, then no JSON-formatted access logging will be performed.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--ldapDebugLogToStandardOut</tt> &mdash; Indicates that LDAP debug log information should be written to standard output.  This cannot be used in conjunction with the '--ldapDebugLogFile' argument.  If neither argument is provided, then no LDAP debug logging will be performed.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-d <i>{path}</i></tt> / <tt>--ldapDebugLogFile <i>{path}</i></tt> &mdash; The path to a file to which detailed information should be written about the LDAP communication performed by the server.  This cannot be used in conjunction with the '--ldapDebugLogToStandardOut' argument.  If neither argument is provided, then no LDAP debug logging will be performed.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>-C <i>{path}</i></tt> / <tt>--codeLogFile <i>{path}</i></tt> &mdash; The path to a file to which the server should write generated code that may be used to recreate the requests received from clients.  If this argument is not provided, then no code logging will be performed.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Additional Arguments</h3>
+    <ul>
+      <li>
+        <tt>--interactive</tt> &mdash; Launch the tool in interactive mode.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-H</tt> / <tt>--help</tt> &mdash; Display usage information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-V</tt> / <tt>--version</tt> &mdash; Display version information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--propertiesFilePath <i>{path}</i></tt> &mdash; The path to a properties file used to specify default values for arguments not supplied on the command line.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--generatePropertiesFile <i>{path}</i></tt> &mdash; Write an empty properties file that may be used to specify default values for arguments.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--noPropertiesFile</tt> &mdash; Do not obtain any argument values from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressPropertiesFileComment</tt> &mdash; Suppress output listing the arguments obtained from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Dependent Argument Sets</h3>
+    <ul>
+      <li>
+        If the <tt>--doNotValidateSchemaDefinitions</tt> argument is provided, then the <tt>--useSchemaFile</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--additionalBindDN</tt> argument is provided, then the <tt>--additionalBindPassword</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--additionalBindPassword</tt> argument is provided, then the <tt>--additionalBindDN</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--useSSL</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--keyStorePath</tt>, <tt>--generateSelfSignedCertificate</tt>
+      </li>
+      <li>
+        If the <tt>--keyStorePath</tt> argument is provided, then the <tt>--keyStorePassword</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--keyStorePassword</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--keyStoreType</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--useStartTLS</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--keyStorePath</tt>, <tt>--generateSelfSignedCertificate</tt>
+      </li>
+      <li>
+        If the <tt>--keyStorePath</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--generateSelfSignedCertificate</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--trustStorePath</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--trustStorePassword</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--trustStoreType</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+    </ul>
+    <h3>Exclusive Argument Sets</h3>
+    <ul>
+      <li>
+        The following arguments cannot be used together:  <tt>--useDefaultSchema</tt>, <tt>--useSchemaFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--keyStorePath</tt>, <tt>--generateSelfSignedCertificate</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--accessLogToStandardOut</tt>, <tt>--accessLogFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--jsonAccessLogToStandardOut</tt>, <tt>--jsonAccessLogFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--ldapDebugLogToStandardOut</tt>, <tt>--ldapDebugLogFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--propertiesFilePath</tt>, <tt>--noPropertiesFile</tt>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Creates an initially-empty directory server instance listening on an automatically-selected port that will allow entries below 'dc=example,dc=com' and will not perform any logging or schema validation.</li>
+    </ul>
+    <blockquote><pre>    in-memory-directory-server --baseDN dc=example,dc=com</pre></blockquote>
+    <ul>
+      <li>Creates a directory server instance listening on port 1389 that is initially populated with the data from the file test.ldif and will allow only entries below 'dc=example,dc=com'.  It will write a record of operations processed to file access.log and will use a default set of standard schema definitions.</li>
+    </ul>
+    <blockquote><pre>    in-memory-directory-server --baseDN dc=example,dc=com --port 1389 \
+         --ldifFile test.ldif --accessLogFile access.log --useDefaultSchema</pre></blockquote>
+  </body>
+</html>

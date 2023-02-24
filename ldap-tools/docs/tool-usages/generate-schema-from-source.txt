@@ -1,0 +1,44 @@
+Usage for generate-schema-from-source:
+
+Generate LDAP schema that may be used to store objects from a
+properly-annotated class contained in the Java classpath.  The schema elements
+will be written to the file in LDIF form.
+
+Usage:  generate-schema-from-source {options}
+
+Available options include:
+* -c, --javaClass {class}
+    The fully-qualified name of the java class to use to generate the LDAP
+    schema.
+* -f, --outputFile {path}
+    The path and name of the LDIF file to create with the schema information.
+-m, --modifyFormat
+    Indicates that the resulting schema file should be in a format that can be
+    used to update a server schema with a tool like ldapmodify.
+--interactive
+    Launch the tool in interactive mode.
+-H, --help
+    Display usage information for this program.
+-V, --version
+    Display version information for this program.
+--propertiesFilePath {path}
+    The path to a properties file used to specify default values for arguments
+    not supplied on the command line.
+--generatePropertiesFile {path}
+    Write an empty properties file that may be used to specify default values
+    for arguments.
+--noPropertiesFile
+    Do not obtain any argument values from a properties file.
+--suppressPropertiesFileComment
+    Suppress output listing the arguments obtained from a properties file.
+
+* Indicates the argument is required
+
+Examples
+
+  Generate LDAP schema that can be used to store objects that are instances of
+  class 'com.example.MyClass' and write those definitions in LDIF form to file
+  'my-schema.ldif'.
+
+    generate-schema-from-source --javaClass com.example.MyClass \
+         --outputFile MyClass-schema.ldif

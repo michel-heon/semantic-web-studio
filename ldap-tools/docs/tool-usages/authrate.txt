@@ -1,0 +1,238 @@
+Usage for authrate:
+
+Perform repeated authentications against an LDAP directory server, where each
+authentication consists of a search to find a user followed by a bind to verify
+the credentials for that user.
+
+Usage:  authrate {options}
+
+Available options include:
+
+  LDAP Connection and Authentication Arguments
+
+    -h, --hostname {host}
+        The IP address or resolvable name to use to connect to the directory
+        server.  If this is not provided, then a default value of 'localhost'
+        will be used.
+    -p, --port {port}
+        The port to use to connect to the directory server.  If this is not
+        provided, then a default value of 389 will be used.
+    -D, --bindDN {dn}
+        The DN to use to bind to the directory server when performing simple
+        authentication.
+    -w, --bindPassword {password}
+        The password to use to bind to the directory server when performing
+        simple authentication or a password-based SASL mechanism.
+    -j, --bindPasswordFile {path}
+        The path to the file containing the password to use to bind to the
+        directory server when performing simple authentication or a
+        password-based SASL mechanism.
+    --promptForBindPassword
+        Indicates that the tool should interactively prompt the user for the
+        bind password.
+    -Z, --useSSL
+        Use SSL when communicating with the directory server.
+    -q, --useStartTLS
+        Use StartTLS when communicating with the directory server.
+    --defaultTrust
+        Use the JVM's default trust store, and optionally an additional trust
+        store specified using the --trustStorePath argument, to
+        non-interactively determine whether to trust any certificate chain
+        presented during TLS negotiation.  If the chain cannot be trusted based
+        on any of those sources, then negotiation will fail without prompting
+        about whether to trust it.
+    -X, --trustAll
+        Trust any certificate presented by the directory server.
+    -K, --keyStorePath {path}
+        The path to the file to use as the key store for obtaining client
+        certificates when communicating securely with the directory server.
+    -W, --keyStorePassword {password}
+        The password to use to access the key store contents.
+    -u, --keyStorePasswordFile {path}
+        The path to the file containing the password to use to access the key
+        store contents.
+    --promptForKeyStorePassword
+        Indicates that the tool should interactively prompt the user for the
+        password to use to access the key store contents.
+    --keyStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store
+        file.
+    -P, --trustStorePath {path}
+        The path to the file to use as trust store when determining whether to
+        trust a certificate presented by the directory server.
+    -T, --trustStorePassword {password}
+        The password to use to access the trust store contents.
+    -U, --trustStorePasswordFile {path}
+        The path to the file containing the password to use to access the trust
+        store contents.
+    --promptForTrustStorePassword
+        Indicates that the tool should interactively prompt the user for the
+        password to use to access the trust store contents.
+    --trustStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store
+        file.
+    -N, --certNickname {nickname}
+        The nickname (alias) of the client certificate in the key store to
+        present to the directory server for SSL client authentication.
+    -o, --saslOption {name=value}
+        A name-value pair providing information to use when performing SASL
+        authentication.
+    --useSASLExternal
+        Use the SASL EXTERNAL mechanism to authenticate.
+    --helpSASL
+        Provide information about the supported SASL mechanisms, including the
+        properties available for use with each.
+
+  Search and Authentication Arguments
+
+  * -b, --baseDN {dn}
+        The base DN to use for the searches.  It may be a simple DN or a value
+        pattern to specify a range of DNs (e.g.,
+        "uid=user.[1-1000],ou=People,dc=example,dc=com").  See
+        https://docs.ldap.com/ldap-sdk/docs/javadoc/index.html?com/unboundid/ut
+        il/ValuePattern.html for complete details about the value pattern
+        syntax.  This must be provided.
+    -s, --scope {scope}
+        The scope to use for the searches.  It should be 'base', 'one', 'sub',
+        or 'subord'.  If this is not provided, a default scope of 'sub' will be
+        used.
+    -f, --filter {filter}
+        The filter to use for the searches.  It may be a simple filter or a
+        value pattern to specify a range of filters (e.g.,
+        "(uid=user.[1-1000])").  See
+        https://docs.ldap.com/ldap-sdk/docs/javadoc/index.html?com/unboundid/ut
+        il/ValuePattern.html for complete details about the value pattern
+        syntax.  This must be provided.
+    -A, --attribute {name}
+        The name of an attribute to include in entries returned from the
+        searches.  Multiple attributes may be requested by providing this
+        argument multiple times.  If no return attributes are specified, then
+        entries will be returned with all user attributes.
+  * -C, --credentials {password}
+        The password to use when binding as the users returned from the
+        searches.  This must be provided.
+    -B, --bindOnly
+        Indicates that the tool should only perform bind operations without the
+        initial search.  If this argument is provided, then the base DN pattern
+        will be used to obtain the bind DNs.
+    -a, --authType {authType}
+        The type of authentication to perform.  Allowed values are:  SIMPLE,
+        CRAM-MD5, DIGEST-MD5, and PLAIN.  If no value is provided, then SIMPLE
+        authentication will be performed.
+
+  Request Control Arguments
+
+    --authorizationIdentityRequestControl
+        Indicates that bind requests should include the authorization identity
+        request control as described in RFC 3829.
+    --passwordPolicyRequestControl
+        Indicates that bind requests should include the password policy request
+        control as described in draft-behera-ldap-password-policy-10.
+    --searchControl {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Indicates that search requests should include the specified request
+        control.  This may be provided multiple times to include multiple
+        search request controls.
+    --bindControl {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Indicates that bind requests should include the specified request
+        control.  This may be provided multiple times to include multiple
+        modify request controls.
+
+  Rate Management Arguments
+
+    -t, --numThreads {num}
+        The number of threads to use to perform the authentication processing.
+        If this is not provided, then a default of one thread will be used.
+    -i, --intervalDuration {num}
+        The length of time in seconds between output lines.  If this is not
+        provided, then a default interval of five seconds will be used.
+    -I, --numIntervals {num}
+        The maximum number of intervals for which to run.  If this is not
+        provided, then the tool will run until it is interrupted.
+    -r, --ratePerSecond {auths-per-second}
+        The target number of authorizations to perform per second.  It is still
+        necessary to specify a sufficient number of threads for achieving this
+        rate.  If neither this option nor --variableRateData is provided, then
+        the tool will run at the maximum rate for the specified number of
+        threads.
+    --variableRateData {path}
+        The path to a file containing information that can be used to cause the
+        tool to vary the target rate over time.  Use the generateSampleRateFile
+        argument to generate a sample rate definition file with comments that
+        describe the required format for this file.
+    --generateSampleRateFile {path}
+        The path to a sample variable data rate file that should be generated.
+        This file will contain comments that describe the expected format for
+        the file to use with the variableRateData argument.
+    --warmUpIntervals {num}
+        The number of intervals to complete before beginning overall statistics
+        collection.  Specifying a nonzero number of warm-up intervals gives the
+        client and server a chance to warm up without skewing performance
+        results.
+
+  Other Arguments
+
+    --timestampFormat {format}
+        Indicates the format to use for timestamps included in the output.  A
+        value of 'none' indicates that no timestamps should be included.  A
+        value of 'with-date' indicates that both the date and the time should
+        be included.  A value of 'without-date' indicates that only the time
+        should be included.
+    --suppressErrorResultCodes
+        Indicates that information about the result codes for failed operations
+        should not be displayed.
+    -c, --csv
+        Generate output in CSV format rather than a display-friendly format
+    -R, --randomSeed {value}
+        Specifies the seed to use for the random number generator.
+
+  Usage Arguments
+
+    --interactive
+        Launch the tool in interactive mode.
+    --outputFile {path}
+        Write all standard output and standard error messages to the specified
+        file instead of to the console.
+    --appendToOutputFile
+        Indicates that the tool should append to the file specified by the
+        --outputFile argument if it already exists.  If this argument is not
+        provided and the output file already exists, it will be overwritten.
+    --teeOutput
+        Write all standard output and standard error messages to the console as
+        well as to the specified output file.  The --outputFile argument must
+        also be provided.
+    -H, --help
+        Display usage information for this program.
+    -V, --version
+        Display version information for this program.
+    --propertiesFilePath {path}
+        The path to a properties file used to specify default values for
+        arguments not supplied on the command line.
+    --generatePropertiesFile {path}
+        Write an empty properties file that may be used to specify default
+        values for arguments.
+    --noPropertiesFile
+        Do not obtain any argument values from a properties file.
+    --suppressPropertiesFileComment
+        Suppress output listing the arguments obtained from a properties file.
+
+  * Indicates the argument is required
+
+Examples
+
+  Test authentication performance by searching randomly across a set of one
+  million users located below 'dc=example,dc=com' with ten concurrent threads
+  and performing simple binds with a password of 'password'.  The searches will
+  be performed anonymously.
+
+    authrate --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --bindPassword password \
+         --baseDN dc=example,dc=com --scope sub \
+         --filter "(uid=user.[1-1000000])" --credentials password \
+         --numThreads 10
+
+  Generate a sample variable rate definition file that may be used in
+  conjunction with the --variableRateData argument.  The sample file will
+  include comments that describe the format for data to be included in this
+  file.
+
+    authrate --generateSampleRateFile variable-rate-data.txt

@@ -1,0 +1,492 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>The searchrate Command-Line Tool</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="../unboundid.css" type="text/css">
+    <link rel="shortcut icon" href="../images/favicon.ico">
+  </head>
+
+  <body>
+    <h1>The searchrate Command-Line Tool</h1>
+
+    <p>
+      Perform repeated searches against an LDAP directory server.
+    </p>
+    <h3>Usage</h3>
+    <blockquote><pre>searchrate <i>{arguments}</i></pre></blockquote>
+    <h3>LDAP Connection and Authentication Arguments</h3>
+    <ul>
+      <li>
+        <tt>-h <i>{host}</i></tt> / <tt>--hostname <i>{host}</i></tt> &mdash; The IP address or resolvable name to use to connect to the directory server.  If this is not provided, then a default value of 'localhost' will be used.
+        <br><br>
+      </li>
+      <li>
+        <tt>-p <i>{port}</i></tt> / <tt>--port <i>{port}</i></tt> &mdash; The port to use to connect to the directory server.  If this is not provided, then a default value of 389 will be used.
+        <br>
+        The specified value must not be less than 1 or greater than 65 535.
+        <br><br>
+      </li>
+      <li>
+        <tt>-D <i>{dn}</i></tt> / <tt>--bindDN <i>{dn}</i></tt> &mdash; The DN to use to bind to the directory server when performing simple authentication.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>-w <i>{password}</i></tt> / <tt>--bindPassword <i>{password}</i></tt> &mdash; The password to use to bind to the directory server when performing simple authentication or a password-based SASL mechanism.
+        <br><br>
+      </li>
+      <li>
+        <tt>-j <i>{path}</i></tt> / <tt>--bindPasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to bind to the directory server when performing simple authentication or a password-based SASL mechanism.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForBindPassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the bind password.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-Z</tt> / <tt>--useSSL</tt> &mdash; Use SSL when communicating with the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-q</tt> / <tt>--useStartTLS</tt> &mdash; Use StartTLS when communicating with the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--defaultTrust</tt> &mdash; Use the JVM's default trust store, and optionally an additional trust store specified using the --trustStorePath argument, to non-interactively determine whether to trust any certificate chain presented during TLS negotiation.  If the chain cannot be trusted based on any of those sources, then negotiation will fail without prompting about whether to trust it.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-X</tt> / <tt>--trustAll</tt> &mdash; Trust any certificate presented by the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-K <i>{path}</i></tt> / <tt>--keyStorePath <i>{path}</i></tt> &mdash; The path to the file to use as the key store for obtaining client certificates when communicating securely with the directory server.
+        <br><br>
+      </li>
+      <li>
+        <tt>-W <i>{password}</i></tt> / <tt>--keyStorePassword <i>{password}</i></tt> &mdash; The password to use to access the key store contents.
+        <br><br>
+      </li>
+      <li>
+        <tt>-u <i>{path}</i></tt> / <tt>--keyStorePasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to access the key store contents.
+        <br>
+        The specified path must refer to a file that may or may not exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForKeyStorePassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the password to use to access the key store contents.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--keyStoreFormat <i>{format}</i></tt> &mdash; The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store file.
+        <br><br>
+      </li>
+      <li>
+        <tt>-P <i>{path}</i></tt> / <tt>--trustStorePath <i>{path}</i></tt> &mdash; The path to the file to use as trust store when determining whether to trust a certificate presented by the directory server.
+        <br><br>
+      </li>
+      <li>
+        <tt>-T <i>{password}</i></tt> / <tt>--trustStorePassword <i>{password}</i></tt> &mdash; The password to use to access the trust store contents.
+        <br><br>
+      </li>
+      <li>
+        <tt>-U <i>{path}</i></tt> / <tt>--trustStorePasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to access the trust store contents.
+        <br>
+        The specified path must refer to a file that may or may not exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForTrustStorePassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the password to use to access the trust store contents.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--trustStoreFormat <i>{format}</i></tt> &mdash; The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store file.
+        <br><br>
+      </li>
+      <li>
+        <tt>-N <i>{nickname}</i></tt> / <tt>--certNickname <i>{nickname}</i></tt> &mdash; The nickname (alias) of the client certificate in the key store to present to the directory server for SSL client authentication.
+        <br><br>
+      </li>
+      <li>
+        <tt>-o <i>{name=value}</i></tt> / <tt>--saslOption <i>{name=value}</i></tt> &mdash; A name-value pair providing information to use when performing SASL authentication.
+        <br><br>
+      </li>
+      <li>
+        <tt>--useSASLExternal</tt> &mdash; Use the SASL EXTERNAL mechanism to authenticate.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--helpSASL</tt> &mdash; Provide information about the supported SASL mechanisms, including the properties available for use with each.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Search Arguments</h3>
+    <ul>
+      <li>
+        <tt>-b <i>{dn}</i></tt> / <tt>--baseDN <i>{dn}</i></tt> &mdash; The base DN to use for the searches.  It may be a simple DN or a value pattern to specify a range of DNs (e.g., "uid=user.[1-1000],ou=People,dc=example,dc=com").  See https://docs.ldap.com/ldap-sdk/docs/javadoc/index.html?com/unboundid/util/ValuePattern.html for complete details about the value pattern syntax.  This argument must not be used in conjunction with the --ldapURL argument.
+        <br><br>
+      </li>
+      <li>
+        <tt>-s <i>{scope}</i></tt> / <tt>--scope <i>{scope}</i></tt> &mdash; The scope to use for the searches.  It should be 'base', 'one', 'sub', or 'subord'.  If this is not provided, then a default scope of 'sub' will be used.  This argument must not be used in conjunction with the --ldapURL argument.
+        <br>
+        The provided value should be one of 'base', 'one', 'sub', or 'subordinate'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-f <i>{filter}</i></tt> / <tt>--filter <i>{filter}</i></tt> &mdash; The filter to use for the searches.  It may be a simple filter or a value pattern to specify a range of filters (e.g., "(uid=user.[1-1000])").  See https://docs.ldap.com/ldap-sdk/docs/javadoc/index.html?com/unboundid/util/ValuePattern.html for complete details about the value pattern syntax.  Exactly one of this argument and the --ldapURL arguments must be provided.
+        <br><br>
+      </li>
+      <li>
+        <tt>-A <i>{name}</i></tt> / <tt>--attribute <i>{name}</i></tt> &mdash; The name of an attribute to include in entries returned from the searches.  Multiple attributes may be requested by providing this argument multiple times.  If no request attributes are provided, then the entries returned will include all user attributes.  This argument must not be used in conjunction with the --ldapURL argument.
+        <br><br>
+      </li>
+      <li>
+        <tt>--ldapURL <i>{url}</i></tt> &mdash; An LDAP URL that provides the base DN, scope, filter, and requested attributes to use for the search requests (the address and port components of the URL, if present, will be ignored).  It may be a simple LDAP URL or a value pattern to specify a range of URLs.  See https://docs.ldap.com/ldap-sdk/docs/javadoc/index.html?com/unboundid/util/ValuePattern.html for complete details about the value pattern syntax.  If this argument is provided, then none of the --baseDN, --scope, --filter, or --attribute arguments may be used.
+        <br><br>
+      </li>
+      <li>
+        <tt>-z <i>{num}</i></tt> / <tt>--sizeLimit <i>{num}</i></tt> &mdash; The maximum number of entries that the server should return in response to each search request.  A value of zero indicates that the client does not wish to impose any limit on the number of entries that are returned (although the server may impose its own limit).  If this is not provided, then a default value of zero will be used.
+        <br>
+        The specified value must not be less than 0 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>-l <i>{seconds}</i></tt> / <tt>--timeLimitSeconds <i>{seconds}</i></tt> &mdash; The maximum length of time, in seconds, that the server should spend processing each search request.  A value of zero indicates that the client does not wish to impose any limit on the server's processing time (although the server may impose its own limit).  If this is not provided, then a default value of zero will be used.
+        <br>
+        The specified value must not be less than 0 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--dereferencePolicy <i>{never|always|search|find}</i></tt> &mdash; The alias dereferencing policy to use for search requests.  The value should be one of 'never', 'always', 'search', or 'find'.  If this is not provided, then a default value of 'never' will be used.
+        <br>
+        A provided value should be one of the following:  'always', 'never', 'search', 'find'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--typesOnly</tt> &mdash; Indicates that server should only include the names of the attributes contained in matching entries rather than both names and values.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Request Control Arguments</h3>
+    <ul>
+      <li>
+        <tt>--assertionFilter <i>{filter}</i></tt> &mdash; Indicates that search requests should include the assertion request control with the specified filter.
+        <br>
+        A provided value must be able to be parsed as an LDAP search filter as described in RFC 4515.
+        <br><br>
+      </li>
+      <li>
+        <tt>--simplePageSize <i>{size}</i></tt> &mdash; Indicates that search requests should include the simple paged results control with the specified page size.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sortOrder <i>{sortOrder}</i></tt> &mdash; Indicates that search requests should include the server-side sort request control with the specified sort order.  This should be a comma-delimited list in which each item is an attribute name, optionally preceded by a plus or minus sign (to indicate ascending or descending order; where ascending order is the default), and optionally followed by a colon and the name or OID of the desired ordering matching rule (if this is not provided, the the attribute type's default ordering rule will be used).
+        <br><br>
+      </li>
+      <li>
+        <tt>-Y <i>{authzID}</i></tt> / <tt>--proxyAs <i>{authzID}</i></tt> &mdash; Indicates that the proxied authorization control (as defined in RFC 4370) should be used to request that operations be processed using an alternate authorization identity.  This may be a simple authorization ID or it may be a value pattern to specify a range of identities.  See https://docs.ldap.com/ldap-sdk/docs/javadoc/index.html?com/unboundid/util/ValuePattern.html for complete details about the value pattern syntax.
+        <br><br>
+      </li>
+      <li>
+        <tt>-J <i>{oid}[:{criticality}[:{stringValue}|::{base64Value}]]</i></tt> / <tt>--control <i>{oid}[:{criticality}[:{stringValue}|::{base64Value}]]</i></tt> &mdash; Indicates that search requests should include the specified request control.  This may be provided multiple times to include multiple request controls.
+        <br>
+        A provided value must be a string representation of a valid LDAP control in the form {oid}[:{criticality}[:{stringValue}|::{base64Value}]].
+        <br><br>
+      </li>
+    </ul>
+    <h3>Rate Management Arguments</h3>
+    <ul>
+      <li>
+        <tt>-t <i>{num}</i></tt> / <tt>--numThreads <i>{num}</i></tt> &mdash; The number of threads to use to perform the searches.  If this is not provided, then a default of one thread will be used.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>-i <i>{num}</i></tt> / <tt>--intervalDuration <i>{num}</i></tt> &mdash; The length of time in seconds between output lines.  If this is not provided, then a default interval of five seconds will be used.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>-I <i>{num}</i></tt> / <tt>--numIntervals <i>{num}</i></tt> &mdash; The maximum number of intervals for which to run.  If this is not provided, then the tool will run until it is interrupted.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--iterationsBeforeReconnect <i>{num}</i></tt> &mdash; The number of search iterations that should be processed on a connection before that connection is closed and replaced with a newly-established (and authenticated, if appropriate) connection.  If this is not provided, then connections will not be periodically closed and re-established.
+        <br>
+        The specified value must not be less than -2 147 483 648 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>-r <i>{searches-per-second}</i></tt> / <tt>--ratePerSecond <i>{searches-per-second}</i></tt> &mdash; The target number of searches to perform per second.  It is still necessary to specify a sufficient number of threads for achieving this rate.  If neither this option nor --variableRateData is provided, then the tool will run at the maximum rate for the specified number of threads.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--variableRateData <i>{path}</i></tt> &mdash; The path to a file containing information that can be used to cause the tool to vary the target rate over time.  Use the generateSampleRateFile argument to generate a sample rate definition file with comments that describe the required format for this file.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--generateSampleRateFile <i>{path}</i></tt> &mdash; The path to a sample variable data rate file that should be generated.  This file will contain comments that describe the expected format for the file to use with the variableRateData argument.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--warmUpIntervals <i>{num}</i></tt> &mdash; The number of intervals to complete before beginning overall statistics collection.  Specifying a nonzero number of warm-up intervals gives the client and server a chance to warm up without skewing performance results.
+        <br>
+        The specified value must not be less than 0 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Additional Arguments</h3>
+    <ul>
+      <li>
+        <tt>--timestampFormat <i>{format}</i></tt> &mdash; Indicates the format to use for timestamps included in the output.  A value of 'none' indicates that no timestamps should be included.  A value of 'with-date' indicates that both the date and the time should be included.  A value of 'without-date' indicates that only the time should be included.
+        <br>
+        A provided value should be one of the following:  'none', 'with-date', 'without-date'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-a</tt> / <tt>--asynchronous</tt> &mdash; Indicates that the client should operate in asynchronous mode, in which it will not be necessary to wait for a response to a previous request before sending the next request.  Either the '--ratePerSecond' or the '--maxOutstandingRequests' argument must be provided to limit the number of outstanding requests.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-O <i>{num}</i></tt> / <tt>--maxOutstandingRequests <i>{num}</i></tt> &mdash; Specifies the maximum number of outstanding requests that should be allowed when operating in asynchronous mode.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressErrorResultCodes</tt> &mdash; Indicates that information about the result codes for failed operations should not be displayed.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-c</tt> / <tt>--csv</tt> &mdash; Generate output in CSV format rather than a display-friendly format
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-R <i>{value}</i></tt> / <tt>--randomSeed <i>{value}</i></tt> &mdash; Specifies the seed to use for the random number generator.
+        <br>
+        The specified value must not be less than -2 147 483 648 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--interactive</tt> &mdash; Launch the tool in interactive mode.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--outputFile <i>{path}</i></tt> &mdash; Write all standard output and standard error messages to the specified file instead of to the console.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--appendToOutputFile</tt> &mdash; Indicates that the tool should append to the file specified by the --outputFile argument if it already exists.  If this argument is not provided and the output file already exists, it will be overwritten.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--teeOutput</tt> &mdash; Write all standard output and standard error messages to the console as well as to the specified output file.  The --outputFile argument must also be provided.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-H</tt> / <tt>--help</tt> &mdash; Display usage information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-V</tt> / <tt>--version</tt> &mdash; Display version information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--propertiesFilePath <i>{path}</i></tt> &mdash; The path to a properties file used to specify default values for arguments not supplied on the command line.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--generatePropertiesFile <i>{path}</i></tt> &mdash; Write an empty properties file that may be used to specify default values for arguments.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--noPropertiesFile</tt> &mdash; Do not obtain any argument values from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressPropertiesFileComment</tt> &mdash; Suppress output listing the arguments obtained from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Required Argument Sets</h3>
+    <ul>
+      <li>
+        At least one of the following arguments must be provided:  <tt>--filter</tt>, <tt>--ldapURL</tt>
+      </li>
+    </ul>
+    <h3>Dependent Argument Sets</h3>
+    <ul>
+      <li>
+        If the <tt>--keyStorePassword</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--keyStorePasswordFile</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--promptForKeyStorePassword</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--trustStorePassword</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--trustStorePasswordFile</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--promptForTrustStorePassword</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--keyStorePath</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--trustStorePath</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--defaultTrust</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--trustAll</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--bindPassword</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--bindPasswordFile</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--promptForBindPassword</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--asynchronous</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--ratePerSecond</tt>, <tt>--maxOutstandingRequests</tt>
+      </li>
+      <li>
+        If the <tt>--maxOutstandingRequests</tt> argument is provided, then the <tt>--asynchronous</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--appendToOutputFile</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--teeOutput</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+    </ul>
+    <h3>Exclusive Argument Sets</h3>
+    <ul>
+      <li>
+        The following arguments cannot be used together:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--keyStorePassword</tt>, <tt>--keyStorePasswordFile</tt>, <tt>--promptForKeyStorePassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--trustStorePassword</tt>, <tt>--trustStorePasswordFile</tt>, <tt>--promptForTrustStorePassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--defaultTrust</tt>, <tt>--trustAll</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--trustAll</tt>, <tt>--trustStorePath</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--bindDN</tt>, <tt>--saslOption</tt>, <tt>--useSASLExternal</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--bindPassword</tt>, <tt>--bindPasswordFile</tt>, <tt>--promptForBindPassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--variableRateData</tt>, <tt>--generateSampleRateFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--baseDN</tt>, <tt>--ldapURL</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--scope</tt>, <tt>--ldapURL</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--filter</tt>, <tt>--ldapURL</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--attribute</tt>, <tt>--ldapURL</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--asynchronous</tt>, <tt>--simplePageSize</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--propertiesFilePath</tt>, <tt>--noPropertiesFile</tt>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Test search performance by searching randomly across a set of one million users located below 'dc=example,dc=com' with ten concurrent threads.  The entries returned to the client will include the givenName, sn, and mail attributes.</li>
+    </ul>
+    <blockquote><pre>    searchrate --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --bindPassword password \
+         --baseDN dc=example,dc=com --scope sub \
+         --filter "(uid=user.[1-1000000])" --attribute givenName \
+         --attribute sn --attribute mail --numThreads 10</pre></blockquote>
+    <ul>
+      <li>Generate a sample variable rate definition file that may be used in conjunction with the --variableRateData argument.  The sample file will include comments that describe the format for data to be included in this file.</li>
+    </ul>
+    <blockquote><pre>    searchrate --generateSampleRateFile variable-rate-data.txt</pre></blockquote>
+  </body>
+</html>

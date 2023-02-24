@@ -1,0 +1,2322 @@
+The manage-certificates Command-Line Tool
+
+Global Usage:
+
+Manage certificates and private keys in a JKS, PKCS #12, PKCS #11, or BCFKS key
+store.
+
+Usage:  manage-certificates {subcommand} {options}
+
+Available options include:
+--interactive
+    Launch the tool in interactive mode.
+-H, --help
+    Display usage information for this program.
+--helpSubcommands
+    Display the names and descriptions of the supported subcommands.
+-V, --version
+    Display version information for this program.
+--propertiesFilePath {path}
+    The path to a properties file used to specify default values for arguments
+    not supplied on the command line.
+--generatePropertiesFile {path}
+    Write an empty properties file that may be used to specify default values
+    for arguments.
+--noPropertiesFile
+    Do not obtain any argument values from a properties file.
+--suppressPropertiesFileComment
+    Suppress output listing the arguments obtained from a properties file.
+
+Examples
+
+  List verbose information about each of the certificates in key store file
+  'config/keystore'.  Also, display a command that can be used to obtain a
+  similar result with the Java keytool utility.
+
+    manage-certificates list-certificates --keystore config/keystore \
+         --keystore-password-file config/keystore.pin --verbose \
+         --display-keytool-command
+
+  Exports a PEM-formatted representation of the certificate contained in the
+  'server-cert' alias in the 'config/keystore' key store and writes it to the
+  'server-cert.crt' output file.  Also, display a command that can be used to
+  obtain a similar result with the Java keytool utility.
+
+    manage-certificates export-certificate --keystore config/keystore \
+         --keystore-password-file config/keystore.pin --alias server-cert \
+         --output-file server-cert.crt --output-format PEM --verbose \
+         --display-keytool-command
+
+  Exports a PEM-formatted representation of the private key contained in the
+  'server-cert' alias in the 'config/keystore' key store and writes it to the
+  'server-cert.private-key' output file.
+
+    manage-certificates export-private-key --keystore config/keystore \
+         --keystore-password-file config/keystore.pin \
+         --private-key-password-file config/server-cert-private-key.pin \
+         --alias server-cert --output-file server-cert.private-key \
+         --output-format PEM --verbose --display-keytool-command
+
+  Imports a certificate chain read from file 'server-cert.crt' and the
+  corresponding private key read from file 'server-cert.private-key' into the
+  'server-cert' alias in the 'config/keystore' key store.  If the key store
+  does not already exist, then it will be created using the JKS key store
+  format.
+
+    manage-certificates import-certificate --keystore config/keystore \
+         --keystore-type JKS --keystore-password-file config/keystore.pin \
+         --alias server-cert --certificate-file server-cert.crt \
+         --private-key-file server-cert.private-key \
+         --display-keytool-command
+
+  Deletes the certificate stored in the 'server-cert' alias in the
+  'config/keystore' key store.
+
+    manage-certificates delete-certificate --keystore config/keystore \
+         --keystore-password-file config/keystore.pin --alias server-cert
+
+  Generates a self-signed certificate with alias 'ca-cert' in the
+  'config/keystore' key store.  If the key store does not already exist, then
+  it will be created using the standard PKCS #12 format.  The certificate will
+  have a subject DN of 'CN=Example Authority,O=Example Corporation,C=US', a
+  4096-bit RSA key, and a signature generated using the SHA256withRSA
+  algorithm.  The certificate will be valid for 7300 days starting at midnight
+  local time on January 1, 2017.  It will include a basic constraints extension
+  that indicates the certificate can act as a certification authority, and a
+  key usage extension that indicates that the key can be used for signing
+  certificates and CRLs.  Also, display a command that can be used to obtain a
+  similar result with the Java keytool utility.
+
+    manage-certificates generate-self-signed-certificate \
+         --keystore config/keystore --keystore-type PKCS12 \
+         --keystore-password-file config/keystore.pin --alias ca-cert \
+         --subject-dn "CN=Example Authority,O=Example Corporation,C=US" \
+         --days-valid 7300 --validity-start-time 20170101000000 \
+         --key-algorithm RSA --key-size-bits 4096 \
+         --signature-algorithm SHA256withRSA --basic-constraints-is-ca true \
+         --key-usage key-cert-sign --key-usage crl-sign \
+         --display-keytool-command
+
+  Generates a certificate signing request for a new certificate with subject
+  'CN=ldap.example.com,O=Example Corporation,C=US' that will be stored in the
+  'server-cert' alias in the 'config/keystore' key store.  A new 256-bit
+  elliptic curve key pair will be created, the request will be signed with the
+  SHA256withECDSA signature algorithm, and the request will include a subject
+  alternative name extension with alternate DNS names of 'ldap1.example.com'
+  and 'ldap2.example.com', and an extended key usage extension to indicate that
+  the certificate should be usable for either TLS server authentication or TLS
+  client authentication.  The certificate signing request will be written in
+  PEM format to output file 'server-cert.csr'.
+
+    manage-certificates generate-certificate-signing-request \
+         --keystore config/keystore --keystore-type PKCS12 \
+         --keystore-password-file config/keystore.pin \
+         --output-file server-cert.csr --alias server-cert \
+         --subject-dn "CN=ldap.example.com,O=Example Corporation,C=US" \
+         --key-algorithm EC --key-size-bits 256 \
+         --signature-algorithm SHA256withECDSA \
+         --subject-alternative-name-dns ldap1.example.com \
+         --subject-alternative-name-dns ldap2.example.com \
+         --extended-key-usage server-auth --extended-key-usage client-auth \
+         --display-keytool-command
+
+  Generates a certificate signing request intended to renew the existing
+  certificate stored in alias 'server-cert' in the 'config/keystore' key store.
+  The request will use the same subject DN and set of extensions as the
+  certificate currently stored in that alias, and it will be written to
+  standard output in PEM format.
+
+    manage-certificates generate-certificate-signing-request \
+         --keystore config/keystore \
+         --keystore-password-file config/keystore.pin --alias server-cert \
+         --use-existing-key-pair --inherit-extensions \
+         --display-keytool-command
+
+  Uses the 'ca-cert' certificate in key store 'config/keystore' to sign the
+  certificate signing request (CSR) contained in file 'server-cert.csr' and
+  writes the signed certificate to PEM-formatted output file 'server-cert.crt'.
+  The signed certificate will use the subject DN and set of extensions included
+  in the request, and the resulting certificate will be valid for 730 days,
+  starting immediately.  Also, display a command that can be used to obtain a
+  similar result with the Java keytool utility.
+
+    manage-certificates sign-certificate-signing-request \
+         --keystore config/keystore \
+         --keystore-password-file config/keystore.pin \
+         --request-input-file server-cert.csr \
+         --certificate-output-file server-cert.crt --alias ca-cert \
+         --days-valid 730 --include-requested-extensions \
+         --display-keytool-command
+
+  Updates the 'config/keystore' key store to change the alias of the
+  'server-cert' certificate to be 'server-certificate'.  Also, display a
+  command that can be used to obtain a similar result with the Java keytool
+  utility.
+
+    manage-certificates change-certificate-alias --keystore config/keystore \
+         --keystore-password-file config/keystore.pin \
+         --current-alias server-cert --new-alias server-certificate \
+         --display-keytool-command
+
+  Changes the password for the 'config/keystore' key store from the current
+  password contained in file 'config/current.pin' to the new password contained
+  in file 'config/new.pin'.
+
+    manage-certificates change-keystore-password --keystore config/keystore \
+         --current-keystore-password-file config/current.pin \
+         --new-keystore-password-file config/new.pin \
+         --display-keytool-command
+
+  Establish a secure connection to ds.example.com on port 636 and display basic
+  information about the server's certificate chain.
+
+    manage-certificates retrieve-server-certificate \
+         --hostname ds.example.com --port 636
+
+  Copies the contents of the 'keystore.jks' JKS key store to the 'keystore.p12'
+  PKCS #12 key store.
+
+    manage-certificates copy-keystore --source-keystore config/keystore.jks \
+         --source-keystore-password-file config/keystore.pin \
+         --source-keystore-type JKS \
+         --destination-keystore config/keystore.p12 \
+         --destination-keystore-password-file config/keystore.pin \
+         --destination-keystore-type PKCS12
+
+  Connects to the ldap.example.com server on port 636 to retrieve the
+  certificate chain that the server presents during TLS negotiation.  That
+  certificate chain will be added to the 'config/truststore' key store with a
+  base alias of 'ldap.example.com:636' after interactively confirming that the
+  certificate chain should be trusted.
+
+    manage-certificates trust-server-certificate --hostname ldap.example.com \
+         --port 636 --keystore config/truststore \
+         --keystore-password-file config/truststore.pin \
+         --alias ldap.example.com:636
+
+  Examines the 'server-cert' certificate in the 'config/keystore' key store to
+  determine whether that certificate is suitable for use as a TLS server
+  certificate.
+
+    manage-certificates check-certificate-usability \
+         --keystore config/keystore \
+         --keystore-password-file config/keystore.pin --alias server-cert
+
+  Displays verbose information about all of the certificates contained in file
+  'config/keystore', along with a command that can be used to obtain a similar
+  result with the Java keytool utility.
+
+    manage-certificates display-certificate-file \
+         --certificate-file server-cert.crt --verbose \
+         --display-keytool-command
+
+  Displays information about the certificate signing request contained in file
+  'config/keystore', along with a command that can be used to obtain a similar
+  result with the Java keytool utility.
+
+    manage-certificates display-certificate-signing-request-file \
+         --certificate-signing-request-file server-cert.csr \
+         --display-keytool-command
+
+  Displays a list of the subcommands available for use with this tool.
+
+    manage-certificates --help-subcommands
+
+
+
+Available Subcommands:
+* list-certificates
+* export-certificate
+* export-private-key
+* import-certificate
+* delete-certificate
+* generate-self-signed-certificate
+* generate-certificate-signing-request
+* sign-certificate-signing-request
+* change-certificate-alias
+* change-keystore-password
+* change-private-key-password
+* copy-keystore
+* retrieve-server-certificate
+* trust-server-certificate
+* check-certificate-usability
+* display-certificate-file
+* display-certificate-signing-request-file
+
+
+
+Usage for subcommand list-certificates:
+
+Displays a list of some or all of the certificates in a key store.
+
+Usage:  list-certificates {options}
+
+Available options include:
+--keystore {path}
+    The path to the key store file containing the certificates to list.  Either
+    this argument or the --useJVMDefaultTrustStore argument must be provided,
+    and if this argument is given, then the specified file must exist.
+--use-jvm-default-trust-store
+    List certificates from the JVM-default trust store
+    (/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/cacerts).
+--keystore-password {password}
+    The password (also called a passphrase or PIN) needed to access the
+    contents of the key store.  A key store password is optional for some key
+    store types, but may be required for others.
+--keystore-password-file {path}
+    The path to a file containing the password needed to access the contents of
+    the key store.  A key store password is optional for some key store types,
+    but may be required for others.  If a key store password file is supplied,
+    then the file must exist, must contain only one line, and that line must
+    consist only of the clear-text key store password.
+--prompt-for-keystore-password
+    Interactively prompt for the key store password.  A key store password is
+    optional for some key store types, but may be required for others.
+--keystore-type {type}
+    The key store type for the key store.  This is usually not necessary when
+    listing certificates, but it may be required in some cases (for example,
+    when listing the certificates in a BCFKS key store when not operating in
+    FIPS 140-2-compliant mode).  The value must be one of 'JKS' (for the Java
+    Key Store format), 'PKCS12' (for the standard PKCS #12 format), 'PKCS11'
+    (for PKCS #11 tokens), or 'BCFKS' (for the Bouncy Castle FIPS
+    140-2-compliant Key Store format).  If this is not provided, then an
+    attempt will be made to automatically infer the correct key store type.
+--alias {alias}
+    The alias (also called a nickname) of a certificate to include in the
+    output.  This argument may be provided multiple times to identify multiple
+    certificates to include.  If this argument is provided, then only the
+    listed certificates will be displayed.  If this argument is omitted, then
+    all certificates will be listed.
+--display-pem-certificate
+    Include a PEM-encoded representation of each certificate in the output.
+--verbose
+    Display verbose information about each of the certificates.  If this
+    argument is not provided, then the listing will only include basic summary
+    information for each certificate, including its subject and issuer DNs,
+    validity start and end times, and fingerprints.  If this argument is
+    provided, then additional information, including the X.509 certificate
+    version, serial number, signature algorithm and value, public key algorithm
+    and content, and extensions, will also be included.
+--display-keytool-command
+    Display a command that can be invoked to achieve a similar result with the
+    Java keytool utility.  Note that this may just be an approximation, since
+    the manage-certificates and keytool utilities do not provide exactly the
+    same sets of functionality.
+
+Examples
+
+  Display basic information about all of the certificates in the
+  'config/keystore' key store file.
+
+    manage-certificates list-certificates list-certificates \
+         --keystore config/keystore
+
+  Display verbose information about the 'server-cert' certificate in the
+  'config/keystore.p12' key store file, whose contents are protected by a
+  password contained in the 'config/keystore.pin' file.  It will also display a
+  command that can be used to accomplish a similar result using the Java
+  keytool utility, along with a PEM-encoded representation of the certificate.
+
+    manage-certificates list-certificates list-certificates \
+         --keystore config/keystore.p12 \
+         --keystore-password-file config/keystore.pin --alias server-cert \
+         --verbose --display-pem-certificate --display-keytool-command
+
+  Display basic information about all of the certificates in the JVM's default
+  trust store file.
+
+    manage-certificates list-certificates list-certificates \
+         --use-jvm-default-trust-store
+
+
+
+Usage for subcommand export-certificate:
+
+Exports a certificate or certificate chain from a key store.
+
+Usage:  export-certificate {options}
+
+Available options include:
+--keystore {path}
+    The path to the key store file containing the certificates to export.  This
+    is required, and the key store file must exist.
+--use-jvm-default-trust-store
+    Export certificates from the JVM-default trust store
+    (/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/cacerts).
+--keystore-password {password}
+    The password (also called a passphrase or PIN) needed to access the
+    contents of the key store.  A key store password is optional for some key
+    store types, but may be required for others.
+--keystore-password-file {path}
+    The path to a file containing the password needed to access the contents of
+    the key store.  A key store password is optional for some key store types,
+    but may be required for others.  If a key store password file is supplied,
+    then the file must exist, must contain only one line, and that line must
+    consist only of the clear-text key store password.
+--prompt-for-keystore-password
+    Interactively prompt for the key store password.  A key store password is
+    optional for some key store types, but may be required for others.
+--keystore-type {type}
+    The key store type for the key store.  This is usually not necessary when
+    exporting certificates, but it may be required in some cases (for example,
+    when listing the certificates in a BCFKS key store when not operating in
+    FIPS 140-2-compliant mode).  The value must be one of 'JKS' (for the Java
+    Key Store format), 'PKCS12' (for the standard PKCS #12 format), 'PKCS11'
+    (for PKCS #11 tokens), or 'BCFKS' (for the Bouncy Castle FIPS
+    140-2-compliant key store format).  If this is not provided, then an
+    attempt will be made to automatically infer the correct key store type.
+* --alias {alias}
+    The alias (also called a nickname) of the certificate to export.  This is
+    required, and it may only be provided once.
+--export-certificate-chain
+    Indicates that the entire certificate chain (the target certificate and all
+    of the certificates in its issuer chain) should be exported rather than
+    just the specified target certificate.
+--output-format {format}
+    The output format to use for the exported certificate.  The value may be
+    either 'PEM' (to export the certificate in the text-based PEM format), or
+    'DER' (to export the certificate in the binary DER format).  If this is not
+    provided, then the PEM output format will be used.
+--output-file {path}
+    The path to the output file to which the exported certificate should be
+    written.  An output file is optional when using the PEM format, but
+    required when using the DER format.  If no output file is provided, then
+    the exported certificate will be written to standard output.
+--separate-file-per-certificate
+    Indicates that if multiple certificates are to be exported, then each
+    certificate should be written to a different file rather than concatenating
+    all of them into the same file.  This can only be used if both the
+    --export-certificate-chain and --output-file arguments are also provided.
+--display-keytool-command
+    Display a command that can be invoked to achieve a similar result with the
+    Java keytool utility.  Note that this may just be an approximation, since
+    the manage-certificates and keytool utilities do not provide exactly the
+    same sets of functionality.
+
+* Indicates the argument is required
+
+Examples
+
+  Export the 'server-cert' certificate in PEM format to standard output.
+
+    manage-certificates export-certificate export-certificate \
+         --keystore config/keystore --alias server-cert
+
+  Export the 'server-cert' certificate, and all of the certificates in its
+  issuer chain, to the specified output file in the binary DER format.  It will
+  also display a command that can be used to accomplish a similar result using
+  the Java keytool utility.
+
+    manage-certificates export-certificate export-certificate \
+         --keystore config/keystore.p12 \
+         --keystore-password-file config/keystore.pin --alias server-cert \
+         --export-certificate-chain --output-format DER \
+         --output-file certificate-chain.der --display-keytool-command
+
+
+
+Usage for subcommand export-private-key:
+
+Exports a private key from a key store.
+
+Usage:  export-private-key {options}
+
+Available options include:
+* --keystore {path}
+    The path to the key store file containing the private key to export.  This
+    is required, and the key store file must exist.
+--keystore-password {password}
+    The password (also called a passphrase or PIN) needed to access the
+    contents of the key store.  A key store password is required when exporting
+    a private key, so one of the --keystore-password, --keystore-password-file,
+    or --prompt-for-keystore-password arguments must be provided.
+--keystore-password-file {path}
+    The path to a file containing the password needed to access the contents of
+    the key store.  A key store password is required when exporting a private
+    key, so one of the --keystore-password, --keystore-password-file, or
+    --prompt-for-keystore-password arguments must be provided.  If a key store
+    password file is supplied, then the file must exist, must contain only one
+    line, and that line must consist only of the clear-text key store password.
+--prompt-for-keystore-password
+    Interactively prompt for the key store password.  A key store password is
+    required when exporting a private key, so one of the --keystore-password,
+    --keystore-password-file, or --prompt-for-keystore-password arguments must
+    be provided.
+--private-key-password {password}
+    The password (also called a passphrase or PIN) used to protect the private
+    key.  In many cases, the private key password will be the same as the
+    password used to protect the key store itself, and in such instances, the
+    private key password can be omitted and the key store password will be
+    used.  However, if a private key is protected with a different password
+    than the key store itself, then one of the --private-key-password,
+    --private-key-password-file, or --prompt-for-private-key-password arguments
+    must be provided.
+--private-key-password-file {path}
+    The path to a file containing the password used to protect the private key.
+    In many cases, the private key password will be the same as the password
+    used to protect the key store itself, and in such instances, the private
+    key password can be omitted and the key store password will be used.
+    However, if a private key is protected with a different password than the
+    key store itself, then one of the --private-key-password,
+    --private-key-password-file, or --prompt-for-private-key-password arguments
+    must be provided.  If a private key password file is supplied, then the
+    file must exist, must contain only one line, and that line must consist
+    only of the clear-text private key password.
+--prompt-for-private-key-password
+    Interactively prompt for the private key password.  In many cases, the
+    private key password will be the same as the password used to protect the
+    key store itself, and in such instances, the private key password can be
+    omitted and the key store password will be used.  However, if a private key
+    is protected with a different password than the key store itself, then one
+    of the --private-key-password, --private-key-password-file, or
+    --prompt-for-private-key-password arguments must be provided.
+--keystore-type {type}
+    The key store type for the key store.  This is usually not necessary when
+    exporting private keys, but it may be required in some cases (for example,
+    when listing the certificates in a BCFKS key store when not operating in
+    FIPS 140-2-compliant mode).  The value must be one of 'JKS' (for the Java
+    Key Store format), 'PKCS12' (for the standard PKCS #12 format), 'PKCS11'
+    (for PKCS #11 tokens), or 'BCFKS' (for the Bouncy Castle FIPS
+    140-2-compliant Key Store format).  If this is not provided, then an
+    attempt will be made to automatically infer the correct key store type.
+* --alias {alias}
+    The alias (also called a nickname) of the private key to export.  This is
+    required, and it may only be provided once.
+--output-format {format}
+    The output format to use for the exported private key.  The value may be
+    either 'PEM' (to export the private key in the text-based PEM format), or
+    'DER' (to export the key in the binary DER format).  If this is not
+    provided, then the PEM output format will be used.
+--output-file {path}
+    The path to the output file to which the exported private key should be
+    written.  An output file is optional when using the PEM format, but
+    required when using the DER format.  If no output file is provided, then
+    the exported private key will be written to standard output.
+
+* Indicates the argument is required
+
+Examples
+
+  Export the private key for the 'server-cert' certificate to standard output
+  in PEM format.
+
+    manage-certificates export-private-key export-private-key \
+         --keystore config/keystore \
+         --keystore-password-file config/keystore.pin --alias server-cert
+
+  Export the private key for the 'server-cert' certificate to the specified
+  output file in the binary DER format.
+
+    manage-certificates export-private-key export-private-key \
+         --keystore config/keystore.p12 \
+         --keystore-password-file config/keystore.pin \
+         --private-key-password-file config/server-cert-key.pin \
+         --alias server-cert --output-format DER \
+         --output-file server-cert-key.der
+
+
+
+Usage for subcommand import-certificate:
+
+Imports a certificate or certificate chain, and optionally a private key, into
+a key store.
+
+Usage:  import-certificate {options}
+
+Available options include:
+* --keystore {path}
+    The path to the key store file into which the certificates and key should
+    be imported.  This is required, but if the file does not exist, then it
+    will be created.
+--keystore-password {password}
+    The password (also called a passphrase or PIN) needed to access the
+    contents of the key store.  If the key store does not exist, then it will
+    be created with this password.  A key store password is required when
+    importing certificates, so one of the --keystore-password,
+    --keystore-password-file, or --prompt-for-keystore-password arguments must
+    be provided.  The password must contain at least six characters.
+--keystore-password-file {path}
+    The password (also called a passphrase or PIN) needed to access the
+    contents of the key store.  If the key store does not exist, then it will
+    be created with this password.  A key store password is required when
+    importing certificates, so one of the --keystore-password,
+    --keystore-password-file, or --prompt-for-keystore-password arguments must
+    be provided.  If a key store password file is supplied, then the file must
+    exist, must contain only one line, and that line must consist only of the
+    clear-text key store password.  The password must contain at least six
+    characters.
+--prompt-for-keystore-password
+    Interactively prompt for the key store password.  If the key store does not
+    exist, then it will be created with this password.  A key store password is
+    required when importing certificates, so one of the --keystore-password,
+    --keystore-password-file, or --prompt-for-keystore-password arguments must
+    be provided.  The password must contain at least six characters.
+--keystore-type {type}
+    The key store type for the key store to create.  This argument should only
+    be provided when creating a new key store, and it will be ignored if the
+    key store already exists.  The value must be one of 'JKS' (for the Java Key
+    Store format), 'PKCS12' (for the standard PKCS #12 format), 'PKCS11' (for
+    PKCS #11 tokens), or 'BCFKS' (for the Bouncy Castle FIPS 140-2-compliant
+    Key Store format).  If this is not provided, then a default key store type
+    of 'JKS' will be used for newly-created key stores.
+* --alias {alias}
+    The alias (also called a nickname) to use for the imported certificate.  If
+    multiple certificates are to be imported, then the behavior depends on
+    whether a private key will also be imported.  When importing a certificate
+    chain along with a private key, then the alias must not already exist in
+    the key store, and the private key and the entire certificate chain will be
+    stored under this alias.  When importing a certificate for which the
+    corresponding private key already exists in the key store (for example, if
+    you used the generate-certificate-request subcommand to create a
+    certificate signing request and are now importing the signed certificate),
+    then you should use the same alias that is used for the existing private
+    key, and you should provide the complete certificate chain.  When importing
+    a certificate for which the corresponding private key does not already
+    exist in the key store and for which the private key is not being provided
+    by the --private-key-file argument, then the alias must not already exist
+    in the key store, and any provided issuer certificates (which you should
+    provide if they do not already exist in the key store and are not in the
+    JVM's default set of trusted issuer certificates) will be imported with
+    aliases that are generated from the provided alias.  If there is only one
+    issuer certificate to be imported, then it will be stored with an alias
+    that is the provided alias with '-issuer' appended onto it.  If there are
+    multiple issuer certificates to be imported, then their aliases will be the
+    provided alias with '-issuer-#' appended onto it, where '#' will be '1' for
+    the first issuer certificate, '2' for the second, and so on.  This is a
+    required argument.
+* --certificate-file {path}
+    The path to a file containing a certificate or certificate chain to import.
+    The certificates in the file may be stored either in the text-based PEM or
+    the binary DER format, but if the file contains multiple certificates, then
+    they must all be in the same format.  You may also provide this argument
+    multiple times to specify multiple files containing certificates to import.
+    However, if multiple certificates are provided, then they must all form a
+    certificate chain in which each subsequent certificate is the issuer
+    certificate for the previous certificate.  When importing a non-self-signed
+    certificate, you should ensure that its issuer certificate is also being
+    imported, is already in the key store under a different alias, or is in the
+    JVM's default set of trusted certificates.  At least one certificate file
+    is required.
+--private-key-file {path}
+    The path to a file containing the private key for the end certificate in
+    the chain to be imported.  It may be stored in either the text-based PEM or
+    the binary DER format.  This is an optional argument, and at most one
+    private key file may be specified, and that file may contain only a single
+    private key.
+--private-key-password {password}
+    The password (also called a passphrase or PIN) to use to protect the
+    private key.  This is only needed when importing a private key along with a
+    certificate chain, or when importing a certificate chain into an alias with
+    an existing private key.  In many cases, the private key password will be
+    the same as the key store password and in such instances, the private key
+    password can be omitted and the key store password will be used as the
+    private key password.  However, if you are importing a private key and wish
+    to protect it with a password that does not match the key store password,
+    or if you are importing a new certificate chain for an existing private key
+    that uses a password that does not match the key store password, then one
+    of the --private-key-password, --private-key-password-file, or
+    --prompt-for-private-key-password arguments should be provided.
+--private-key-password-file {path}
+    The path to a file containing the password to use to protect the private
+    key.  This is only needed when importing a private key along with a
+    certificate chain, or when importing a certificate chain into an alias with
+    an existing private key.  In many cases, the private key password will be
+    the same as the key store password and in such instances, the private key
+    password can be omitted and the key store password will be used as the
+    private key password.  However, if you are importing a private key and wish
+    to protect it with a password that does not match the key store password,
+    or if you are importing a new certificate chain for an existing private key
+    that uses a password that does not match the key store password, then one
+    of the --private-key-password, --private-key-password-file, or
+    --prompt-for-private-key-password arguments should be provided.  If a
+    private key password file is supplied, then the file must exist, must
+    contain only one line, and that line must consist only of the clear-text
+    private key password.
+--prompt-for-private-key-password
+    Interactively prompt for the password to use to protect the private key.
+    This is only needed when importing a private key along with a certificate
+    chain, or when importing a certificate chain into an alias with an existing
+    private key.  In many cases, the private key password will be the same as
+    the key store password and in such instances, the private key password can
+    be omitted and the key store password will be used as the private key
+    password.  However, if you are importing a private key and wish to protect
+    it with a password that does not match the key store password, or if you
+    are importing a new certificate chain for an existing private key that uses
+    a password that does not match the key store password, then one of the
+    --private-key-password, --private-key-password-file, or
+    --prompt-for-private-key-password arguments should be provided.
+--no-prompt
+    Import the certificates without prompting the end user.  By default, the
+    certificates will be displayed and the user will be interactively prompted
+    about whether to import them.
+--display-keytool-command
+    Display a command that can be invoked to achieve a similar result with the
+    Java keytool utility.  Note that this may just be an approximation, since
+    the manage-certificates and keytool utilities do not provide exactly the
+    same sets of functionality.
+
+* Indicates the argument is required
+
+Examples
+
+  Import the certificates in the 'server-cert.crt' file into the specified key
+  store using an alias of 'server-cert'.
+
+    manage-certificates import-certificate import-certificate \
+         --keystore config/keystore \
+         --keystore-password-file config/keystore.pin --alias server-cert \
+         --certificate-file server-cert.crt
+
+  Import a certificate chain, including a private key, from the set of provided
+  files into the specified key store using an alias of 'server-cert'.
+
+    manage-certificates import-certificate import-certificate \
+         --keystore config/keystore \
+         --keystore-password-file config/keystore.pin --alias server-cert \
+         --certificate-file server-cert.crt \
+         --certificate-file server-cert-issuer.crt \
+         --private-key-file server-cert.key --display-keytool-command
+
+
+
+Usage for subcommand delete-certificate:
+
+Removes a certificate from a key store.
+
+Usage:  delete-certificate {options}
+
+Available options include:
+* --keystore {path}
+    The path to the key store file containing the certificate to remove.  This
+    is required, and the key store file must exist.
+--keystore-password {password}
+    The password (also called a passphrase or PIN) needed to access the
+    contents of the key store.  A key store password is required when importing
+    certificates, so one of the --keystore-password, --keystore-password-file,
+    or --prompt-for-keystore-password arguments must be provided.
+--keystore-password-file {path}
+    The path to a file containing the password needed to access the contents of
+    the key store.  A key store password is required when importing
+    certificates, so one of the --keystore-password, --keystore-password-file,
+    or --prompt-for-keystore-password arguments must be provided.  If a key
+    store password file is supplied, then the file must exist, must contain
+    only one line, and that line must consist only of the clear-text key store
+    password.
+--prompt-for-keystore-password
+    Interactively prompt for the key store password.  A key store password is
+    required when importing certificates, so one of the --keystore-password,
+    --keystore-password-file, or --prompt-for-keystore-password arguments must
+    be provided.
+--keystore-type {type}
+    The key store type for the key store.  This is usually not necessary when
+    deleting certificates, but it may be required in some cases (for example,
+    when listing the certificates in a BCFKS key store when not operating in
+    FIPS 140-2-compliant mode).  The value must be one of 'JKS' (for the Java
+    Key Store format), 'PKCS12' (for the standard PKCS #12 format), 'PKCS11'
+    (for PKCS #11 tokens), or 'BCFKS' (for the Bouncy Castle FIPS
+    140-2-compliant Key Store format).  If this is not provided, then an
+    attempt will be made to automatically infer the correct key store type.
+* --alias {alias}
+    The alias (also called a nickname) of the certificate to delete.  This is
+    required, and it may only be provided once.
+--no-prompt
+    Delete the certificate without prompting the end user.  By default, the
+    target certificate will be displayed and the user will be interactively
+    prompted about whether to delete it.
+--display-keytool-command
+    Display a command that can be invoked to achieve a similar result with the
+    Java keytool utility.  Note that this may just be an approximation, since
+    the manage-certificates and keytool utilities do not provide exactly the
+    same sets of functionality.
+
+* Indicates the argument is required
+
+Examples
+
+  Remove the 'server-cert' certificate from the 'config/keystore' key store.
+
+    manage-certificates delete-certificate delete-certificate \
+         --keystore config/keystore --alias server-cert
+
+
+
+Usage for subcommand generate-self-signed-certificate:
+
+Generates a self-signed certificate in a key store.
+
+Usage:  generate-self-signed-certificate {options}
+
+Available options include:
+* --keystore {path}
+    The path to the key store file in which the self-signed certificate will be
+    created.  This is required, but if the file does not exist, then it will be
+    created.
+--keystore-password {password}
+    The password (also called a passphrase or PIN) needed to access the
+    contents of the key store.  If the key store does not exist, then it will
+    be created with this password.  A key store password is required when
+    generating certificates, so one of the --keystore-password,
+    --keystore-password-file, or --prompt-for-keystore-password arguments must
+    be provided.  The password must contain at least six characters.
+--keystore-password-file {path}
+    The password (also called a passphrase or PIN) needed to access the
+    contents of the key store.  If the key store does not exist, then it will
+    be created with this password.  A key store password is required when
+    generating certificates, so one of the --keystore-password,
+    --keystore-password-file, or --prompt-for-keystore-password arguments must
+    be provided.  If a key store password file is supplied, then the file must
+    exist, must contain only one line, and that line must consist only of the
+    clear-text key store password.  The password must contain at least six
+    characters.
+--prompt-for-keystore-password
+    Interactively prompt for the key store password.  If the key store does not
+    exist, then it will be created with this password.  A key store password is
+    required when generating certificates, so one of the --keystore-password,
+    --keystore-password-file, or --prompt-for-keystore-password arguments must
+    be provided.  The password must contain at least six characters.
+--private-key-password {password}
+    The password (also called a passphrase or PIN) to use to protect the
+    private key.  Although in many cases, private keys will be protected with
+    the same password as the key store itself, it is possible to use a
+    different password for the private key.  If an alternate private key
+    password is needed, then one of the --private-key-password,
+    --private-key-password-file, or --prompt-for-private-key-password arguments
+    should be used to provide that private key password.  If none of these
+    arguments is given, then the key store password will be used as the private
+    key password.  The password must contain at least six characters.
+--private-key-password-file {path}
+    The path to a file containing the password to use to protect the private
+    key.  Although in many cases, private keys will be protected with the same
+    password as the key store itself, it is possible to use a different
+    password for the private key.  If an alternate private key password is
+    needed, then one of the --private-key-password,
+    --private-key-password-file, or --prompt-for-private-key-password arguments
+    should be used to provide that private key password.  If none of these
+    arguments is given, then the key store password will be used as the private
+    key password.  If a private key password file is supplied, then the file
+    must exist, must contain only one line, and that line must consist only of
+    the clear-text private key password.  The password must contain at least
+    six characters.
+--prompt-for-private-key-password
+    Interactively prompt for the password to use to protect the private key.
+    Although in many cases, private keys will be protected with the same
+    password as the key store itself, it is possible to use a different
+    password for the private key.  If an alternate private key password is
+    needed, then one of the --private-key-password,
+    --private-key-password-file, or --prompt-for-private-key-password arguments
+    should be used to provide that private key password.  If none of these
+    arguments is given, then the key store password will be used as the private
+    key password.  The password must contain at least six characters.
+--keystore-type {type}
+    The key store type for the key store to create.  This argument should only
+    be provided when creating a new key store, and it will be ignored if the
+    key store already exists.  The value must be one of 'JKS' (for the Java Key
+    Store format), 'PKCS12' (for the standard PKCS #12 format), 'PKCS11' (for
+    PKCS #11 tokens), or 'BCFKS' (for the Bouncy Castle FIPS 140-2-compliant
+    Key Store format).  If this is not provided, then a default key store type
+    of 'JKS' will be used for newly-created key stores.
+* --alias {alias}
+    The alias (also called a nickname) to use for the newly-generated
+    certificate.  If the --replace-existing-certificate argument is provided,
+    then this must be the alias of the private key for which to replace the
+    certificate chain with the self-signed certificate.  If the
+    --replace-existing-certificate argument is not provided, then the alias
+    must not already exist in the key store.
+--replace-existing-certificate
+    Indicates that the new self-signed certificate should replace the
+    certificate chain associated with an existing private key that is
+    identified by the --alias argument, reusing the existing key pair.  If this
+    argument is not provided, then a new key pair will be generated.
+--subject-dn {dn}
+    The subject DN for the new certificate.  This must be provided unless then
+    --replace-existing-certificate argument is given.  If the
+    --replace-existing-certificate argument is provided, then the --subject-dn
+    argument may be omitted if you want to reuse the same subject as the
+    existing certificate.  A subject DN typically includes at least a 'CN'
+    attribute (which in a server certificate should be the hostname that
+    clients are expected to use when connecting to the server, and in other
+    certificates indicates the purpose of that certificate), and may also
+    include additional attributes like 'OU' (the associated department or
+    organizational unit name), 'O' (the company or organization name), 'L' (the
+    city or locality name), 'ST' (the full name -- NOT the two-letter
+    abbreviation -- of the state or province), 'C' (the two-letter country code
+    -- NOT the full country name).  For example:
+    'CN=ldap.example.com,OU=Directory Services,O=Example
+    Corporation,L=Austin,ST=Texas,C=US'.
+--days-valid {value}
+    The number of days that the certificate should be considered valid.  If
+    this argument is not provided, then a default value of 365 days will be
+    used.
+--validity-start-time {YYYYMMDDhhmmss}
+    The time that the certificate's validity window should start (that is, the
+    'notBefore' value).  If this is not provided, then the current time will be
+    used.  If a value is given, it should be in the form 'YYYYMMDDhhmmss' (for
+    example, '20180102123456').  Timestamp values are assumed to be in the
+    local time zone.
+--key-algorithm {name}
+    The name of the key algorithm to use to generate the key pair.  If present,
+    the value will typically be 'RSA' or 'EC' (for elliptic curve).  This
+    argument must not be provided if the --replace-existing-certificate
+    argument is used.  If neither this argument nor the
+    --replace-existing-certificate argument is provided, then a default key
+    algorithm of 'RSA' will be used.
+--key-size-bits {bits}
+    The size of the key to generate, in bits.  This argument must not be
+    provided if the --replace-existing-certificate argument is used.  This
+    argument must be provided if the --key-algorithm argument is used to
+    specify an algorithm other than 'RSA'.  If neither this argument nor the
+    --replace-existing-certificate argument is provided, then a default key
+    size of 2048 bits will be used.
+--signature-algorithm {name}
+    The name of the algorithm to use to sign the certificate.  This argument
+    must not be provided if the --replace-existing-certificate argument is
+    used.  This argument must be provided if the --key-algorithm argument is
+    used to specify an algorithm other than 'RSA'.  If neither this argument
+    nor the --replace-existing-certificate argument is provided, then a default
+    signature algorithm of 'SHA256withRSA' will be used.
+--inherit-extensions
+    This argument can only be used in conjunction with the
+    --replace-existing-certificate argument, and it indicates that the new
+    certificate should inherit all of the same extension values as the
+    certificate being replaced (although extensions known to apply to the
+    certificate's issuer, like authority key identifier and issuer alternative
+    name, may be excluded).  If the --replace-existing-certificate argument is
+    provided without the --inherit-extensions argument, then the new
+    certificate will only have the extensions that are explicitly specified
+    using other arguments.
+--subject-alternative-name-dns {name}
+    Indicates that the certificate should include a subject alternative name
+    extension with the specified DNS hostname.  This can be used to help
+    clients trust a server certificate if they connect to the server using a
+    different hostname than is included in the CN attribute of the certificate
+    subject.  This can be provided multiple times to specify multiple alternate
+    hostnames, and hostnames can have an asterisk as their leftmost component
+    (for example, '*.example.com' or '*.east.example.com') to match any value
+    in that component.  Each value must contain only ASCII characters, so
+    internationalized domain names must use the ASCII-Compatible Encoding (ACE)
+    described in RFC 5890.
+--subject-alternative-name-ip-address {name}
+    Indicates that the certificate should include a subject alternative name
+    extension with the specified IP address.  This can be used to help clients
+    trust a server certificate if they connect to the server using an IP
+    address rather than the hostname that is included in the CN attribute of
+    the certificate subject.  This can be provided multiple times to specify
+    multiple IP addresses, and each value must be a valid IPv4 or IPv6 address.
+    There is no support for wildcards, CIDR, other mechanisms for specifying a
+    range of addresses.
+--subject-alternative-name-email-address {name}
+    Indicates that the certificate should include a subject alternative name
+    extension with the specified email address (technically, RFC 822 name)
+    value.  This can be provided multiple times to specify multiple email
+    addresses.  Each value must contain only ASCII characters, so
+    internationalized email addresses must use the ASCII-Compatible Encoding
+    (ACE) described in RFC 5890.
+--subject-alternative-name-uri {uri}
+    Indicates that the certificate should include a subject alternative name
+    extension with the specified URI value.  This can be provided multiple
+    times to specify multiple URIs.  Each value must contain only ASCII
+    characters, so internationalized resource identifiers must be mapped to
+    URIs as described in RFC 3987.
+--subject-alternative-name-oid {oid}
+    Indicates that the certificate should include a subject alternative name
+    extension with the specified OID as a resource identifier.  This can be
+    provided multiple times to specify multiple OIDs, and each value must be
+    the string representation of a valid object identifier.
+--basic-constraints-is-ca {true|false}
+    Indicates that the certificate should include a basic constraints extension
+    that indicates whether the certificate should be considered a certification
+    authority.  If present, the value must be either 'true' or 'false'.
+--basic-constraints-maximum-path-length {value}
+    Indicates that the certificate should include a basic constraints extension
+    that specifies that there must not be more than the specified number of
+    intermediate certificates between that issuer certificate and the subject
+    certificate in a certificate chain.  This argument can only be provided in
+    conjunction with a --basic-constraints-is-ca value of 'true'.
+--key-usage {value}
+    Indicates that the certificate should include a key usage extension that
+    indicates that the certificate can be used for a specified purpose.
+    Allowed values for this argument are 'digital-signature',
+    'non-repudiation', 'key-encipherment', 'data-encipherment',
+    'key-agreement', 'key-cert-sign', 'crl-sign', 'encipher-only', and
+    'decipher-only'.  This argument can be provided multiple times to specify
+    multiple key usage values.
+--extended-key-usage {value}
+    Indicates that the certificate should include an extended key usage
+    extension that indicates that the certificate can be used for a specified
+    purpose.  Allowed values for this argument are 'server-auth',
+    'client-auth', 'code-signing', 'email-protection', 'time-stamping', and
+    'ocsp-signing', or the string representation of any valid object
+    identifier.  This argument can be provided multiple times to specify
+    multiple extended key usage values.
+--extension {value}
+    Indicates that the certificate should include an extension with the
+    specified content.  The value must be in the form oid:criticality:value,
+    where oid is the OID that identifies the type of extension, criticality is
+    a value of either 'true' or 'false', and value is the hexadecimal
+    representation of the extension value (for example, --ext
+    2.5.29.19:true:30030101ff).
+--output-file {path}
+    The output file to which the generated certificate should be written, if
+    desired.
+--output-format {format}
+    The format in which the generated certificate should be written to the
+    specified output file.  The value may be either 'PEM' (to export the
+    certificate in the text-based PEM format), or 'DER' (to export the
+    certificate in the binary DER format).  If this is not provided, then the
+    PEM output format will be used.
+--display-keytool-command
+    Display a command that can be invoked to achieve a similar result with the
+    Java keytool utility.  Note that this may just be an approximation, since
+    the manage-certificates and keytool utilities do not provide exactly the
+    same sets of functionality.
+
+* Indicates the argument is required
+
+Examples
+
+  Generates a self-signed certificate with an alias of 'server-cert' and
+  subject DN of 'CN=ldap.example.com,O=Example Corp,C=US'.  The certificate
+  will use a 2048-bit RSA key, a signature algorithm of SHA256withRSA, and a
+  validity of 365 days, starting immediately.
+
+    manage-certificates generate-self-signed-certificate \
+         generate-self-signed-certificate --keystore config/keystore \
+         --keystore-password-file config/keystore.pin --alias server-cert \
+         --subject-dn "CN=ldap.example.com,O=Example Corp,C=US"
+
+  Generates a self-signed certificate to replace the existing certificate with
+  the 'server-cert' alias.  The new certificate will include the same subject,
+  key and signature algorithms, and set of extensions as the existing
+  certificate, and it will have a validity of 365 days, starting immediately.
+
+    manage-certificates generate-self-signed-certificate \
+         generate-self-signed-certificate --keystore config/keystore \
+         --keystore-password-file config/keystore.pin --alias server-cert \
+         --replace-existing-certificate --inherit-extensions
+
+  Generates a self-signed server certificate with an alias of 'server-cert', a
+  subject DN of 'CN=ldap.example.com,O=Example Corp,C=US', a 4096-bit RSA key,
+  a signature algorithm of SHA256withRSA, a subject alternate name extension
+  with DNS names of 'ldap1.example.com' and 'ldap2.example.com' and IP
+  addresses of 1.2.3.4 and 1.2.3.5, and an extended key usage extension with
+  the server-auth and client-auth usages.  The certificate will have a validity
+  of 3650 days, starting at midnight on January 1, 2017 in the local time zone.
+
+    manage-certificates generate-self-signed-certificate \
+         generate-self-signed-certificate --keystore config/keystore \
+         --keystore-password-file config/keystore.pin --alias server-cert \
+         --subject-dn "CN=ldap.example.com,O=Example Corp,C=US" \
+         --days-valid 3650 --validity-start-time 20170101000000 \
+         --key-algorithm RSA --key-size-bits 4096 \
+         --signature-algorithm SHA256withRSA \
+         --subject-alternative-name-dns ldap1.example.com \
+         --subject-alternative-name-dns ldap2.example.com \
+         --subject-alternative-name-ip-address 1.2.3.4 \
+         --subject-alternative-name-ip-address 1.2.3.5 \
+         --extended-key-usage server-auth --extended-key-usage client-auth \
+         --display-keytool-command
+
+  Generates a self-signed certification authority certificate with an alias of
+  'ca-cert', a subject DN of 'CN=Example Certification Authority,O=Example
+  Corp,C=US', a 256-bit elliptic curve key, a signature algorithm of
+  SHA256withECDSA, a basic constraints extension that indicates the certificate
+  is a certification authority, and a key usage extension with the
+  key-cert-sign and crl-sign values.  The certificate will have a validity of
+  7300 days, starting at midnight on January 1, 2017 in the local time zone.
+
+    manage-certificates generate-self-signed-certificate \
+         generate-self-signed-certificate --keystore config/keystore \
+         --keystore-password-file config/keystore.pin --alias ca-cert \
+         --subject-dn "CN=Example Certification Authority,O=Example Corp,C=US" \
+         --days-valid 7300 --validity-start-time 20170101000000 \
+         --key-algorithm EC --key-size-bits 256 \
+         --signature-algorithm SHA256withECDSA \
+         --basic-constraints-is-ca true --key-usage key-cert-sign \
+         --key-usage crl-sign --display-keytool-command
+
+
+
+Usage for subcommand generate-certificate-signing-request:
+
+Generates a certificate signing request (CSR) for a private key in a key store,
+optionally generating the private key in the process.  The certificate signing
+request may be either written to standard output or to a specified output file.
+
+Usage:  generate-certificate-signing-request {options}
+
+Available options include:
+--output-format {format}
+    The output format to use for the generated certificate signing request.
+    The value may be either 'PEM' (to export the request in the text-based PEM
+    format), or 'DER' (to export the request in the binary DER format).  If
+    this is not provided, then the PEM output format will be used.
+--output-file {path}
+    The path to the output file to which the certificate signing request should
+    be written.  If this is not provided, then the certificate signing request
+    will be written to standard output.
+* --keystore {path}
+    The path to the key store file that contains the key (or in which the key
+    will be generated) to use for the certificate signing request.  This is
+    required, but if the file does not exist, then it will be created.
+--keystore-password {password}
+    The password (also called a passphrase or PIN) needed to access the
+    contents of the key store.  If the key store does not exist, then it will
+    be created with this password.  A key store password is required when
+    generating certificate signing requests, so one of the --keystore-password,
+    --keystore-password-file, or --prompt-for-keystore-password arguments must
+    be provided.  The password must contain at least six characters.
+--keystore-password-file {path}
+    The password (also called a passphrase or PIN) needed to access the
+    contents of the key store.  If the key store does not exist, then it will
+    be created with this password.  A key store password is required when
+    generating certificate signing requests, so one of the --keystore-password,
+    --keystore-password-file, or --prompt-for-keystore-password arguments must
+    be provided.  If a key store password file is supplied, then the file must
+    exist, must contain only one line, and that line must consist only of the
+    clear-text key store password.  The password must contain at least six
+    characters.
+--prompt-for-keystore-password
+    Interactively prompt for the key store password.  If the key store does not
+    exist, then it will be created with this password.  A key store password is
+    required when generating certificate signing requests, so one of the
+    --keystore-password, --keystore-password-file, or
+    --prompt-for-keystore-password arguments must be provided.  The password
+    must contain at least six characters.
+--private-key-password {password}
+    The password (also called a passphrase or PIN) to use to protect the
+    private key.  Although in many cases, private keys will be protected with
+    the same password as the key store itself, it is possible to use a
+    different password for the private key.  If an alternate private key
+    password is needed, then one of the --private-key-password,
+    --private-key-password-file, or --prompt-for-private-key-password arguments
+    should be used to provide that private key password.  If none of these
+    arguments is given, then the key store password will be used as the private
+    key password.  The password must contain at least six characters.
+--private-key-password-file {path}
+    The path to a file containing the password to use to protect the private
+    key.  Although in many cases, private keys will be protected with the same
+    password as the key store itself, it is possible to use a different
+    password for the private key.  If an alternate private key password is
+    needed, then one of the --private-key-password,
+    --private-key-password-file, or --prompt-for-private-key-password arguments
+    should be used to provide that private key password.  If none of these
+    arguments is given, then the key store password will be used as the private
+    key password.  If a private key password file is supplied, then the file
+    must exist, must contain only one line, and that line must consist only of
+    the clear-text private key password.  The password must contain at least
+    six characters.
+--prompt-for-private-key-password
+    Interactively prompt for the password to use to protect the private key.
+    Although in many cases, private keys will be protected with the same
+    password as the key store itself, it is possible to use a different
+    password for the private key.  If an alternate private key password is
+    needed, then one of the --private-key-password,
+    --private-key-password-file, or --prompt-for-private-key-password arguments
+    should be used to provide that private key password.  If none of these
+    arguments is given, then the key store password will be used as the private
+    key password.  The password must contain at least six characters.
+--keystore-type {type}
+    The key store type for the key store to create.  This argument should only
+    be provided when creating a new key store, and it will be ignored if the
+    key store already exists.  The value must be one of 'JKS' (for the Java Key
+    Store format), 'PKCS12' (for the standard PKCS #12 format), 'PKCS11' (for
+    PKCS #11 tokens), or 'BCFKS' (for the Bouncy Castle FIPS 140-2-compliant
+    Key Store format).  If this is not provided, then a default key store type
+    of 'JKS' will be used for newly-created key stores.
+* --alias {alias}
+    The alias (also called a nickname) of the private key to use to generate
+    the certificate signing request.  If the --replace-existing-certificate
+    argument is provided, then this must be the alias of an existing private
+    key.  If the --replace-existing-certificate argument is not provided, then
+    the alias must not already exist in the key store, and a corresponding key
+    pair will be created in that alias.
+--use-existing-key-pair
+    Indicates that the certificate signing request should use an existing key
+    pair in the key store, identified by the specified alias.  If this argument
+    is not provided, then a new key pair will be generated for the certificate
+    signing request and stored in the key store.
+--subject-dn {dn}
+    The subject DN for the certificate signing request.  This must be provided
+    unless then --replace-existing-certificate argument is given.  If the
+    --replace-existing-certificate argument is provided, then the --subject-dn
+    argument may be omitted if you want to reuse the same subject as the
+    existing certificate.  A subject DN typically includes at least a 'CN'
+    attribute (which in a server certificate should be the hostname that
+    clients are expected to use when connecting to the server, and in other
+    certificates indicates the purpose of that certificate), and may also
+    include additional attributes like 'OU' (the associated department name),
+    'O' (the company or organization name), 'L' (the city or locality name),
+    'ST' (the full name -- NOT the two-letter abbreviation -- of the state or
+    province), 'C' (the two-letter country code -- NOT the full country name).
+    For example:  'CN=ldap.example.com,OU=Directory Services,O=Example
+    Corporation,L=Austin,ST=Texas,C=US'.
+--key-algorithm {name}
+    The name of the key algorithm to use to generate the key pair.  If present,
+    the value will typically be 'RSA' or 'EC' (for elliptic curve).  This
+    argument must not be provided if the --replace-existing-certificate
+    argument is used.  If neither this argument nor the
+    --replace-existing-certificate argument is provided, then a default key
+    algorithm of 'RSA' will be used.
+--key-size-bits {bits}
+    The size of the key to generate, in bits.  This argument must not be
+    provided if the --replace-existing-certificate argument is used.  This
+    argument must be provided if the --key-algorithm argument is used to
+    specify an algorithm other than 'RSA'.  If neither this argument nor the
+    --replace-existing-certificate argument is provided, then a default key
+    size of 2048 bits will be used.
+--signature-algorithm {name}
+    The name of the algorithm to use to sign the certificate.  This argument
+    must not be provided if the --replace-existing-certificate argument is
+    used.  This argument must be provided if the --key-algorithm argument is
+    used to specify an algorithm other than 'RSA'.  If neither this argument
+    nor the --replace-existing-certificate argument is provided, then a default
+    signature algorithm of 'SHA256withRSA' will be used.
+--inherit-extensions
+    This argument can only be used in conjunction with the
+    --replace-existing-certificate argument, and it indicates that the
+    requested certificate should inherit all of the same extension values as
+    the certificate being replaced (although extensions known to apply to the
+    certificate's issuer, like authority key identifier and issuer alternative
+    name, may be excluded).  If the --replace-existing-certificate argument is
+    provided without the --inherit-extensions argument, then the new
+    certificate will only have the extensions that are explicitly specified
+    using other arguments.
+--subject-alternative-name-dns {name}
+    Indicates that the certificate signing request should include a subject
+    alternative name extension with the specified DNS hostname.  This can be
+    used to help clients trust a server certificate if they connect to the
+    server using a different hostname than is included in the CN attribute of
+    the certificate subject.  This can be provided multiple times to specify
+    multiple alternate hostnames, and hostnames can have an asterisk as their
+    leftmost component (for example, '*.example.com' or '*.east.example.com')
+    to match any value in that component.  Each value must contain only ASCII
+    characters, so internationalized domain names must use the ASCII-Compatible
+    Encoding (ACE) described in RFC 5890.
+--subject-alternative-name-ip-address {name}
+    Indicates that the certificate signing request should include a subject
+    alternative name extension with the specified IP address.  This can be used
+    to help clients trust a server certificate if they connect to the server
+    using an IP address rather than the hostname that is included in the CN
+    attribute of the certificate subject.  This can be provided multiple times
+    to specify multiple IP addresses, and each value must be a valid IPv4 or
+    IPv6 address.  There is no support for wildcards, CIDR, other mechanisms
+    for specifying a range of addresses.
+--subject-alternative-name-email-address {name}
+    Indicates that the certificate signing request should include a subject
+    alternative name extension with the specified email address (technically,
+    RFC 822 name) value.  This can be provided multiple times to specify
+    multiple email addresses.  Each value must contain only ASCII characters,
+    so internationalized email addresses must use the ASCII-Compatible Encoding
+    (ACE) described in RFC 5890.
+--subject-alternative-name-uri {uri}
+    Indicates that the certificate signing request should include a subject
+    alternative name extension with the specified URI value.  This can be
+    provided multiple times to specify multiple URIs.  Each value must contain
+    only ASCII characters, so internationalized resource identifiers must be
+    mapped to URIs as described in RFC 3987.
+--subject-alternative-name-oid {oid}
+    Indicates that the certificate signing request should include a subject
+    alternative name extension with the specified OID as a resource identifier.
+    This can be provided multiple times to specify multiple OIDs, and each
+    value must be the string representation of a valid object identifier.
+--basic-constraints-is-ca {true|false}
+    Indicates that the certificate signing request should include a basic
+    constraints extension that indicates whether the certificate should be
+    considered a certification authority.  If present, the value must be either
+    'true' or 'false'.
+--basic-constraints-maximum-path-length {value}
+    Indicates that the certificate should include a basic constraints extension
+    that specifies that there must not be more than the specified number of
+    intermediate certificates between that issuer certificate and the subject
+    certificate in a certificate chain.  This argument can only be provided in
+    conjunction with a --basic-constraints-is-ca value of 'true'.
+--key-usage {value}
+    Indicates that the certificate signing request should include a key usage
+    extension that indicates that the certificate can be used for a specified
+    purpose.  Allowed values for this argument are 'digital-signature',
+    'non-repudiation', 'key-encipherment', 'data-encipherment',
+    'key-agreement', 'key-cert-sign', 'crl-sign', 'encipher-only', and
+    'decipher-only'.  This argument can be provided multiple times to specify
+    multiple key usage values.
+--extended-key-usage {value}
+    Indicates that the certificate signing request should include an extended
+    key usage extension that indicates that the certificate can be used for a
+    specified purpose.  Allowed values for this argument are 'server-auth',
+    'client-auth', 'code-signing', 'email-protection', 'time-stamping', and
+    'ocsp-signing', or the string representation of any valid object
+    identifier.  This argument can be provided multiple times to specify
+    multiple extended key usage values.
+--extension {value}
+    Indicates that the certificate signing request should include an extension
+    with the specified content.  The value must be in the form
+    oid:criticality:value, where oid is the OID that identifies the type of
+    extension, criticality is a value of either 'true' or 'false', and value is
+    the hexadecimal representation of the extension value (for example, --ext
+    2.5.29.19:true:30030101ff).
+--display-keytool-command
+    Display a command that can be invoked to achieve a similar result with the
+    Java keytool utility.  Note that this may just be an approximation, since
+    the manage-certificates and keytool utilities do not provide exactly the
+    same sets of functionality.
+
+* Indicates the argument is required
+
+Examples
+
+  Generates a certificate signing request for a certificate with a subject DN
+  of 'CN=ldap.example.com,O=Example Corp,C=US'.  The request will generate a
+  new key pair in the 'server-cert' alias with a 2048-bit RSA key and a
+  signature algorithm of SHA256withRSA.  The generated certificate signing
+  request will be sent to standard output.
+
+    manage-certificates generate-certificate-signing-request \
+         generate-certificate-signing-request --keystore config/keystore \
+         --keystore-password-file config/keystore.pin --alias server-cert \
+         --subject-dn "CN=ldap.example.com,O=Example Corp,C=US"
+
+  Generates a certificate signing request to replace the existing certificate
+  with the 'server-cert' alias.  The new certificate will include the same
+  subject, key and signature algorithms, and set of extensions as the existing
+  certificate, and the request will be written to the server-cert.csr output
+  file.
+
+    manage-certificates generate-certificate-signing-request \
+         generate-certificate-signing-request --keystore config/keystore \
+         --keystore-password-file config/keystore.pin --alias server-cert \
+         --use-existing-key-pair --inherit-extensions \
+         --output-file server-cert.csr
+
+  Generates a certificate signing request for a certificate with a subject DN
+  of 'CN=ldap.example.com,O=Example Corp,C=US', a subject alternate name
+  extension with DNS names of 'ldap1.example.com' and 'ldap2.example.com' and
+  IP addresses of 1.2.3.4 and 1.2.3.5, and an extended key usage extension with
+  the server-auth and client-auth usages.  The certificate will use a
+  newly-generated key pair with a 256-bit elliptic curve key and a signature
+  algorithm of SHA256withECDSA.  The request will be written to the
+  server-cert.csr output file.
+
+    manage-certificates generate-certificate-signing-request \
+         generate-certificate-signing-request --keystore config/keystore \
+         --keystore-password-file config/keystore.pin --alias server-cert \
+         --subject-dn "CN=ldap.example.com,O=Example Corp,C=US" \
+         --key-algorithm EC --key-size-bits 256 \
+         --signature-algorithm SHA256withECDSA \
+         --subject-alternative-name-dns ldap1.example.com \
+         --subject-alternative-name-dns ldap2.example.com \
+         --subject-alternative-name-ip-address 1.2.3.4 \
+         --subject-alternative-name-ip-address 1.2.3.5 \
+         --extended-key-usage server-auth --extended-key-usage client-auth \
+         --output-file server-cert.csr --display-keytool-command
+
+
+
+Usage for subcommand sign-certificate-signing-request:
+
+Signs a certificate signing request (CSR) provided in a specified input file
+using a certificate contained in a specified key store.  The signed certificate
+may be written to either standard output or to a specified file.
+
+Usage:  sign-certificate-signing-request {options}
+
+Available options include:
+* --request-input-file, --input-file {path}
+    The path to the input file containing the certificate signing request to
+    process.  This must be provided, and the specified file must exist.
+--certificate-output-file, --output-file {path}
+    The path to the output file to which the signed certificate should be
+    written.  If this is not provided, then the certificate will be written to
+    standard output.
+--output-format {format}
+    The output format to use for the signed certificate.  The value may be
+    either 'PEM' (to write the certificate in the text-based PEM format), or
+    'DER' (to write the certificate in the binary DER format).  If this is not
+    provided, then the PEM output format will be used.  If an output format of
+    'DER' is specified, then the --certificate-output-file argument must also
+    be provided.
+* --keystore {path}
+    The path to the key store file that contains the certificate that will be
+    used to sign the requested certificate.  This must be provided, and the
+    specified file must exist.
+--keystore-password {password}
+    The password (also called a passphrase or PIN) needed to access the
+    contents of the key store containing the signing certificate.  A key store
+    password is required when signing certificate requests, so one of the
+    --keystore-password, --keystore-password-file, or
+    --prompt-for-keystore-password arguments must be provided.
+--keystore-password-file {path}
+    The password (also called a passphrase or PIN) needed to access the
+    contents of the key store containing the signing certificate.  A key store
+    password is required when signing certificate requests, so one of the
+    --keystore-password, --keystore-password-file, or
+    --prompt-for-keystore-password arguments must be provided.  If a key store
+    password file is supplied, then the file must exist, must contain only one
+    line, and that line must consist only of the clear-text key store password.
+--prompt-for-keystore-password
+    Interactively prompt for the key store password.  A key store password is
+    required when signing certificate requests, so one of the
+    --keystore-password, --keystore-password-file, or
+    --prompt-for-keystore-password arguments must be provided.
+--private-key-password {password}
+    The password (also called a passphrase or PIN) to use to protect the
+    private key.  Although in many cases, private keys will be protected with
+    the same password as the key store itself, it is possible to use a
+    different password for the private key.  If an alternate private key
+    password is needed, then one of the --private-key-password,
+    --private-key-password-file, or --prompt-for-private-key-password arguments
+    should be used to provide that private key password.  If none of these
+    arguments is given, then the key store password will be used as the private
+    key password.
+--private-key-password-file {path}
+    The path to a file containing the password to use to protect the private
+    key.  Although in many cases, private keys will be protected with the same
+    password as the key store itself, it is possible to use a different
+    password for the private key.  If an alternate private key password is
+    needed, then one of the --private-key-password,
+    --private-key-password-file, or --prompt-for-private-key-password arguments
+    should be used to provide that private key password.  If none of these
+    arguments is given, then the key store password will be used as the private
+    key password.  If a private key password file is supplied, then the file
+    must exist, must contain only one line, and that line must consist only of
+    the clear-text private key password.
+--prompt-for-private-key-password
+    Interactively prompt for the password to use to protect the private key.
+    Although in many cases, private keys will be protected with the same
+    password as the key store itself, it is possible to use a different
+    password for the private key.  If an alternate private key password is
+    needed, then one of the --private-key-password,
+    --private-key-password-file, or --prompt-for-private-key-password arguments
+    should be used to provide that private key password.  If none of these
+    arguments is given, then the key store password will be used as the private
+    key password.
+--keystore-type {type}
+    The key store type for the key store.  This is usually not necessary when
+    signing certificates, but it may be required in some cases (for example,
+    when listing the certificates in a BCFKS key store when not operating in
+    FIPS 140-2-compliant mode).  The value must be one of 'JKS' (for the Java
+    Key Store format), 'PKCS12' (for the standard PKCS #12 format), 'PKCS11'
+    (for PKCS #11 tokens), or 'BCFKS' (for the Bouncy Castle FIPS
+    140-2-compliant Key Store format).  If this is not provided, then an
+    attempt will be made to automatically infer the correct key store type.
+* --signing-certificate-alias {alias}
+    The alias (also called a nickname) of the certificate to use to sign the
+    request.  This alias must exist in the key store, and it must reference a
+    private key with a certificate chain.
+--subject-dn {dn}
+    The subject DN for the signed certificate.  A subject DN typically includes
+    at least a 'CN' attribute (which in a server certificate should be the
+    hostname that clients are expected to use when connecting to the server,
+    and in other certificates indicates the purpose of that certificate), and
+    may also include additional attributes like 'OU' (the associated department
+    or organizational unit name), 'O' (the company or organization name), 'L'
+    (the city or locality name), 'ST' (the full name -- NOT the two-letter
+    abbreviation -- of the state or province), 'C' (the two-letter country code
+    -- NOT the full country name).  For example:
+    'CN=ldap.example.com,OU=Directory Services,O=Example
+    Corporation,L=Austin,ST=Texas,C=US'.  This argument is optional, and if it
+    is not provided, then the subject DN from the certificate signing request
+    will be used.
+--days-valid {value}
+    The number of days that the signed certificate should be considered valid.
+    If this argument is not provided, then a default value of 365 days will be
+    used.
+--validity-start-time {YYYYMMDDhhmmss}
+    The time that the signed certificate's validity window should start (that
+    is, the 'notBefore' value).  If this is not provided, then the current time
+    will be used.  If a value is given, it should be in the form
+    'YYYYMMDDhhmmss' (for example, '20180102123456').  Timestamp values are
+    assumed to be in the local time zone.
+--signature-algorithm {name}
+    The name of the algorithm to use to sign the certificate.  If this is not
+    provided, then the signature algorithm from the certificate signing request
+    will be used.
+--include-requested-extensions
+    Indicates that the signed certificate should include all of the extensions
+    requested in the certificate signing request (although extensions known to
+    apply to the certificate's issuer, like authority key identifier and issuer
+    alternative name, may be excluded), and the requested extensions will be
+    included in addition to any other extensions requested via command-line
+    arguments.  If this is not provided, then only the extensions requested via
+    command-line arguments will be included in the signed certificate.
+--subject-alternative-name-dns {name}
+    Indicates that the signed certificate should include a subject alternative
+    name extension with the specified DNS hostname.  This can be used to help
+    clients trust a server certificate if they connect to the server using a
+    different hostname than is included in the CN attribute of the certificate
+    subject.  This can be provided multiple times to specify multiple alternate
+    hostnames, and hostnames can have an asterisk as their leftmost component
+    (for example, '*.example.com' or '*.east.example.com') to match any value
+    in that component.  Each value must contain only ASCII characters, so
+    internationalized domain names must use the ASCII-Compatible Encoding (ACE)
+    described in RFC 5890.
+--subject-alternative-name-ip-address {name}
+    Indicates that the signed certificate should include a subject alternative
+    name extension with the specified IP address.  This can be used to help
+    clients trust a server certificate if they connect to the server using an
+    IP address rather than the hostname that is included in the CN attribute of
+    the certificate subject.  This can be provided multiple times to specify
+    multiple IP addresses, and each value must be a valid IPv4 or IPv6 address.
+    There is no support for wildcards, CIDR, other mechanisms for specifying a
+    range of addresses.
+--subject-alternative-name-email-address {name}
+    Indicates that the signed certificate should include a subject alternative
+    name extension with the specified email address (technically, RFC 822 name)
+    value.  This can be provided multiple times to specify multiple email
+    addresses.  Each value must contain only ASCII characters, so
+    internationalized email addresses must use the ASCII-Compatible Encoding
+    (ACE) described in RFC 5890.
+--subject-alternative-name-uri {uri}
+    Indicates that the signed certificate should include a subject alternative
+    name extension with the specified URI value.  This can be provided multiple
+    times to specify multiple URIs.  Each value must contain only ASCII
+    characters, so internationalized resource identifiers must be mapped to
+    URIs as described in RFC 3987.
+--subject-alternative-name-oid {oid}
+    Indicates that the signed certificate should include a subject alternative
+    name extension with the specified OID as a resource identifier.  This can
+    be provided multiple times to specify multiple OIDs, and each value must be
+    the string representation of a valid object identifier.
+--issuer-alternative-name-dns {name}
+    Indicates that the signed certificate should include an issuer alternative
+    name extension with the specified DNS hostname.  This can be provided
+    multiple times to specify multiple alternate hostnames, and hostnames can
+    have an asterisk as their leftmost component (for example, '*.example.com'
+    or '*.east.example.com') to match any value in that component.  Each value
+    must contain only ASCII characters, so internationalized domain names must
+    use the ASCII-Compatible Encoding (ACE) described in RFC 5890.
+--issuer-alternative-name-ip-address {name}
+    Indicates that the signed certificate should include an issuer alternative
+    name extension with the specified IP address.  This can be provided
+    multiple times to specify multiple IP addresses, and each value must be a
+    valid IPv4 or IPv6 address.  There is no support for wildcards, CIDR, other
+    mechanisms for specifying a range of addresses.
+--issuer-alternative-name-email-address {name}
+    Indicates that the signed certificate should include an issuer alternative
+    name extension with the specified email address (technically, RFC 822 name)
+    value.  This can be provided multiple times to specify multiple email
+    addresses.  Each value must contain only ASCII characters, so
+    internationalized email addresses must use the ASCII-Compatible Encoding
+    (ACE) described in RFC 5890.
+--issuer-alternative-name-uri {uri}
+    Indicates that the signed certificate should include an issuer alternative
+    name extension with the specified URI value.  This can be provided multiple
+    times to specify multiple URIs.  Each value must contain only ASCII
+    characters, so internationalized resource identifiers must be mapped to
+    URIs as described in RFC 3987.
+--issuer-alternative-name-oid {oid}
+    Indicates that the signed certificate should include an issuer alternative
+    name extension with the specified OID as a resource identifier.  This can
+    be provided multiple times to specify multiple OIDs, and each value must be
+    the string representation of a valid object identifier.
+--basic-constraints-is-ca {true|false}
+    Indicates that the signed certificate should include a basic constraints
+    extension that indicates whether the certificate should be considered a
+    certification authority.  If present, the value must be either 'true' or
+    'false'.
+--basic-constraints-maximum-path-length {value}
+    Indicates that the certificate should include a basic constraints extension
+    that specifies that there must not be more than the specified number of
+    intermediate certificates between that issuer certificate and the subject
+    certificate in a certificate chain.  This argument can only be provided in
+    conjunction with a --basic-constraints-is-ca value of 'true'.
+--key-usage {value}
+    Indicates that the signed certificate should include a key usage extension
+    that indicates that the certificate can be used for a specified purpose.
+    Allowed values for this argument are 'digital-signature',
+    'non-repudiation', 'key-encipherment', 'data-encipherment',
+    'key-agreement', 'key-cert-sign', 'crl-sign', 'encipher-only', and
+    'decipher-only'.  This argument can be provided multiple times to specify
+    multiple key usage values.
+--extended-key-usage {value}
+    Indicates that the signed certificate should include an extended key usage
+    extension that indicates that the certificate can be used for a specified
+    purpose.  Allowed values for this argument are 'server-auth',
+    'client-auth', 'code-signing', 'email-protection', 'time-stamping', and
+    'ocsp-signing', or the string representation of any valid object
+    identifier.  This argument can be provided multiple times to specify
+    multiple extended key usage values.
+--extension {value}
+    Indicates that the signed certificate should include an extension with the
+    specified content.  The value must be in the form oid:criticality:value,
+    where oid is the OID that identifies the type of extension, criticality is
+    a value of either 'true' or 'false', and value is the hexadecimal
+    representation of the extension value (for example, --ext
+    2.5.29.19:true:30030101ff).
+--no-prompt
+    Sign the request without prompting the end user.  By default, the
+    certificate signing request will be displayed and the user will be
+    interactively prompted about whether to sign it.
+--display-keytool-command
+    Display a command that can be invoked to achieve a similar result with the
+    Java keytool utility.  Note that this may just be an approximation, since
+    the manage-certificates and keytool utilities do not provide exactly the
+    same sets of functionality.
+
+* Indicates the argument is required
+
+Examples
+
+  Signs the certificate signing request contained in file 'server-cert.csr'
+  using the 'ca-cert' certificate contained in the 'config/keystore' key store.
+  The subject DN, signature algorithm, and extensions from the provided
+  certificate signing request will be used to generate the corresponding values
+  in the signed certificate, and the certificate will be valid for 365 days,
+  starting immediately.  The signed certificate will be written to standard
+  output in PEM format.
+
+    manage-certificates sign-certificate-signing-request \
+         sign-certificate-signing-request \
+         --request-input-file server-cert.csr --keystore config/keystore \
+         --keystore-password-file config/keystore.pin \
+         --signing-certificate-alias ca-cert --include-requested-extensions
+
+  Signs the certificate signing request contained in file 'server-cert.csr'
+  using the 'ca-cert' certificate contained in the 'config/keystore' key store.
+  The subject DN, signature algorithm, and extensions from the provided
+  certificate signing request will be used to generate the corresponding values
+  in the signed certificate, and the certificate will also include an issuer
+  alternative name extension with an email address of 'ca@example.com'.  The
+  signed certificate will be valid for 730 days starting at midnight on January
+  1, 2017 in the local timezone.  The signed certificate will be written to the
+  file 'server-cert.der' file in the binary DER format.
+
+    manage-certificates sign-certificate-signing-request \
+         sign-certificate-signing-request \
+         --request-input-file server-cert.csr \
+         --certificate-output-file server-cert.der --output-format DER \
+         --keystore config/keystore \
+         --keystore-password-file config/keystore.pin \
+         --signing-certificate-alias ca-cert --days-valid 730 \
+         --validity-start-time 20170101000000 --include-requested-extensions \
+         --issuer-alternative-name-email-address 'ca@example.com'
+
+
+
+Usage for subcommand change-certificate-alias:
+
+Changes the alias of a certificate in a key store.
+
+Usage:  change-certificate-alias {options}
+
+Available options include:
+* --keystore {path}
+    The path to the key store file containing the alias to rename.  This is
+    required, and the keystore file must exist.
+--keystore-password {password}
+    The password (also called a passphrase or PIN) needed to access the
+    contents of the key store.  A key store password is required, so one of the
+    --keystore-password, --keystore-password-file, or
+    --prompt-for-keystore-password arguments must be provided.
+--keystore-password-file {path}
+    The path to a file containing the password needed to access the contents of
+    the key store.  A key store password is required, so one of the
+    --keystore-password, --keystore-password-file, or
+    --prompt-for-keystore-password arguments must be provided.  If a key store
+    password file is supplied, then the file must exist, must contain only one
+    line, and that line must consist only of the clear-text key store password.
+--prompt-for-keystore-password
+    Interactively prompt for the key store password.  A key store password is
+    required so one of the --keystore-password, --keystore-password-file, or
+    --prompt-for-keystore-password arguments must be provided.
+--private-key-password {password}
+    The password (also called a passphrase or PIN) used to protect the private
+    key.  In many cases, the private key password will be the same as the
+    password used to protect the key store itself, and in such instances, the
+    private key password can be omitted and the key store password will be
+    used.  However, if the target alias includes a private key, and that
+    private key is protected with a different password than the key store
+    itself, then one of the --private-key-password,
+    --private-key-password-file, or --prompt-for-private-key-password arguments
+    must be provided.
+--private-key-password-file {path}
+    The path to a file containing the password used to protect the private key.
+    In many cases, the private key password will be the same as the password
+    used to protect the key store itself, and in such instances, the private
+    key password can be omitted and the key store password will be used.
+    However, if the target alias includes a private key, and that private key
+    is protected with a different password than the key store itself, then one
+    of the --private-key-password, --private-key-password-file, or
+    --prompt-for-private-key-password arguments must be provided.  If a private
+    key password file is supplied, then the file must exist, must contain only
+    one line, and that line must consist only of the clear-text private key
+    password.
+--prompt-for-private-key-password
+    Interactively prompt for the private key password.  In many cases, the
+    private key password will be the same as the password used to protect the
+    key store itself, and in such instances, the private key password can be
+    omitted and the key store password will be used.  However, if the target
+    alias includes a private key, and that private key is protected with a
+    different password than the key store itself, then one of the
+    --private-key-password, --private-key-password-file, or
+    --prompt-for-private-key-password arguments must be provided.
+--keystore-type {type}
+    The key store type for the key store.  This is usually not necessary when
+    changing a certificate alias, but it may be required in some cases (for
+    example, when listing the certificates in a BCFKS key store when not
+    operating in FIPS 140-2-compliant mode).  The value must be one of 'JKS'
+    (for the Java Key Store format), 'PKCS12' (for the standard PKCS #12
+    format), 'PKCS11' (for PKCS #11 tokens), or 'BCFKS' (for the Bouncy Castle
+    FIPS 140-2-compliant Key Store format).  If this is not provided, then an
+    attempt will be made to automatically infer the correct key store type.
+* --current-alias, --from {alias}
+    The current alias for the key store entry to rename.  This is required, and
+    it may only be provided once.
+* --new-alias, --to {alias}
+    The new alias to assign to the target entry in the key store.  This is
+    required, and it may only be provided once.
+--display-keytool-command
+    Display a command that can be invoked to achieve a similar result with the
+    Java keytool utility.  Note that this may just be an approximation, since
+    the manage-certificates and keytool utilities do not provide exactly the
+    same sets of functionality.
+
+* Indicates the argument is required
+
+Examples
+
+  Changes the alias of the existing 'server-cert' certificate to be
+  'server-certificate'.
+
+    manage-certificates change-certificate-alias change-certificate-alias \
+         --keystore config/keystore \
+         --keystore-password-file config/keystore.pin \
+         --current-alias server-cert --new-alias server-certificate \
+         --display-keytool-command
+
+
+
+Usage for subcommand change-keystore-password:
+
+Changes the password used to protect the contents of a key store.
+
+Usage:  change-keystore-password {options}
+
+Available options include:
+* --keystore {path}
+    The path to the key store file for which to change the password.  This is
+    required, and the key store file must exist.
+--current-keystore-password {password}
+    The current password for the key store.  The current password is required,
+    so one of the --current-keystore-password,
+    --current-keystore-password-file, or --prompt-for-current-keystore-password
+    arguments must be provided.
+--current-keystore-password-file {path}
+    The path to a file containing the current password for the key store.  The
+    current password is required, so one of the --current-keystore-password,
+    --current-keystore-password-file, or --prompt-for-current-keystore-password
+    arguments must be provided.  If a key store password file is supplied, then
+    the file must exist, must contain only one line, and that line must consist
+    only of the clear-text key store password.
+--prompt-for-current-keystore-password
+    Interactively prompt for the current key store password.  The current
+    password is required, so one of the --current-keystore-password,
+    --current-keystore-password-file, or --prompt-for-current-keystore-password
+    arguments must be provided.
+--new-keystore-password {password}
+    The new password for the key store.  The new password is required, so one
+    of the --new-keystore-password, --new-keystore-password-file, or
+    --prompt-for-new-keystore-password arguments must be provided.
+--new-keystore-password-file {path}
+    The path to a file containing the new password for the key store.  The new
+    password is required, so one of the --new-keystore-password,
+    --new-keystore-password-file, or --prompt-for-new-keystore-password
+    arguments must be provided.  If a key store password file is supplied, then
+    the file must exist, must contain only one line, and that line must consist
+    only of the clear-text key store password.
+--prompt-for-new-keystore-password
+    Interactively prompt for the new key store password.  The new password is
+    required, so one of the --new-keystore-password,
+    --new-keystore-password-file, or --prompt-for-new-keystore-password
+    arguments must be provided.
+--display-keytool-command
+    Display a command that can be invoked to achieve a similar result with the
+    Java keytool utility.  Note that this may just be an approximation, since
+    the manage-certificates and keytool utilities do not provide exactly the
+    same sets of functionality.
+
+* Indicates the argument is required
+
+Examples
+
+  Changes the password for the 'config/keystore' key store from the current
+  password contained in file 'config/current.pin' to the new password contained
+  in file 'config/new.pin'.
+
+    manage-certificates change-keystore-password change-keystore-password \
+         --keystore config/keystore \
+         --current-keystore-password-file config/current.pin \
+         --new-keystore-password-file config/new.pin \
+         --display-keytool-command
+
+
+
+Usage for subcommand change-private-key-password:
+
+Changes the password used to protect a specified private key.
+
+Usage:  change-private-key-password {options}
+
+Available options include:
+* --keystore {path}
+    The path to the key store file containing the private key entry for which
+    to change the password.  This is required, and the key store file must
+    exist.
+--keystore-password {password}
+    The password (also called a passphrase or PIN) needed to access the
+    contents of the key store.  A key store password is required, so one of the
+    --keystore-password, --keystore-password-file, or
+    --prompt-for-keystore-password arguments must be provided.
+--keystore-password-file {path}
+    The path to a file containing the password needed to access the contents of
+    the key store.  A key store password is required, so one of the
+    --keystore-password, --keystore-password-file, or
+    --prompt-for-keystore-password arguments must be provided.  If a key store
+    password file is supplied, then the file must exist, must contain only one
+    line, and that line must consist only of the clear-text key store password.
+--prompt-for-keystore-password
+    Interactively prompt for the key store password.  A key store password is
+    required so one of the --keystore-password, --keystore-password-file, or
+    --prompt-for-keystore-password arguments must be provided.
+--keystore-type {type}
+    The key store type for the key store.  This is usually not necessary when
+    changing private key passwords, but it may be required in some cases (for
+    example, when listing the certificates in a BCFKS key store when not
+    operating in FIPS 140-2-compliant mode).  The value must be one of 'JKS'
+    (for the Java Key Store format), 'PKCS12' (for the standard PKCS #12
+    format), 'PKCS11' (for PKCS #11 tokens), or 'BCFKS' (for the Bouncy Castle
+    FIPS 140-2-compliant Key Store format).  If this is not provided, then an
+    attempt will be made to automatically infer the correct key store type.
+* --alias {alias}
+    The alias (also called a nickname) of the private key entry for which to
+    change the password.  This is required.
+--current-private-key-password {password}
+    The current password used to encrypt the private key.  The current private
+    key password is required, so one of the --current-private-key-password,
+    --current-private-key-password-file, and
+    --prompt-for-current-private-key-password arguments is required.
+--current-private-key-password-file {path}
+    The path to a file containing the current password used to encrypt the
+    private key.  The current private key password is required, so one of the
+    --current-private-key-password, --current-private-key-password-file, and
+    --prompt-for-current-private-key-password arguments is required.  If a
+    private key password file is supplied, then the file must exist, must
+    contain only one line, and that line must consist only of the clear-text
+    private key password.
+--prompt-for-current-private-key-password
+    Interactively prompt for the current private key password.  The current
+    private key password is required, so one of the
+    --current-private-key-password, --current-private-key-password-file, and
+    --prompt-for-current-private-key-password arguments is required.
+--new-private-key-password {password}
+    The new password to use to encrypt the private key.  The new private key
+    password is required, so one of the --new-private-key-password,
+    --new-private-key-password-file, and --prompt-for-new-private-key-password
+    arguments is required.
+--new-private-key-password-file {path}
+    The path to a file containing the new password to use to encrypt the
+    private key.  The new private key password is required, so one of the
+    --new-private-key-password, --new-private-key-password-file, and
+    --prompt-for-new-private-key-password arguments is required.  If a private
+    key password file is supplied, then the file must exist, must contain only
+    one line, and that line must consist only of the clear-text private key
+    password.
+--prompt-for-new-private-key-password
+    Interactively prompt for the new private key password.  The new private key
+    password is required, so one of the --new-private-key-password,
+    --new-private-key-password-file, and --prompt-for-new-private-key-password
+    arguments is required.
+--display-keytool-command
+    Display a command that can be invoked to achieve a similar result with the
+    Java keytool utility.  Note that this may just be an approximation, since
+    the manage-certificates and keytool utilities do not provide exactly the
+    same sets of functionality.
+
+* Indicates the argument is required
+
+Examples
+
+  Changes the password for the 'server-cert' private key entry in the
+  'config/keystore' key store from the current password contained in file
+  'config/current.pin' to the new password contained in file 'config/new.pin'.
+
+    manage-certificates change-private-key-password \
+         change-private-key-password --keystore config/keystore \
+         --keystore-password-file config/keystore.pin --alias server-cert \
+         --current-private-key-password-file config/current.pin \
+         --new-private-key-password-file config/new.pin \
+         --display-keytool-command
+
+
+
+Usage for subcommand copy-keystore:
+
+Copies the contents of one key store to another.  If the destination key store
+does not exist, then a new one will be created (allowing you to convert one
+type of key store to another).  If the destination key store does exist, then
+there must not be any conflicts between the aliases of the source and
+destination key stores.
+
+Usage:  copy-keystore {options}
+
+Available options include:
+* --source-keystore {path}
+    The path to the source key store whose contents should be copied.  This
+    must be provided, and the file must exist.
+--source-keystore-password {password}
+    The password needed to access the contents of the source key store.
+    Exactly one of the --source-keystore-password,
+    --source-keystore-password-file, and --prompt-for-source-keystore-password
+    arguments must be provided.
+--source-keystore-password-file {path}
+    The path to a file containing the password needed to access the contents of
+    the source key store.  Exactly one of the --source-keystore-password,
+    --source-keystore-password-file, and --prompt-for-source-keystore-password
+    arguments must be provided.
+--prompt-for-source-keystore-password
+    Interactively prompt for the password needed to access the contents of the
+    source key store.  Exactly one of the --source-keystore-password,
+    --source-keystore-password-file, and --prompt-for-source-keystore-password
+    arguments must be provided.
+--source-private-key-password {password}
+    The password needed to access private keys in the source key store.  At
+    most one of the --source-keystore-password,
+    --source-keystore-password-file, and --prompt-for-source-keystore-password
+    arguments must be provided, and if none of them is provided, then the
+    source key store password will be used as the source private key password.
+--source-private-key-password-file {path}
+    The path to a file containing the password needed to access the private
+    keys in the source key store.  At most one of the
+    --source-keystore-password, --source-keystore-password-file, and
+    --prompt-for-source-keystore-password arguments must be provided, and if
+    none of them is provided, then the source key store password will be used
+    as the source private key password.
+--prompt-for-source-private-key-password
+    Interactively prompt for the password needed to access private keys in the
+    source key store.  At most one of the --source-keystore-password,
+    --source-keystore-password-file, and --prompt-for-source-keystore-password
+    arguments must be provided, and if none of them is provided, then the
+    source key store password will be used as the source private key password.
+--source-keystore-type {type}
+    The key store type for the source key store.  If provided, the value must
+    be one of 'JKS' (for the Java Key Store format), 'PKCS12' (for the standard
+    PKCS #12 key store format), 'PKCS11' (for PKCS #11 tokens), or 'BCFKS' (for
+    the Bouncy Castle FIPS 140-2-compliant Key Store format).  If this is not
+    provided, then an attempt will be made to automatically infer the correct
+    key store type.
+* --destination-keystore {path}
+    The path to the destination key store to which the source key store
+    contents should be copied.  This must be provided, but if the file does not
+    exist, then a new key store will be created.
+--destination-keystore-password {password}
+    The password needed to access the contents of the destination key store.
+    At most one of the --destination-keystore-password,
+    --destination-keystore-password-file, and
+    --prompt-for-destination-keystore-password arguments may be provided, and
+    if none of them is given, then the source key store password will be used
+    as the destination key store password.
+--destination-keystore-password-file {path}
+    The path to a file containing the password needed to access the contents of
+    the destination key store.  At most one of the
+    --destination-keystore-password, --destination-keystore-password-file, and
+    --prompt-for-destination-keystore-password arguments may be provided, and
+    if none of them is given, then the source key store password will be used
+    as the destination key store password.
+--prompt-for-destination-keystore-password
+    Interactively prompt for the password needed to access the contents of the
+    destination key store.  At most one of the --destination-keystore-password,
+    --destination-keystore-password-file, and
+    --prompt-for-destination-keystore-password arguments may be provided, and
+    if none of them is given, then the source key store password will be used
+    as the destination key store password.
+--destination-private-key-password {password}
+    The password needed to access private keys in the destination key store.
+    At most one of the --destination-keystore-password,
+    --destination-keystore-password-file, and
+    --prompt-for-destination-keystore-password arguments must be provided, and
+    if none of them is provided, then the destination key store password will
+    be used as the destination private key password.
+--destination-private-key-password-file {path}
+    The path to a file containing the password needed to access the private
+    keys in the destination key store.  At most one of the
+    --destination-keystore-password, --destination-keystore-password-file, and
+    --prompt-for-destination-keystore-password arguments must be provided, and
+    if none of them is provided, then the destination key store password will
+    be used as the destination private key password.
+--prompt-for-destination-private-key-password
+    Interactively prompt for the password needed to access private keys in the
+    destination key store.  At most one of the --destination-keystore-password,
+    --destination-keystore-password-file, and
+    --prompt-for-destination-keystore-password arguments must be provided, and
+    if none of them is provided, then the destination key store password will
+    be used as the destination private key password.
+--destination-keystore-type {type}
+    The key store type for the destination key store.  If provided, the value
+    must be one of 'JKS' (for the Java Key Store format), 'PKCS12' (for the
+    standard PKCS #12 key store format), 'PKCS11' (for PKCS #11 tokens), or
+    'BCFKS' (for the Bouncy Castle FIPS 140-2-compliant Key Store format).  If
+    this is not provided, then an attempt will be made to automatically infer
+    the correct key store type if the destination key store exists, or a
+    default type of 'JKS' will be used if the file does not exist.
+--alias {alias}
+    The alias for a certificate to copy from the source key store to the
+    destination key store.  This may be provided multiple times if multiple
+    specific certificates should be copied.  If this is not provided, then all
+    certificates in the source key store will be copied to the destination key
+    store.
+
+* Indicates the argument is required
+
+Examples
+
+  Copies the contents of the 'keystore.jks' JKS key store to the 'keystore.p12'
+  PKCS #12 key store.
+
+    manage-certificates copy-keystore copy-keystore \
+         --source-keystore config/keystore.jks \
+         --source-keystore-password-file config/keystore.pin \
+         --source-keystore-type JKS \
+         --destination-keystore config/keystore.p12 \
+         --destination-keystore-password-file config/keystore.pin \
+         --destination-keystore-type PKCS12
+
+
+
+Usage for subcommand retrieve-server-certificate:
+
+Initiates a secure connection to a server to get that server's certificate
+chain, and then displays that certificate and optionally writes it to a file.
+
+Usage:  retrieve-server-certificate {options}
+
+Available options include:
+* -h, --hostname {host}
+    The hostname or IP address of the server to which the connection should be
+    established.  This must be provided.
+* -p, --port {port}
+    The TCP port number of the server to which the connection should be
+    established.  Unless the --use-ldap-start-tls argument is provided, the
+    port number must be one on which the server expects to accept TLS-based
+    connections.  If the --use-ldap-start-tls argument is provided, then the
+    specified port must be one on which an LDAP server is listening for
+    non-secure connections but on which clients may use the StartTLS extended
+    operation to transition to using secure communication.  Standard secure
+    port numbers include 636 for LDAPS and 443 for HTTPS, and the standard
+    non-secure port for LDAP is 389.  This must be provided.
+-q, --use-ldap-start-tls
+    Indicates that the tool should initially establish a non-secure connection
+    to an LDAP server, and then use the StartTLS extended operation to
+    transition to using secure communication.
+--output-file {path}
+    The path to the output file to which the retrieved certificates should be
+    written.  If this argument is provided, then a PEM or DER representation of
+    all certificates in the chain will be written to the specified file.  If
+    this argument is not provided, then information about the certificate will
+    only be written to standard output.
+--output-format {format}
+    The format in which the certificates should be written to the specified
+    output file.  The value may be either 'PEM' (to use the text-based PEM
+    format), or 'DER' (to use the binary DER format).  This argument may only
+    be provided if the --output-file argument is also given.  If this is not
+    provided, then the PEM output format will be used.
+--only-peer-certificate
+    Only provide information about the peer certificate.  If this argument is
+    not provided, then the tool will provide information about all certificates
+    in the presented chain.
+--enableSSLDebugging
+    Enable Java's low-level support for debugging SSL/TLS communication.  This
+    is equivalent to setting the 'javax.net.debug' property to 'all'.
+--verbose
+    Display verbose information about the certificates that are retrieved.
+    This will only affect what is written to standard output and will not alter
+    what may be written to the output file (if one was requested).
+
+* Indicates the argument is required
+
+Examples
+
+  Establish a secure connection to ds.example.com on port 636 and display basic
+  information about the server's certificate chain.
+
+    manage-certificates retrieve-server-certificate \
+         retrieve-server-certificate --hostname ds.example.com --port 636
+
+  Establish an initially insecure connection to ds.example.com on port 389 and
+  then invoke an LDAP StartTLS extended operation to establish a secure
+  communication channel.  Display verbose information about the peer
+  certificate (ignoring any issuer certificates), and write a PEM
+  representation of that certificate to the 'ds-cert.pem' file.
+
+    manage-certificates retrieve-server-certificate \
+         retrieve-server-certificate --hostname ds.example.com --port 389 \
+         --use-ldap-start-tls --only-peer-certificate \
+         --output-file ds-cert.pem --output-format PEM --verbose
+
+
+
+Usage for subcommand trust-server-certificate:
+
+Initiates a secure connection to a server to get that server's certificate
+chain, and then adds those certificates to a key store so that it can be used
+as a trust store for that server.
+
+Usage:  trust-server-certificate {options}
+
+Available options include:
+* -h, --hostname {host}
+    The hostname or IP address of the server to which the connection should be
+    established.  This must be provided.
+* -p, --port {port}
+    The TCP port number of the server to which the connection should be
+    established.  Unless the --use-ldap-start-tls argument is provided, the
+    port number must be one on which the server expects to accept TLS-based
+    connections.  If the --use-ldap-start-tls argument is provided, then the
+    specified port must be one on which an LDAP server is listening for
+    non-secure connections but on which clients may use the StartTLS extended
+    operation to transition to using secure communication.  Standard secure
+    port numbers include 636 for LDAPS and 443 for HTTPS, and the standard
+    non-secure port for LDAP is 389.  This must be provided.
+-q, --use-ldap-start-tls
+    Indicates that the tool should initially establish a non-secure connection
+    to an LDAP server, and then use the StartTLS extended operation to
+    transition to using secure communication.
+* --keystore {path}
+    The path to the key store file to which the certificates should be added.
+    This is required, but if the file does not exist, then it will be created.
+--keystore-password {password}
+    The password (also called a passphrase or PIN) needed to access the
+    contents of the key store.  If the key store does not exist, then it will
+    be created with this password.  A key store password is required when
+    importing certificates, so one of the --keystore-password,
+    --keystore-password-file, or --prompt-for-keystore-password arguments must
+    be provided.  The password must contain at least six characters.
+--keystore-password-file {path}
+    The password (also called a passphrase or PIN) needed to access the
+    contents of the key store.  If the key store does not exist, then it will
+    be created with this password.  A key store password is required when
+    importing certificates, so one of the --keystore-password,
+    --keystore-password-file, or --prompt-for-keystore-password arguments must
+    be provided.  If a key store password file is supplied, then the file must
+    exist, must contain only one line, and that line must consist only of the
+    clear-text key store password.  The password must contain at least six
+    characters.
+--prompt-for-keystore-password
+    Interactively prompt for the key store password.  If the key store does not
+    exist, then it will be created with this password.  A key store password is
+    required when importing certificates, so one of the --keystore-password,
+    --keystore-password-file, or --prompt-for-keystore-password arguments must
+    be provided.  The password must contain at least six characters.
+--keystore-type {type}
+    The key store type for the key store to create.  This argument should only
+    be provided when creating a new key store, and it will be ignored if the
+    key store already exists.  The value must be one of 'JKS' (for the Java Key
+    Store format), 'PKCS12' (for the standard PKCS #12 format), 'PKCS11' (for
+    PKCS #11 tokens), or 'BCFKS' (for the Bouncy Castle FIPS 140-2-compliant
+    Key Store format).  If this is not provided, then a default key store type
+    of 'JKS' will be used for newly-created key stores.
+--alias {alias}
+    The alias (also called a nickname) to use for the first certificate to add
+    to the key store.  This alias must not already be in use in the key store.
+    If multiple certificates are to be imported, then the first certificate
+    imported will use this alias, and subsequent certificates will have either
+    '-issuer' (if there is only one issuer certificate) or '-issuer-#' (if
+    there are multiple issuers, where # will be replaced with an incrementing
+    number for each subsequent issuer).  If this is omitted, then a default
+    alias will be constructed from the hostname and port number.
+--issuers-only
+    Indicates that the tool should only update the key store to include the
+    issuer certificates for the target server, but omit the server certificate
+    at the head of the chain.  This may be useful in environments in which all
+    servers are signed by a common issuer and it is sufficient to trust just
+    the issuer certificates.  This argument will not have any effect for
+    self-signed certificates in which a certificate is its own issuer.
+--enableSSLDebugging
+    Enable Java's low-level support for debugging SSL/TLS communication.  This
+    is equivalent to setting the 'javax.net.debug' property to 'all'.
+--verbose
+    Display verbose information about the certificates in the server's
+    certificate chain.
+--no-prompt
+    Trust the server certificates without prompting the end user.  By default,
+    the server certificate chain will be displayed and the user will be
+    interactively prompted about whether to trust the certificate.
+
+* Indicates the argument is required
+
+Examples
+
+  Establishes a secure connection to the server ds.example.com on port 636 and
+  adds that server's certificate chain to the 'config/truststore' key store
+  with a base alias of 'ds.example.com:636'.  The tool will display verbose
+  information about the certificate chain presented by the server, and will
+  interactively prompt about whether to trust that chain.
+
+    manage-certificates trust-server-certificate trust-server-certificate \
+         --hostname ds.example.com --port 636 --keystore config/truststore \
+         --keystore-password-file config/truststore.pin --verbose
+
+  Establishes a non-secure connection to ds.example.com on port 389, and then
+  uses the LDAP StartTLS extended operation to transition to a secure
+  connection.  It will then add the server's issuer certificates to the
+  'config/truststore' key store with a base alias of 'ds-start-tls-cert'.  The
+  tool will trust the certificate chain without any confirmation from the user.
+
+    manage-certificates trust-server-certificate trust-server-certificate \
+         --hostname ds.example.com --port 389 --use-ldap-start-tls \
+         --keystore config/truststore \
+         --keystore-password-file config/truststore.pin --issuers-only \
+         --alias ds-start-tls-cert --no-prompt
+
+
+
+Usage for subcommand check-certificate-usability:
+
+Examines a key store to determine how suitable a specified certificate is for
+use as a server certificate.
+
+Usage:  check-certificate-usability {options}
+
+Available options include:
+* --keystore {path}
+    The path to the key store file containing the certificate to check.  This
+    is required, and the key store file must exist.
+--keystore-password {password}
+    The password (also called a passphrase or PIN) needed to access the
+    contents of the key store.  A key store password is required, so one of the
+    --keystore-password, --keystore-password-file, or
+    --prompt-for-keystore-password arguments must be provided.
+--keystore-password-file {path}
+    The path to a file containing the password needed to access the contents of
+    the key store.  A key store password is required, so one of the
+    --keystore-password, --keystore-password-file, or
+    --prompt-for-keystore-password arguments must be provided.  If a key store
+    password file is supplied, then the file must exist, must contain only one
+    line, and that line must consist only of the clear-text key store password.
+--prompt-for-keystore-password
+    Interactively prompt for the key store password.  A key store password is
+    required, so one of the --keystore-password, --keystore-password-file, or
+    --prompt-for-keystore-password arguments must be provided.
+--keystore-type {type}
+    The key store type for the key store.  This is usually not necessary when
+    checking certificate usability, but it may be required in some cases (for
+    example, when listing the certificates in a BCFKS key store when not
+    operating in FIPS 140-2-compliant mode).  The value must be one of 'JKS'
+    (for the Java Key Store format), 'PKCS12' (for the standard PKCS #12
+    format), 'PKCS11' (for PKCS #11 tokens), or 'BCFKS' (for the Bouncy Castle
+    FIPS 140-2-compliant Key Store format).  If this is not provided, then an
+    attempt will be made to automatically infer the correct key store type.
+* --alias {alias}
+    The alias (also called a nickname) of the certificate to examine.  This is
+    required, and it may only be provided once.
+--allow-sha-1-signature-for-issuer-certificates
+    Do not fail the validation check merely because an issuer certificate
+    contains a signature based on the SHA-1 digest algorithm.  The SHA-1
+    algorithm is considered weak, and some clients may reject a certificate
+    chain that includes a certificate with a SHA-1-based signature, but because
+    some commercial authorities still use SHA-1-based root certificates, this
+    argument makes it possible to ignore this warning for issuer certificates.
+
+* Indicates the argument is required
+
+Examples
+
+  Check the 'server-cert' certificate in the 'config/keystore' key store to
+  determine how suitable it is for use as a server certificate.
+
+    manage-certificates check-certificate-usability \
+         check-certificate-usability --keystore config/keystore \
+         --keystore-password-file config/keystore.pin --alias server-cert
+
+
+
+Usage for subcommand display-certificate-file:
+
+Displays information about all of the certificates contained in a file.  The
+certificates may be formatted in either the text-based PEM or the binary DER
+format, and if the file multiple certificates, then all certificates must use
+the same format.
+
+Usage:  display-certificate-file {options}
+
+Available options include:
+* --certificate-file {path}
+    The path to a file containing the certificates to be printed.  The
+    certificates may be formatted in either the text-based PEM format or the
+    binary DER format.  If the certificates are in PEM format, then each
+    certificate must include the begin header and end footer, and blank lines
+    and lines that start with the octothorpe character (#) will be ignored.  If
+    the certificates are in DER format, then there must not be any delimiter
+    between the certificates.
+--verbose
+    Display verbose information about each of the certificates.  If this
+    argument is not provided, then the listing will only include basic summary
+    information for each certificate, including its subject and issuer DNs,
+    validity start and end times, and fingerprints.  If this argument is
+    provided, then additional information, including the X.509 certificate
+    version, serial number, signature algorithm and value, public key algorithm
+    and content, and extensions, will also be included.
+--display-keytool-command
+    Display a command that can be invoked to achieve a similar result with the
+    Java keytool utility.  Note that this may just be an approximation, since
+    the manage-certificates and keytool utilities do not provide exactly the
+    same sets of functionality.
+
+* Indicates the argument is required
+
+Examples
+
+  Display basic information about each of the certificates in file
+  'certificate.pem'.
+
+    manage-certificates display-certificate-file display-certificate-file \
+         --certificate-file certificate.pem
+
+  Display verbose information about each of the certificates in file
+  'certificate.pem'.  It will also display a command that can be used to
+  accomplish a similar result using the Java keytool utility.
+
+    manage-certificates display-certificate-file display-certificate-file \
+         --certificate-file certificate.pem --verbose \
+         --display-keytool-command
+
+
+
+Usage for subcommand display-certificate-signing-request-file:
+
+Displays information about a certificate signing request (CSR) contained in a
+file.  The CSR may be formatted in either the text-based PEM or the binary DER
+format.
+
+Usage:  display-certificate-signing-request-file {options}
+
+Available options include:
+* --certificate-signing-request-file {path}
+    The path to a file containing the certificate signing request (CSR) to be
+    printed.  The CSR may be formatted in either the text-based PEM format or
+    the binary DER format.  If the request is in PEM format, it must include
+    the begin header and end footer, and blank lines and lines that start with
+    the octothorpe character (#) will be ignored.  The file must contain only a
+    single certificate signing request.
+--verbose
+    Display verbose information about the certificate signing request.  If this
+    argument is not provided, then the listing will only include basic summary
+    information for the request, including its subject DN, signature algorithm,
+    and public key algorithm.  If this argument is provided, then additional
+    information about the signature, public key, and extensions will be
+    included.
+--display-keytool-command
+    Display a command that can be invoked to achieve a similar result with the
+    Java keytool utility.  Note that this may just be an approximation, since
+    the manage-certificates and keytool utilities do not provide exactly the
+    same sets of functionality.
+
+* Indicates the argument is required
+
+Examples
+
+  Display information about the certificate signing request in file
+  'server-cert.csr', as well as a command that can be used to accomplish a
+  similar result using the Java keytool utility.
+
+    manage-certificates display-certificate-signing-request-file \
+         display-certificate-signing-request-file \
+         --certificate-signing-request-file server-cert.csr \
+         --display-keytool-command

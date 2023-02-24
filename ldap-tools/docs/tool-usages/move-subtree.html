@@ -1,0 +1,375 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>The move-subtree Command-Line Tool</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="../unboundid.css" type="text/css">
+    <link rel="shortcut icon" href="../images/favicon.ico">
+  </head>
+
+  <body>
+    <h1>The move-subtree Command-Line Tool</h1>
+
+    <p>
+      Move all entries in a specified subtree from one server to another.
+    </p>
+    <h3>Usage</h3>
+    <blockquote><pre>move-subtree <i>{arguments}</i></pre></blockquote>
+    <h3>Source Connection and Authentication Arguments</h3>
+    <ul>
+      <li>
+        <tt>--sourceHostname <i>{host}</i></tt> &mdash; The IP address or resolvable name to use to connect to the directory server.  If this is not provided, then a default value of 'localhost' will be used.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourcePort <i>{port}</i></tt> &mdash; The port to use to connect to the directory server.  If this is not provided, then a default value of 389 will be used.
+        <br>
+        The specified value must not be less than 1 or greater than 65 535.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceBindDN <i>{dn}</i></tt> &mdash; The DN to use to bind to the directory server when performing simple authentication.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceBindPassword <i>{password}</i></tt> &mdash; The password to use to bind to the directory server when performing simple authentication or a password-based SASL mechanism.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceBindPasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to bind to the directory server when performing simple authentication or a password-based SASL mechanism.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceUseSSL</tt> &mdash; Use SSL when communicating with the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceUseStartTLS</tt> &mdash; Use StartTLS when communicating with the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceDefaultTrust</tt> &mdash; Use the JVM's default trust store, and optionally an additional trust store specified using the --trustStorePath argument, to non-interactively determine whether to trust any certificate chain presented during TLS negotiation.  If the chain cannot be trusted based on any of those sources, then negotiation will fail without prompting about whether to trust it.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceTrustAll</tt> &mdash; Trust any certificate presented by the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceKeyStorePath <i>{path}</i></tt> &mdash; The path to the file to use as the key store for obtaining client certificates when communicating securely with the directory server.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceKeyStorePassword <i>{password}</i></tt> &mdash; The password to use to access the key store contents.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceKeyStorePasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to access the key store contents.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceKeyStoreFormat <i>{format}</i></tt> &mdash; The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store file.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceTrustStorePath <i>{path}</i></tt> &mdash; The path to the file to use as trust store when determining whether to trust a certificate presented by the directory server.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceTrustStorePassword <i>{password}</i></tt> &mdash; The password to use to access the trust store contents.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceTrustStorePasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to access the trust store contents.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceTrustStoreFormat <i>{format}</i></tt> &mdash; The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store file.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceCertNickname <i>{nickname}</i></tt> &mdash; The nickname (alias) of the client certificate in the key store to present to the directory server for SSL client authentication.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sourceSASLOption <i>{name=value}</i></tt> &mdash; A name-value pair providing information to use when performing SASL authentication.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Target Connection and Authentication Arguments</h3>
+    <ul>
+      <li>
+        <tt>--targetHostname <i>{host}</i></tt> &mdash; The IP address or resolvable name to use to connect to the directory server.  If this is not provided, then a default value of 'localhost' will be used.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetPort <i>{port}</i></tt> &mdash; The port to use to connect to the directory server.  If this is not provided, then a default value of 389 will be used.
+        <br>
+        The specified value must not be less than 1 or greater than 65 535.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetBindDN <i>{dn}</i></tt> &mdash; The DN to use to bind to the directory server when performing simple authentication.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetBindPassword <i>{password}</i></tt> &mdash; The password to use to bind to the directory server when performing simple authentication or a password-based SASL mechanism.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetBindPasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to bind to the directory server when performing simple authentication or a password-based SASL mechanism.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetUseSSL</tt> &mdash; Use SSL when communicating with the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetUseStartTLS</tt> &mdash; Use StartTLS when communicating with the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetDefaultTrust</tt> &mdash; Use the JVM's default trust store, and optionally an additional trust store specified using the --trustStorePath argument, to non-interactively determine whether to trust any certificate chain presented during TLS negotiation.  If the chain cannot be trusted based on any of those sources, then negotiation will fail without prompting about whether to trust it.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetTrustAll</tt> &mdash; Trust any certificate presented by the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetKeyStorePath <i>{path}</i></tt> &mdash; The path to the file to use as the key store for obtaining client certificates when communicating securely with the directory server.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetKeyStorePassword <i>{password}</i></tt> &mdash; The password to use to access the key store contents.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetKeyStorePasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to access the key store contents.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetKeyStoreFormat <i>{format}</i></tt> &mdash; The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store file.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetTrustStorePath <i>{path}</i></tt> &mdash; The path to the file to use as trust store when determining whether to trust a certificate presented by the directory server.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetTrustStorePassword <i>{password}</i></tt> &mdash; The password to use to access the trust store contents.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetTrustStorePasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to access the trust store contents.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetTrustStoreFormat <i>{format}</i></tt> &mdash; The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store file.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetCertNickname <i>{nickname}</i></tt> &mdash; The nickname (alias) of the client certificate in the key store to present to the directory server for SSL client authentication.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetSASLOption <i>{name=value}</i></tt> &mdash; A name-value pair providing information to use when performing SASL authentication.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Additional Arguments</h3>
+    <ul>
+      <li>
+        <tt>-b <i>{dn}</i></tt> / <tt>--baseDN <i>{dn}</i></tt> &mdash; The base DN of the subtree to move.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>-f <i>{path}</i></tt> / <tt>--baseDNFile <i>{path}</i></tt> &mdash; The path to a file containing the base DNs of the subtrees to move.  Each subtree base DN should be provided on a separate line.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>-z <i>{num}</i></tt> / <tt>--sizeLimit <i>{num}</i></tt> &mdash; The maximum number of entries to allow for the move.
+        <br>
+        The specified value must not be less than 0 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--purpose <i>{purpose}</i></tt> &mdash; The reason that the subtree is to be moved from the source server to the target server.
+        <br><br>
+      </li>
+      <li>
+        <tt>-v</tt> / <tt>--verbose</tt> &mdash; Indicates that the tool should operate in verbose mode in which it will output detailed information as entries are added to the target server and removed from the source server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--outputFile <i>{path}</i></tt> &mdash; Write all standard output and standard error messages to the specified file instead of to the console.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--appendToOutputFile</tt> &mdash; Indicates that the tool should append to the file specified by the --outputFile argument if it already exists.  If this argument is not provided and the output file already exists, it will be overwritten.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--teeOutput</tt> &mdash; Write all standard output and standard error messages to the console as well as to the specified output file.  The --outputFile argument must also be provided.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-H</tt> / <tt>--help</tt> &mdash; Display usage information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-V</tt> / <tt>--version</tt> &mdash; Display version information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--propertiesFilePath <i>{path}</i></tt> &mdash; The path to a properties file used to specify default values for arguments not supplied on the command line.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--generatePropertiesFile <i>{path}</i></tt> &mdash; Write an empty properties file that may be used to specify default values for arguments.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--noPropertiesFile</tt> &mdash; Do not obtain any argument values from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressPropertiesFileComment</tt> &mdash; Suppress output listing the arguments obtained from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Required Argument Sets</h3>
+    <ul>
+      <li>
+        At least one of the following arguments must be provided:  <tt>--baseDN</tt>, <tt>--baseDNFile</tt>
+      </li>
+    </ul>
+    <h3>Dependent Argument Sets</h3>
+    <ul>
+      <li>
+        If the <tt>--sourceBindDN</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--sourceBindPassword</tt>, <tt>--sourceBindPasswordFile</tt>
+      </li>
+      <li>
+        If the <tt>--targetBindDN</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--targetBindPassword</tt>, <tt>--targetBindPasswordFile</tt>
+      </li>
+      <li>
+        If the <tt>--appendToOutputFile</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--teeOutput</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+    </ul>
+    <h3>Exclusive Argument Sets</h3>
+    <ul>
+      <li>
+        The following arguments cannot be used together:  <tt>--sourceUseSSL</tt>, <tt>--sourceUseStartTLS</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--sourceBindPassword</tt>, <tt>--sourceBindPasswordFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--sourceKeyStorePassword</tt>, <tt>--sourceKeyStorePasswordFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--sourceTrustStorePassword</tt>, <tt>--sourceTrustStorePasswordFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--sourceTrustAll</tt>, <tt>--sourceTrustStorePath</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--sourceTrustAll</tt>, <tt>--sourceDefaultTrust</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--targetUseSSL</tt>, <tt>--targetUseStartTLS</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--targetBindPassword</tt>, <tt>--targetBindPasswordFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--targetKeyStorePassword</tt>, <tt>--targetKeyStorePasswordFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--targetTrustStorePassword</tt>, <tt>--targetTrustStorePasswordFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--targetTrustAll</tt>, <tt>--targetTrustStorePath</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--targetTrustAll</tt>, <tt>--targetDefaultTrust</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--baseDN</tt>, <tt>--baseDNFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--propertiesFilePath</tt>, <tt>--noPropertiesFile</tt>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Migrate all entries at or below 'cn=small subtree,dc=example,dc=com' from source server 'ds1.example.com' to target server 'ds2.example.com'.</li>
+    </ul>
+    <blockquote><pre>    move-subtree --sourceHostname ds1.example.com --sourcePort 389 \
+         --sourceBindDN uid=admin,dc=example,dc=com \
+         --sourceBindPassword password --targetHostname ds2.example.com \
+         --targetPort 389 --targetBindDN uid=admin,dc=example,dc=com \
+         --targetBindPassword password \
+         --baseDN "cn=small subtree,dc=example,dc=com" --sizeLimit 100 \
+         --purpose "Migrate a small subtree from ds1 to ds2"</pre></blockquote>
+  </body>
+</html>

@@ -1,0 +1,256 @@
+Usage for modrate:
+
+Perform repeated modifications against an LDAP directory server.
+
+Usage:  modrate {options}
+
+Available options include:
+
+  LDAP Connection and Authentication Arguments
+
+    -h, --hostname {host}
+        The IP address or resolvable name to use to connect to the directory
+        server.  If this is not provided, then a default value of 'localhost'
+        will be used.
+    -p, --port {port}
+        The port to use to connect to the directory server.  If this is not
+        provided, then a default value of 389 will be used.
+    -D, --bindDN {dn}
+        The DN to use to bind to the directory server when performing simple
+        authentication.
+    -w, --bindPassword {password}
+        The password to use to bind to the directory server when performing
+        simple authentication or a password-based SASL mechanism.
+    -j, --bindPasswordFile {path}
+        The path to the file containing the password to use to bind to the
+        directory server when performing simple authentication or a
+        password-based SASL mechanism.
+    --promptForBindPassword
+        Indicates that the tool should interactively prompt the user for the
+        bind password.
+    -Z, --useSSL
+        Use SSL when communicating with the directory server.
+    -q, --useStartTLS
+        Use StartTLS when communicating with the directory server.
+    --defaultTrust
+        Use the JVM's default trust store, and optionally an additional trust
+        store specified using the --trustStorePath argument, to
+        non-interactively determine whether to trust any certificate chain
+        presented during TLS negotiation.  If the chain cannot be trusted based
+        on any of those sources, then negotiation will fail without prompting
+        about whether to trust it.
+    -X, --trustAll
+        Trust any certificate presented by the directory server.
+    -K, --keyStorePath {path}
+        The path to the file to use as the key store for obtaining client
+        certificates when communicating securely with the directory server.
+    -W, --keyStorePassword {password}
+        The password to use to access the key store contents.
+    -u, --keyStorePasswordFile {path}
+        The path to the file containing the password to use to access the key
+        store contents.
+    --promptForKeyStorePassword
+        Indicates that the tool should interactively prompt the user for the
+        password to use to access the key store contents.
+    --keyStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store
+        file.
+    -P, --trustStorePath {path}
+        The path to the file to use as trust store when determining whether to
+        trust a certificate presented by the directory server.
+    -T, --trustStorePassword {password}
+        The password to use to access the trust store contents.
+    -U, --trustStorePasswordFile {path}
+        The path to the file containing the password to use to access the trust
+        store contents.
+    --promptForTrustStorePassword
+        Indicates that the tool should interactively prompt the user for the
+        password to use to access the trust store contents.
+    --trustStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store
+        file.
+    -N, --certNickname {nickname}
+        The nickname (alias) of the client certificate in the key store to
+        present to the directory server for SSL client authentication.
+    -o, --saslOption {name=value}
+        A name-value pair providing information to use when performing SASL
+        authentication.
+    --useSASLExternal
+        Use the SASL EXTERNAL mechanism to authenticate.
+    --helpSASL
+        Provide information about the supported SASL mechanisms, including the
+        properties available for use with each.
+
+  Modification Arguments
+
+  * -b, --entryDN {dn}
+        The DN of the entry to modify.  It may be a simple DN or a value
+        pattern to specify a range of DN (e.g.,
+        "uid=user.[1-1000],ou=People,dc=example,dc=com").  See
+        https://docs.ldap.com/ldap-sdk/docs/javadoc/index.html?com/unboundid/ut
+        il/ValuePattern.html for complete details about the value pattern
+        syntax.  This must be provided.
+  * -A, --attribute {name}
+        The name of the attribute to modify.  Multiple attributes may be
+        specified by providing this argument multiple times.  At least one
+        attribute must be specified.
+    --valuePattern {pattern}
+        The pattern to use to generate values for the replace modifications.
+        If this is provided, then neither the --valueLength argument nor the
+        --characterSet arguments may be provided.
+    -l, --valueLength {num}
+        The length in bytes to use when generating values for the replace
+        modifications.  If this is not provided, then a default length of ten
+        bytes will be used.
+    --valueCount {num}
+        The number of values to include in replace modifications.  If this is
+        not provided, then a default of one value will be used.
+    --increment
+        Indicates that the tool should use the increment modification type
+        rather than the replace modification type.
+    --incrementAmount {value}
+        The amount by which to increment values when using the increment
+        modification type.  The amount may be negative if values should be
+        decremented rather than incremented.  If this is not provided, then a
+        default increment amount of one will be used.
+    -C, --characterSet {chars}
+        The set of characters to use to generate the values for the
+        modifications.  It should only include ASCII characters.  If this is
+        not provided, then a default set of lowercase alphabetic characters
+        will be used.
+
+  Request Control Arguments
+
+    --assertionFilter {filter}
+        Indicates that modify requests should include the assertion request
+        control with the specified filter.
+    --permissiveModify
+        Indicates that modify requests should include the permissive modify
+        request control.
+    --preReadAttribute {attribute}
+        Indicates that modify requests should include the pre-read request
+        control with the specified requested attribute.  This argument may be
+        provided multiple times to indicate that multiple requested attributes
+        should be included in the pre-read request control.
+    --postReadAttribute {attribute}
+        Indicates that modify requests should include the post-read request
+        control with the specified requested attribute.  This argument may be
+        provided multiple times to indicate that multiple requested attributes
+        should be included in the post-read request control.
+    -Y, --proxyAs {authzID}
+        Indicates that the proxied authorization control (as defined in RFC
+        4370) should be used to request that operations be processed using an
+        alternate authorization identity.  This may be a simple authorization
+        ID or it may be a value pattern to specify a range of identities.  See
+        https://docs.ldap.com/ldap-sdk/docs/javadoc/index.html?com/unboundid/ut
+        il/ValuePattern.html for complete details about the value pattern
+        syntax.
+    -J, --control {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Indicates that modify requests should include the specified request
+        control.  This may be provided multiple times to include multiple
+        request controls.
+
+  Rate Management Arguments
+
+    -t, --numThreads {num}
+        The number of threads to use to perform the modifications.  If this is
+        not provided, a single thread will be used.
+    -i, --intervalDuration {num}
+        The length of time in seconds between output lines.  If this is not
+        provided, then a default interval of five seconds will be used.
+    -I, --numIntervals {num}
+        The maximum number of intervals for which to run.  If this is not
+        provided, then the tool will run until it is interrupted.
+    --iterationsBeforeReconnect {num}
+        The number of modify iterations that should be processed on a
+        connection before that connection is closed and replaced with a
+        newly-established (and authenticated, if appropriate) connection.  If
+        this is not provided, then connections will not be periodically closed
+        and re-established.
+    -r, --ratePerSecond {modifies-per-second}
+        The target number of modifies to perform per second.  It is still
+        necessary to specify a sufficient number of threads for achieving this
+        rate.  If neither this option nor --variableRateData is provided, then
+        the tool will run at the maximum rate for the specified number of
+        threads.
+    --variableRateData {path}
+        The path to a file containing information that can be used to cause the
+        tool to vary the target rate over time.  Use the generateSampleRateFile
+        argument to generate a sample rate definition file with comments that
+        describe the required format for this file.
+    --generateSampleRateFile {path}
+        The path to a sample variable data rate file that should be generated.
+        This file will contain comments that describe the expected format for
+        the file to use with the variableRateData argument.
+    --warmUpIntervals {num}
+        The number of intervals to complete before beginning overall statistics
+        collection.  Specifying a nonzero number of warm-up intervals gives the
+        client and server a chance to warm up without skewing performance
+        results.
+
+  Other Arguments
+
+    --timestampFormat {format}
+        Indicates the format to use for timestamps included in the output.  A
+        value of 'none' indicates that no timestamps should be included.  A
+        value of 'with-date' indicates that both the date and the time should
+        be included.  A value of 'without-date' indicates that only the time
+        should be included.
+    --suppressErrorResultCodes
+        Indicates that information about the result codes for failed operations
+        should not be displayed.
+    -c, --csv
+        Generate output in CSV format rather than a display-friendly format
+    -R, --randomSeed {value}
+        Specifies the seed to use for the random number generator.
+
+  Usage Arguments
+
+    --interactive
+        Launch the tool in interactive mode.
+    --outputFile {path}
+        Write all standard output and standard error messages to the specified
+        file instead of to the console.
+    --appendToOutputFile
+        Indicates that the tool should append to the file specified by the
+        --outputFile argument if it already exists.  If this argument is not
+        provided and the output file already exists, it will be overwritten.
+    --teeOutput
+        Write all standard output and standard error messages to the console as
+        well as to the specified output file.  The --outputFile argument must
+        also be provided.
+    -H, --help
+        Display usage information for this program.
+    -V, --version
+        Display version information for this program.
+    --propertiesFilePath {path}
+        The path to a properties file used to specify default values for
+        arguments not supplied on the command line.
+    --generatePropertiesFile {path}
+        Write an empty properties file that may be used to specify default
+        values for arguments.
+    --noPropertiesFile
+        Do not obtain any argument values from a properties file.
+    --suppressPropertiesFileComment
+        Suppress output listing the arguments obtained from a properties file.
+
+  * Indicates the argument is required
+
+Examples
+
+  Test modify performance by randomly selecting entries across a set of one
+  million users located below 'ou=People,dc=example,dc=com' with ten concurrent
+  threads and replacing the values for the description attribute with a string
+  of 12 randomly-selected lowercase alphabetic characters.
+
+    modrate --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --bindPassword password \
+         --entryDN "uid=user.[1-1000000],ou=People,dc=example,dc=com" \
+         --attribute description --valueLength 12 --numThreads 10
+
+  Generate a sample variable rate definition file that may be used in
+  conjunction with the --variableRateData argument.  The sample file will
+  include comments that describe the format for data to be included in this
+  file.
+
+    modrate --generateSampleRateFile variable-rate-data.txt

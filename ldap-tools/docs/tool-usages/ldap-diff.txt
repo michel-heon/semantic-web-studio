@@ -1,0 +1,271 @@
+Usage for ldap-diff:
+
+Compare the contents of two LDAP servers.
+
+This tool identifies the differences between data stored in two LDAPv3 servers
+and records the output in an LDIF file with the changes that may be applied
+(using a tool like ldapmodify or parallel-update) to the source server to bring
+its contents in sync with the target server.  By default, all entries beneath
+the specified base DN will be compared, but you can use the --searchFilter
+argument to restrict the comparison to a specified set of entries.  Also by
+default, all user attributes in each entry will be compared, and operational
+attributes will be ignored, but you can use trailing arguments to specify the
+set of attributes to request when retrieving entries.
+
+This tool can be used on servers that are actively being updated by clients.
+It will attempt to avoid reporting false positives that result from replication
+delays by checking differing entries multiple times (as configured by the
+--numPasses and --secondsBetweenPasses arguments).  The output is formatted so
+that deletes are included first, followed by modifies, and finally adds.
+Deletes will be listed in reverse order so that children will be removed before
+parents, and processing modifies before adds should help avoid problems
+resulting from uniqueness conflicts.
+
+This tool tries to make efficient use of memory, but it must store compact
+representations of all entries in memory.  For directories with a very large
+number of entries, this might require a substantial amount of memory.  If
+processing progress slows dramatically, or if the tool reports an out of memory
+error, then you may need to increase the amount of memory available to the JVM
+when running the tool.
+
+The accounts used for performing the searches must be sufficiently privileged
+to retrieve all the appropriate entries from each server, and all appropriate
+attributes from those entries.
+
+Usage:  ldap-diff {options} {attributes}
+
+Available options include:
+
+  Source Connection and Authentication Arguments
+
+    --sourceHostname {host}
+        The IP address or resolvable name to use to connect to the directory
+        server.  If this is not provided, then a default value of 'localhost'
+        will be used.
+    --sourcePort {port}
+        The port to use to connect to the directory server.  If this is not
+        provided, then a default value of 389 will be used.
+    --sourceBindDN {dn}
+        The DN to use to bind to the directory server when performing simple
+        authentication.
+    --sourceBindPassword {password}
+        The password to use to bind to the directory server when performing
+        simple authentication or a password-based SASL mechanism.
+    --sourceBindPasswordFile {path}
+        The path to the file containing the password to use to bind to the
+        directory server when performing simple authentication or a
+        password-based SASL mechanism.
+    --sourceUseSSL
+        Use SSL when communicating with the directory server.
+    --sourceUseStartTLS
+        Use StartTLS when communicating with the directory server.
+    --sourceDefaultTrust
+        Use the JVM's default trust store, and optionally an additional trust
+        store specified using the --trustStorePath argument, to
+        non-interactively determine whether to trust any certificate chain
+        presented during TLS negotiation.  If the chain cannot be trusted based
+        on any of those sources, then negotiation will fail without prompting
+        about whether to trust it.
+    --sourceTrustAll
+        Trust any certificate presented by the directory server.
+    --sourceKeyStorePath {path}
+        The path to the file to use as the key store for obtaining client
+        certificates when communicating securely with the directory server.
+    --sourceKeyStorePassword {password}
+        The password to use to access the key store contents.
+    --sourceKeyStorePasswordFile {path}
+        The path to the file containing the password to use to access the key
+        store contents.
+    --sourceKeyStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store
+        file.
+    --sourceTrustStorePath {path}
+        The path to the file to use as trust store when determining whether to
+        trust a certificate presented by the directory server.
+    --sourceTrustStorePassword {password}
+        The password to use to access the trust store contents.
+    --sourceTrustStorePasswordFile {path}
+        The path to the file containing the password to use to access the trust
+        store contents.
+    --sourceTrustStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store
+        file.
+    --sourceCertNickname {nickname}
+        The nickname (alias) of the client certificate in the key store to
+        present to the directory server for SSL client authentication.
+    --sourceSASLOption {name=value}
+        A name-value pair providing information to use when performing SASL
+        authentication.
+
+  Target Connection and Authentication Arguments
+
+    --targetHostname {host}
+        The IP address or resolvable name to use to connect to the directory
+        server.  If this is not provided, then a default value of 'localhost'
+        will be used.
+    --targetPort {port}
+        The port to use to connect to the directory server.  If this is not
+        provided, then a default value of 389 will be used.
+    --targetBindDN {dn}
+        The DN to use to bind to the directory server when performing simple
+        authentication.
+    --targetBindPassword {password}
+        The password to use to bind to the directory server when performing
+        simple authentication or a password-based SASL mechanism.
+    --targetBindPasswordFile {path}
+        The path to the file containing the password to use to bind to the
+        directory server when performing simple authentication or a
+        password-based SASL mechanism.
+    --targetUseSSL
+        Use SSL when communicating with the directory server.
+    --targetUseStartTLS
+        Use StartTLS when communicating with the directory server.
+    --targetDefaultTrust
+        Use the JVM's default trust store, and optionally an additional trust
+        store specified using the --trustStorePath argument, to
+        non-interactively determine whether to trust any certificate chain
+        presented during TLS negotiation.  If the chain cannot be trusted based
+        on any of those sources, then negotiation will fail without prompting
+        about whether to trust it.
+    --targetTrustAll
+        Trust any certificate presented by the directory server.
+    --targetKeyStorePath {path}
+        The path to the file to use as the key store for obtaining client
+        certificates when communicating securely with the directory server.
+    --targetKeyStorePassword {password}
+        The password to use to access the key store contents.
+    --targetKeyStorePasswordFile {path}
+        The path to the file containing the password to use to access the key
+        store contents.
+    --targetKeyStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store
+        file.
+    --targetTrustStorePath {path}
+        The path to the file to use as trust store when determining whether to
+        trust a certificate presented by the directory server.
+    --targetTrustStorePassword {password}
+        The password to use to access the trust store contents.
+    --targetTrustStorePasswordFile {path}
+        The path to the file containing the password to use to access the trust
+        store contents.
+    --targetTrustStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store
+        file.
+    --targetCertNickname {nickname}
+        The nickname (alias) of the client certificate in the key store to
+        present to the directory server for SSL client authentication.
+    --targetSASLOption {name=value}
+        A name-value pair providing information to use when performing SASL
+        authentication.
+
+  Processing Arguments
+
+  * -b, --baseDN {baseDN}
+        The base DN to use when searching for entries to compare.  Only entries
+        that exist below this base DN will be examined.  The empty base DN is
+        not permitted.
+    --sourceDNsFile {path}
+        The path to a file containing the DNs of the entries to compare from
+        the source server.  If this is provided, then the DNs contained in this
+        file will be used instead of retrieving them from the source server.
+    --targetDNsFile {path}
+        The path to a file containing the DNs of the entries to compare from
+        the target server.  If this is provided, then the DNs contained in this
+        file will be used instead of retrieving them from the target server.
+    -B, --excludeBranch {dn}
+        The base DN of a subtree to exclude when examining entries.  This
+        argument may be provided multiple times if multiple subtrees should be
+        excluded.
+    -f, --searchFilter {filter}
+        The filter to use when identifying entries to compare.  If this is not
+        specified, then a default filter of '(objectClass=*)' will be used.
+    -s, --searchScope {base|one|sub|subordinates}
+        The scope to use when searching for entries to compare in the source
+        and target servers.  If this is not specified, a default scope of 'sub'
+        will be used.
+  * -o, --outputLDIF {path}
+        The path to the file to which LDIF records will be written for any
+        differences identified between the source and target servers.
+    --wrapColumn {value}
+        The column at which to wrap long lines in the generated LDIF output.
+        If this is not specified, then a default value of zero (which indicates
+        no wrapping) will be used.
+    -Q, --quiet
+        Do not write any progress information to standard output.
+    --numThreads {value}
+        The number of concurrent threads to use when comparing entries between
+        the source and target servers.  A separate connection will be
+        established for each thread, so this argument also controls the number
+        of connections to establish to each server.  If this is not specified,
+        then a default value of 20 will be used.  A smaller value may have a
+        lesser impact on server performance, but it may take longer for
+        processing to complete.
+    --numPasses {value}
+        The maximum number of times that each entry may be compared between the
+        source and target servers to determine whether they are in sync.  Using
+        multiple passes can help eliminate false positives that may result from
+        replication delay or from comparing an entry that is altered at the
+        time it is being compared.  If this is not specified, then up to three
+        passes will be used by default.
+    --secondsBetweenPasses {value}
+        The number of seconds that the tool should wait between each pass to
+        re-examine any entries that were found to be out of sync in the
+        previous pass.  If this is not specified, then a default delay of two
+        seconds will be used.
+    --byteForByte
+        Use a byte-for-byte comparison when identifying differences between
+        entries.  By default, the tool will attempt to use schema-aware
+        matching based on the equality matching rule for each attribute type to
+        determine whether attribute values are logically equivalent.
+    --missingOnly
+        Only report on entries that are present in one of the servers but not
+        in the other.  If this option is used, then entries that exist in both
+        servers will not be compared for differences.  This can significantly
+        reduce the length of time required to run the tool.
+    --useLegacyExitCode
+        Use the same exit codes as a legacy version of this tool.  If all
+        processing completes successfully and no differences are identified,
+        then a legacy exit code of 0 will be used (which is the same in legacy
+        and non-legacy modes).  If all processing completes successfully but
+        one or more differences are identified, then a legacy exit code of 3
+        will be used (rather than the default of 5, which corresponds to the
+        compareFalse LDAP result code).  If an error occurs while processing
+        the command-line arguments, then a legacy exit code of 2 will be used
+        (rather than the default of 89, which corresponds to the paramError
+        LDAP result code).  If any other error occurs, then a legacy exit code
+        of 1 will be used (rather than the default behavior of using the
+        integer value that corresponds to the LDAP result code that most
+        closely reflects the error that occurred).
+
+  Usage Arguments
+
+    -H, --help
+        Display usage information for this program.
+    -V, --version
+        Display version information for this program.
+    --propertiesFilePath {path}
+        The path to a properties file used to specify default values for
+        arguments not supplied on the command line.
+    --generatePropertiesFile {path}
+        Write an empty properties file that may be used to specify default
+        values for arguments.
+    --noPropertiesFile
+        Do not obtain any argument values from a properties file.
+    --suppressPropertiesFileComment
+        Suppress output listing the arguments obtained from a properties file.
+
+  * Indicates the argument is required
+
+Examples
+
+  Compares all entries beneath 'dc=example,dc=com' between the source and port
+  servers and writes an LDIF representation of any differences identified to
+  'diff.ldif'.
+
+    ldap-diff --sourceHostname source.example.com --sourcePort 636 \
+         --sourceUseSSL --sourceBindDN "cn=Directory Manager" \
+         --sourceBindPasswordFile /path/to/password.txt \
+         --targetHostname target.example.com --targetPort 636 --targetUseSSL \
+         --targetBindDN "cn=Directory Manager" \
+         --targetBindPasswordFile /path/to/password.txt \
+         --baseDN dc=example,dc=com --outputLDIF diff.ldif

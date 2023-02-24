@@ -1,0 +1,523 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>The collect-support-data Command-Line Tool</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="../unboundid.css" type="text/css">
+    <link rel="shortcut icon" href="../images/favicon.ico">
+  </head>
+
+  <body>
+    <h1>The collect-support-data Command-Line Tool</h1>
+
+    <p>
+      Collect and package system information useful in troubleshooting problems.  The information is packaged as a zip archive that can be sent to a technical support representative.
+    </p>
+    <p>
+      Information collected may include configuration files, server monitor entries, portions of log files, JVM thread stack dumps, system metrics, and other data that may be helpful in diagnosing problems, understanding server performance, or otherwise assisting with support requests.  Although the tool will do its best to obscure or omit sensitive data, and the entire archive may be encrypted if you desire, you may wish to review the resulting support data archive to ensure verify its contents.  Further, the archive will include a summary of any potential problems or concerns that are identified in the course of collecting the support data.
+    </p>
+    <h3>Usage</h3>
+    <blockquote><pre>collect-support-data <i>{arguments}</i></pre></blockquote>
+    <h3>LDAP Connection and Authentication Arguments</h3>
+    <ul>
+      <li>
+        <tt>-h <i>{host}</i></tt> / <tt>--hostname <i>{host}</i></tt> &mdash; The IP address or resolvable name to use to connect to the directory server.  If this is not provided, then a default value of 'localhost' will be used.
+        <br><br>
+      </li>
+      <li>
+        <tt>-p <i>{port}</i></tt> / <tt>--port <i>{port}</i></tt> &mdash; The port to use to connect to the directory server.  If this is not provided, then a default value of 389 will be used.
+        <br>
+        The specified value must not be less than 1 or greater than 65 535.
+        <br><br>
+      </li>
+      <li>
+        <tt>-D <i>{dn}</i></tt> / <tt>--bindDN <i>{dn}</i></tt> &mdash; The DN to use to bind to the directory server when performing simple authentication.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>-w <i>{password}</i></tt> / <tt>--bindPassword <i>{password}</i></tt> &mdash; The password to use to bind to the directory server when performing simple authentication or a password-based SASL mechanism.
+        <br><br>
+      </li>
+      <li>
+        <tt>-j <i>{path}</i></tt> / <tt>--bindPasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to bind to the directory server when performing simple authentication or a password-based SASL mechanism.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForBindPassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the bind password.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-Z</tt> / <tt>--useSSL</tt> &mdash; Use SSL when communicating with the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-q</tt> / <tt>--useStartTLS</tt> &mdash; Use StartTLS when communicating with the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--defaultTrust</tt> &mdash; Use the JVM's default trust store, and optionally an additional trust store specified using the --trustStorePath argument, to non-interactively determine whether to trust any certificate chain presented during TLS negotiation.  If the chain cannot be trusted based on any of those sources, then negotiation will fail without prompting about whether to trust it.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-X</tt> / <tt>--trustAll</tt> &mdash; Trust any certificate presented by the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-K <i>{path}</i></tt> / <tt>--keyStorePath <i>{path}</i></tt> &mdash; The path to the file to use as the key store for obtaining client certificates when communicating securely with the directory server.
+        <br><br>
+      </li>
+      <li>
+        <tt>-W <i>{password}</i></tt> / <tt>--keyStorePassword <i>{password}</i></tt> &mdash; The password to use to access the key store contents.
+        <br><br>
+      </li>
+      <li>
+        <tt>-u <i>{path}</i></tt> / <tt>--keyStorePasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to access the key store contents.
+        <br>
+        The specified path must refer to a file that may or may not exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForKeyStorePassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the password to use to access the key store contents.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--keyStoreFormat <i>{format}</i></tt> &mdash; The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store file.
+        <br><br>
+      </li>
+      <li>
+        <tt>-P <i>{path}</i></tt> / <tt>--trustStorePath <i>{path}</i></tt> &mdash; The path to the file to use as trust store when determining whether to trust a certificate presented by the directory server.
+        <br><br>
+      </li>
+      <li>
+        <tt>-T <i>{password}</i></tt> / <tt>--trustStorePassword <i>{password}</i></tt> &mdash; The password to use to access the trust store contents.
+        <br><br>
+      </li>
+      <li>
+        <tt>-U <i>{path}</i></tt> / <tt>--trustStorePasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to access the trust store contents.
+        <br>
+        The specified path must refer to a file that may or may not exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForTrustStorePassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the password to use to access the trust store contents.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--trustStoreFormat <i>{format}</i></tt> &mdash; The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store file.
+        <br><br>
+      </li>
+      <li>
+        <tt>-N <i>{nickname}</i></tt> / <tt>--certNickname <i>{nickname}</i></tt> &mdash; The nickname (alias) of the client certificate in the key store to present to the directory server for SSL client authentication.
+        <br><br>
+      </li>
+      <li>
+        <tt>--enableSSLDebugging</tt> &mdash; Enable Java's low-level support for debugging SSL/TLS communication.  This is equivalent to setting the 'javax.net.debug' property to 'all'.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-o <i>{name=value}</i></tt> / <tt>--saslOption <i>{name=value}</i></tt> &mdash; A name-value pair providing information to use when performing SASL authentication.
+        <br><br>
+      </li>
+      <li>
+        <tt>--useSASLExternal</tt> &mdash; Use the SASL EXTERNAL mechanism to authenticate.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--helpSASL</tt> &mdash; Provide information about the supported SASL mechanisms, including the properties available for use with each.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Output Arguments</h3>
+    <ul>
+      <li>
+        <tt>--outputPath <i>{path}</i></tt> &mdash; Specifies the path to which the support data archive should be written.  If this path references a file that already exists, then that file will be overwritten with the new support data archive.  If it references a directory that already exists, then a new support data archive will be created in that directory with a name that is dynamically generated.  If it references a file that does not exist, then the parent directory must exist, and a new support data archive file will be created with that path and name.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--encrypt</tt> &mdash; Indicates that the resulting support data archive should be encrypted.  If the --passphraseFile argument is provided in conjunction with the --generatePassphrase argument, then a passphrase will dynamically generated and written to the specified file.  If the --passphraseFile argument is provided without the --generatePassphrase argument, then that file must exist and it will be read to obtain the passphrase used to generate the encryption key.  If the --passphraseFile argument is not provided, then the encryption passphrase will be interactively requested.  Note that when providing an encrypted collect-support-data archive to support personnel, it is strongly recommended that the passphrase be provided over a separate channel than the encrypted archive itself to help prevent unauthorized third-party access.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--passphraseFile <i>{path}</i></tt> &mdash; The path to a file containing the passphrase used to encrypt or decrypt the support data archive.  If this file exists, then it must contain exactly one line that consists entirely of the encryption passphrase.  If this file does not exist, then the --generatePassphrase argument must have also been provided, and the generated passphrase will be written into the specified file.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--generatePassphrase</tt> &mdash; Indicates that the tool should automatically generate the passphrase used to generate the encryption key and write it to the file specified by the --passphraseFile argument.  This argument may only be used if both the --encrypt and --passphraseFile arguments are also provided.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--decrypt <i>{path}</i></tt> &mdash; Decrypts the encrypted support data archive contained in the specified file.  If the --passphraseFile argument is provided, then it will be used to obtain the passphrase to use to generate the encryption key.  Otherwise, the passphrase will be interactively requested.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Data Collection Arguments</h3>
+    <ul>
+      <li>
+        <tt>--collectExpensiveData</tt> &mdash; Indicates that the tool should attempt to collect information that may be time-consuming or resource-intensive to obtain, or that may affect server performance or responsiveness.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--collectReplicationStateDump</tt> &mdash; Indicates that the support data archive should include a replication state dump, which may be several megabytes in size.  This argument cannot be used in conjunction with the --noLDAP argument.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--includeBinaryFiles</tt> &mdash; Indicates that the support data archive should include any binary files that would have otherwise been omitted, but that may contain information that could be helpful in investigating the underlying issue.  Note that sensitive information in these binary files may not be obscured or redacted in the same way that it would be in plain text files.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--archiveExtensionSource</tt> &mdash; Indicates that the resulting support data archive should include the source code (if available) for any third-party extensions installed in the server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--sequential</tt> &mdash; Collect data sequentially rather than in parallel.  This has the effect of reducing the initial memory footprint of this tool, but at the expense of taking longer to complete.  Use this option if running without it results in out-of-memory errors.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--securityLevel <i>{none|obscure-secrets|maximum}</i></tt> &mdash; Specifies the degree to which the tool will attempt to obscure or omit potentially sensitive information.  A value of 'none' indicates that the tool will not attempt to obscure or redact any information.  A value of 'obscure-secrets' indicates that the tool will attempt to obscure secret information (like the values of sensitive configuration properties) and omit log files containing user data (like the data recovery log).  A value of 'maximum' indicates that the tool will take even more drastic measures, like omitting access log files and obscuring attribute values in entry DNs and search filters, but at the risk of omitting information that could be useful in investigating the associated issue.  If this is not provided, a value of 'obscure-secrets' will be used by default.
+        <br>
+        A provided value should be one of the following:  'maximum', 'none', 'obscure-secrets'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--jstackCount <i>{count}</i></tt> &mdash; The number of times the jstack tool should be invoked to obtain stack traces of all threads running in the JVM.  A value of zero indicates that the jstack tool should not be invoked.  If this argument is not provided, the tool will be invoked ten times by default.
+        <br>
+        The specified value must not be less than 0 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--reportCount <i>{count}</i></tt> &mdash; The number of intervals of data to collect from tools that use interval-based sampling (e.g., vmstat, iostat, mpstat, etc.).  A value of zero indicates that no information should be collected from these tools.  If this argument is not provided, then data will be collected from ten intervals by default.
+        <br>
+        The specified value must not be less than 0 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--reportIntervalSeconds <i>{seconds}</i></tt> &mdash; The number of seconds that should elapse between intervals from tools that use interval-based sampling (e.g., vmstat, iostat, mpstat, etc.).  If this argument is provided, the value must be greater than zero.  If it is not provided, an interval duration of one second will be used by default.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--logTimeRange <i>{startTime[,endTime]}</i></tt> &mdash; Include log messages falling within the indicated time range.  The start and end time values should be formatted in the generalized time format (e.g., 'YYYYMMDDhhmmss.uuuZ'), a format similar to the generalized time format but without the time zone indicator to indicate that the value should be in the local time zone (e.g., 'YYYYMMDDhhmmss.uuu'), or the server's default log timestamp format (e.g., '[DD/MMM/YYYY:hh:mm:ss Z]' or '[DD/MMM/YYYY:hh:mm:ss.uuu Z]').  If the end time is omitted, the current time will be used.
+        <br><br>
+      </li>
+      <li>
+        <tt>--logDuration <i>{duration}</i></tt> &mdash; Include log messages within the specified duration before the current time.  If specified, the value must consist of an integer followed by a time unit, which may be one of millisecond, second, minute, hour, or day, or their plurals (e.g., '5 minutes' or '1 hour').
+        <br>
+        The provided value must contain an integer followed by a unit of 'ns' (for nanoseconds), 'us' (for microseconds), 'ms' (for milliseconds), 's' (for seconds), 'm' (for minutes), 'h' (for hours), 'd' (for days), or 'w' (for weeks).  The specified duration must not be less than 0ns or greater than 9223372036854775807ns.
+        <br><br>
+      </li>
+      <li>
+        <tt>--logFileHeadCollectionSizeKB <i>{sizeKB}</i></tt> &mdash; The amount of data in kilobytes that the tool should capture from the beginning of each log file.  If this is specified, then the value must be greater than or equal to zero.
+        <br>
+        The specified value must not be less than 0 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--logFileTailCollectionSizeKB <i>{sizeKB}</i></tt> &mdash; The amount of data in kilobytes that the tool should capture from the end of each log file.  If this is specified, then the value must be greater than or equal to zero.
+        <br>
+        The specified value must not be less than 0 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--pid <i>{pid}</i></tt> &mdash; Specifies the process ID of an additional process about which information should be collected.  This option may be useful for troubleshooting external server tools.  It may be provided multiple times to specify multiple process IDs.
+        <br>
+        The specified value must not be less than -2 147 483 648 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--comment <i>{value}</i></tt> &mdash; Provides a comment that will be included in a README file within the support data archive.  This comment may provide additional context about the issue being investigated.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Communication Arguments</h3>
+    <ul>
+      <li>
+        <tt>--useRemoteServer</tt> &mdash; Indicates that the collect-support-data request should be sent to a server over LDAP rather than operating against the local instance.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--useAdministrativeSession</tt> &mdash; Indicates that the tool should attempt to use an administrative session to process all operations using a dedicated pool of worker threads.  This may be useful when trying to diagnose problems in a server that is unresponsive because all normal worker threads are busy processing other requests.  This argument may only be used in conjunction with the --useRemoteServer argument.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--proxyToServerAddress <i>{address}</i></tt> &mdash; The address of a server to which the collect-support-data extended request should be forwarded.  This may be useful for retrieving support data information from a backend Directory Server instance that can only be accessed through a Directory Proxy Server.  The server to which the initial request will be sent (the one specified by the --hostname and --port arguments) must either be configured with an LDAP external server that has the specified proxy-to address and port values or there must be a server instance with that address and port in the topology registry.  This argument may only be provided if both the --useRemoteServer and --proxyToServerPort arguments are also given.
+        <br><br>
+      </li>
+      <li>
+        <tt>--proxyToServerPort <i>{port}</i></tt> &mdash; The port of a server to which the collect-support-data extended request should be forwarded.  This argument may only be provided if both the --useRemoteServer and --proxyToServerAddress arguments are also given.
+        <br>
+        The specified value must not be less than 1 or greater than 65 535.
+        <br><br>
+      </li>
+      <li>
+        <tt>--noLDAP</tt> &mdash; Indicates that no attempt should be made to collect any information over LDAP.  This option should only be used as a last resort if the server is completely unresponsive or will not start, and it must not be used in conjunction with the --useRemoteServer argument.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Additional Arguments</h3>
+    <ul>
+      <li>
+        <tt>-n</tt> / <tt>--noPrompt</tt> &mdash; Indicates that the tool should not interactively prompt for any information, but should fail if any required information is not provided.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--dryRun</tt> &mdash; Indicates that the tool should validate the set of arguments but should not actually generate the support data archive.  If the --useRemoteServer argument is provided, then the extended request will include the LDAP no-operation request control.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--scriptFriendly</tt> &mdash; Indicates that the tool should generate script-friendly output.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--interactive</tt> &mdash; Launch the tool in interactive mode.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-H</tt> / <tt>--help</tt> &mdash; Display usage information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-V</tt> / <tt>--version</tt> &mdash; Display version information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--propertiesFilePath <i>{path}</i></tt> &mdash; The path to a properties file used to specify default values for arguments not supplied on the command line.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--generatePropertiesFile <i>{path}</i></tt> &mdash; Write an empty properties file that may be used to specify default values for arguments.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--noPropertiesFile</tt> &mdash; Do not obtain any argument values from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressPropertiesFileComment</tt> &mdash; Suppress output listing the arguments obtained from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Dependent Argument Sets</h3>
+    <ul>
+      <li>
+        If the <tt>--keyStorePassword</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--keyStorePasswordFile</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--promptForKeyStorePassword</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--trustStorePassword</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--trustStorePasswordFile</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--promptForTrustStorePassword</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--keyStorePath</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--trustStorePath</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--defaultTrust</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--trustAll</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--bindPassword</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--bindPasswordFile</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--promptForBindPassword</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--useAdministrativeSession</tt> argument is provided, then the <tt>--useRemoteServer</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--proxyToServerPort</tt> argument is provided, then the <tt>--proxyToServerAddress</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--proxyToServerAddress</tt> argument is provided, then the <tt>--proxyToServerPort</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--proxyToServerAddress</tt> argument is provided, then the <tt>--useRemoteServer</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--proxyToServerPort</tt> argument is provided, then the <tt>--useRemoteServer</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--generatePassphrase</tt> argument is provided, then the <tt>--encrypt</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--generatePassphrase</tt> argument is provided, then the <tt>--passphraseFile</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--promptForBindPassword</tt> argument is provided, then the <tt>--useRemoteServer</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--promptForKeyStorePassword</tt> argument is provided, then the <tt>--useRemoteServer</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--promptForTrustStorePassword</tt> argument is provided, then the <tt>--useRemoteServer</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--enableSSLDebugging</tt> argument is provided, then the <tt>--useRemoteServer</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--useSASLExternal</tt> argument is provided, then the <tt>--useRemoteServer</tt> argument must also be provided.
+      </li>
+    </ul>
+    <h3>Exclusive Argument Sets</h3>
+    <ul>
+      <li>
+        The following arguments cannot be used together:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--keyStorePassword</tt>, <tt>--keyStorePasswordFile</tt>, <tt>--promptForKeyStorePassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--trustStorePassword</tt>, <tt>--trustStorePasswordFile</tt>, <tt>--promptForTrustStorePassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--defaultTrust</tt>, <tt>--trustAll</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--trustAll</tt>, <tt>--trustStorePath</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--bindDN</tt>, <tt>--saslOption</tt>, <tt>--useSASLExternal</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--bindPassword</tt>, <tt>--bindPasswordFile</tt>, <tt>--promptForBindPassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--useRemoteServer</tt>, <tt>--pid</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--useRemoteServer</tt>, <tt>--decrypt</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--useRemoteServer</tt>, <tt>--noLDAP</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--useRemoteServer</tt>, <tt>--scriptFriendly</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--logTimeRange</tt>, <tt>--logDuration</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--logFileHeadCollectionSizeKB</tt>, <tt>--logTimeRange</tt>, <tt>--logDuration</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--logFileTailCollectionSizeKB</tt>, <tt>--logTimeRange</tt>, <tt>--logDuration</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--encrypt</tt>, <tt>--decrypt</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--propertiesFilePath</tt>, <tt>--noPropertiesFile</tt>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Collects information about the local server instance using the default settings</li>
+    </ul>
+    <blockquote><pre>    collect-support-data --bindDN uid=admin,dc=example,dc=com \
+         --bindPasswordFile admin-pw.txt</pre></blockquote>
+    <ul>
+      <li>Collects information about the specified remote instance, including log messages from the last 10 minutes and a more extensive set of support data.  The output will be encrypted with a generated passphrase written to a file, and the maximum amount of sanitization will be used.</li>
+    </ul>
+    <blockquote><pre>    collect-support-data --useRemoteServer --hostname ds.example.com \
+         --port 636 --useSSL --trustStorePath config/truststore \
+         --bindDN uid=admin,dc=example,dc=com \
+         --bindPasswordFile admin-pw.txt --collectExpensiveData \
+         --collectReplicationStateDump --securityLevel maximum \
+         --logDuration "10 minutes" --encrypt \
+         --passphraseFile encryption-passphrase.txt --generatePassphrase \
+         --outputPath csd.zip</pre></blockquote>
+    <ul>
+      <li>Decrypts an encrypted support data archive using a passphrase read from the specified file.</li>
+    </ul>
+    <blockquote><pre>    collect-support-data \
+         --decrypt support-data-ds-inst1-20211116111454.232Z-zip-encrypted \
+         --passphraseFile encryption-passphrase.txt</pre></blockquote>
+  </body>
+</html>

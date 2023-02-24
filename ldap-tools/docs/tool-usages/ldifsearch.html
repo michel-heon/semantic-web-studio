@@ -1,0 +1,249 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>The ldifsearch Command-Line Tool</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="../unboundid.css" type="text/css">
+    <link rel="shortcut icon" href="../images/favicon.ico">
+  </head>
+
+  <body>
+    <h1>The ldifsearch Command-Line Tool</h1>
+
+    <p>
+      Search one or more LDIF files to identify entries matching a given set of criteria.
+    </p>
+    <h3>Usage</h3>
+    <blockquote><pre>ldifsearch <i>{arguments}</i> <i>[filter] [attributes...]</i></pre></blockquote>
+    <h3>Input Arguments</h3>
+    <ul>
+      <li>
+        <tt>-l <i>{path}</i></tt> / <tt>--ldifFile <i>{path}</i></tt> &mdash; the path to an LDIF file containing the entries to search.  This must be provided at least once, but if multiple files are given, they will be searched in the order provided.  The file may optionally be compressed or encrypted.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--ldifEncryptionPassphraseFile <i>{path}</i></tt> &mdash; The path to the file containing the passphrase used to encrypt the contents of the input LDIF files.  If this argument is provided, the file must exist and must contain exactly one line that contains only the encryption passphrase.  If the input LDIF file is encrypted but this argument is not provided, then the tool will interactively prompt for the passphrase.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--stripTrailingSpaces</tt> &mdash; Strip off any illegal trailing spaces identified in LDIF entries rather than rejecting those entries.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--schemaPath <i>{path}</i></tt> &mdash; The path to an LDIF file (or a directory containing multiple LDIF files) with the schema definitions to use during processing.  This argument may be used multiple times to specify multiple schema paths.  If this argument is ot provided, the LDAP SDK's default standard schema will be used.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--checkSchema</tt> &mdash; Indicates whether to validate each entry read from an LDIF file to ensure that it conforms to the defined schema.  If this argument is provided, an error will be reported for every entry that does not conform to the schema.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--isCompressed</tt> &mdash; Indicates whether the input LDIF files are compressed.  This argument is no longer necessary, as the tool will automatically detect whether each file is compressed.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Output Arguments</h3>
+    <ul>
+      <li>
+        <tt>-o <i>{path}</i></tt> / <tt>--outputFile <i>{path}</i></tt> &mdash; The path to an output file to which matching entries will be written.  If this is not provided, then matching entries will be written to standard output.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--separateOutputFilePerSearch</tt> &mdash; Use a separate output LDIF file for each search filter.  This argument is only applicable if either the --filterFile or --ldapURLFile argument is provided to specify multiple sets of search criteria.  If this argument is given, then each output file will use the path specified by the --outputFile argument, followed by a period and a number indicating which search criteria is being used (e.g., '.1'; for the first set of search criteria, '.2' for the second, and so on).
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--compressOutput</tt> &mdash; GZIP-compress the data as it is written to each output file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--encryptOutput</tt> &mdash; Encrypt the data as it is written to each output file.  If the '--outputEncryptionPassphraseFile' argument is provided, then the passphrase contained in that file will be used to encrypt the output.  Otherwise, the tool will interactively prompt for the passphrase.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--outputEncryptionPassphraseFile <i>{path}</i></tt> &mdash; The path to a file containing the passphrase to use to encrypt the contents of the output files.  If this argument is provided, then the file must exist, and it must contain exactly one line comprised entirely of the encryption passphrase.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>-O</tt> / <tt>--overwriteExistingOutputFile</tt> &mdash; Overwrite any output file that already exists, rather than appending to it.  This argument must be provided if the output file already exists and either of the '--compressOutput' or '--encryptOutput' arguments is provided.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--outputFormat <i>{ldif|json|csv|multi-valued-csv|tab-delimited|multi-valued-tab-delimited|dns-only|values-only}</i></tt> &mdash; Specifies the format that should be used for the output generated by this tool.  Allowed values are 'LDIF' (LDAP Data Interchange Format, which is the standard string representation for LDAP data), 'JSON' (JavaScript Object Notation, which is a popular format used by web services), 'CSV' (comma-separated values, which is a commonly used format for text processing, with only a single value per attribute), 'multi-valued-csv' (comma-separated values with a vertical bar between values of multivalued attributes), 'tab-delimited' (another commonly used general text format, with only a single value per attribute), 'multi-valued-tab-delimited' (tab-delimited text with a vertical bar between values of multivalued attributes), 'dns-only' (in which only the DN of each matching entry will be written on a line by itself with no information about the entry's attributes), and 'values-only' (in which each value returned will be written on a line by itself with no attribute names, entry DNs, or delimiters between entries).  If the single-valued or multivalued CSV or tab-delimited formats are used then there must be a specific set of attributes requested, and the order in which values are returned will match the order in which they are requested.  Further, the CSV and tab-delimited formats cannot be used in conjunction with the '--ldapURLFile' argument.  If no output format is specified, a default of 'LDIF' will be used.
+        <br>
+        A provided value should be one of the following:  'values-only', 'multi-valued-csv', 'tab-delimited', 'ldif', 'csv', 'multi-valued-tab-delimited', 'json', 'dns-only'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--wrapColumn <i>{value}</i></tt> &mdash; The column at which long lines should be wrapped.  By default, long lines will be wrapped based on the terminal width (or 80 columns if the terminal width cannot be determined).
+        <br>
+        The specified value must not be less than 5 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>-T</tt> / <tt>--doNotWrap</tt> &mdash; Do not wrap long lines as they are written.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Search Criteria Arguments</h3>
+    <ul>
+      <li>
+        <tt>-b <i>{dn}</i></tt> / <tt>--baseDN <i>{dn}</i></tt> &mdash; The base DN to use when searching for matching entries.  This argument must not be provided if the --ldapURLFile argument is given, as the base DN from each URL will be used.  If no LDAP URL file is given and this argument is not provided, then the null DN will be used as the search base.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>-s <i>{base|one|sub|subordinates}</i></tt> / <tt>--scope <i>{base|one|sub|subordinates}</i></tt> &mdash; The scope to use when searching for matching entries.  This argument must not be provided if the --ldapURLFile argument is given, as the scope from each URL will be used.  If no LDAP URL file is given and this argument is not provided, then a default scope of 'sub' will be used.
+        <br>
+        The provided value should be one of 'base', 'one', 'sub', or 'subordinate'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-f <i>{path}</i></tt> / <tt>--filterFile <i>{path}</i></tt> &mdash; The path to a file containing one or more search filters (each on a separate line) to use to identify matching entries.  If neither this argument nor the --ldapURLFile argument is provided, then the filter must be provided as the first trailing argument.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--ldapURLFile <i>{path}</i></tt> &mdash; The path to a file containing one or more LDAP URLs (each on a separate line) with the criteria to use to identify matching entries.  Note that only the base DN, scope, filter, and requested attributes will be used from the LDAP URLs; the server address and port (if any) will be ignored.  If neither this argument nor the --filterFile argument is provided, then the filter must be provided as the first trailing argument.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>-z <i>{value}</i></tt> / <tt>--sizeLimit <i>{value}</i></tt> &mdash; The maximum number of entries to return for each search.  If this is not provided, then no size limit will be enforced.
+        <br>
+        The specified value must not be less than 0 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>-t <i>{value}</i></tt> / <tt>--timeLimitSeconds <i>{value}</i></tt> &mdash; The maximum length of time in seconds to spend processing.  If this is not provided, then no time limit will be enforced.
+        <br>
+        The specified value must not be less than 0 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Additional Arguments</h3>
+    <ul>
+      <li>
+        <tt>--interactive</tt> &mdash; Launch the tool in interactive mode.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-H</tt> / <tt>--help</tt> &mdash; Display usage information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-V</tt> / <tt>--version</tt> &mdash; Display version information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--propertiesFilePath <i>{path}</i></tt> &mdash; The path to a properties file used to specify default values for arguments not supplied on the command line.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--generatePropertiesFile <i>{path}</i></tt> &mdash; Write an empty properties file that may be used to specify default values for arguments.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--noPropertiesFile</tt> &mdash; Do not obtain any argument values from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressPropertiesFileComment</tt> &mdash; Suppress output listing the arguments obtained from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Dependent Argument Sets</h3>
+    <ul>
+      <li>
+        If the <tt>--separateOutputFilePerSearch</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--compressOutput</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--encryptOutput</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--overwriteExistingOutputFile</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--outputEncryptionPassphraseFile</tt> argument is provided, then the <tt>--encryptOutput</tt> argument must also be provided.
+      </li>
+    </ul>
+    <h3>Exclusive Argument Sets</h3>
+    <ul>
+      <li>
+        The following arguments cannot be used together:  <tt>--wrapColumn</tt>, <tt>--doNotWrap</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--baseDN</tt>, <tt>--ldapURLFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--scope</tt>, <tt>--ldapURLFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--filterFile</tt>, <tt>--ldapURLFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--outputFormat</tt>, <tt>--separateOutputFilePerSearch</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--propertiesFilePath</tt>, <tt>--noPropertiesFile</tt>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Search for entries with a uid value of 'jdoe' in the data.ldif file.  The matching entries will be written to standard output.</li>
+    </ul>
+    <blockquote><pre>    ldifsearch --ldifFile data.ldif "(uid=jdoe)"</pre></blockquote>
+    <ul>
+      <li>Search for all entries with the 'person' object class below 'dc=example,dc=com' in the data.ldif file.  Write the matching entries to the 'people.ldif' file, but only include the 'givenName', 'sn', and 'cn' attributes.</li>
+    </ul>
+    <blockquote><pre>    ldifsearch --ldifFile data.ldif --outputFile people.ldif \
+         --baseDN dc=example,dc=com --scope sub "(objectClass=person)" \
+         givenName sn cn</pre></blockquote>
+  </body>
+</html>

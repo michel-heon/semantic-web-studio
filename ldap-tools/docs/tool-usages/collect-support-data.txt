@@ -1,0 +1,320 @@
+Usage for collect-support-data:
+
+Collect and package system information useful in troubleshooting problems.  The
+information is packaged as a zip archive that can be sent to a technical
+support representative.
+
+Information collected may include configuration files, server monitor entries,
+portions of log files, JVM thread stack dumps, system metrics, and other data
+that may be helpful in diagnosing problems, understanding server performance,
+or otherwise assisting with support requests.  Although the tool will do its
+best to obscure or omit sensitive data, and the entire archive may be encrypted
+if you desire, you may wish to review the resulting support data archive to
+ensure verify its contents.  Further, the archive will include a summary of any
+potential problems or concerns that are identified in the course of collecting
+the support data.
+
+Usage:  collect-support-data {options}
+
+Available options include:
+
+  LDAP Connection and Authentication Arguments
+
+    -h, --hostname {host}
+        The IP address or resolvable name to use to connect to the directory
+        server.  If this is not provided, then a default value of 'localhost'
+        will be used.
+    -p, --port {port}
+        The port to use to connect to the directory server.  If this is not
+        provided, then a default value of 389 will be used.
+    -D, --bindDN {dn}
+        The DN to use to bind to the directory server when performing simple
+        authentication.
+    -w, --bindPassword {password}
+        The password to use to bind to the directory server when performing
+        simple authentication or a password-based SASL mechanism.
+    -j, --bindPasswordFile {path}
+        The path to the file containing the password to use to bind to the
+        directory server when performing simple authentication or a
+        password-based SASL mechanism.
+    --promptForBindPassword
+        Indicates that the tool should interactively prompt the user for the
+        bind password.
+    -Z, --useSSL
+        Use SSL when communicating with the directory server.
+    -q, --useStartTLS
+        Use StartTLS when communicating with the directory server.
+    --defaultTrust
+        Use the JVM's default trust store, and optionally an additional trust
+        store specified using the --trustStorePath argument, to
+        non-interactively determine whether to trust any certificate chain
+        presented during TLS negotiation.  If the chain cannot be trusted based
+        on any of those sources, then negotiation will fail without prompting
+        about whether to trust it.
+    -X, --trustAll
+        Trust any certificate presented by the directory server.
+    -K, --keyStorePath {path}
+        The path to the file to use as the key store for obtaining client
+        certificates when communicating securely with the directory server.
+    -W, --keyStorePassword {password}
+        The password to use to access the key store contents.
+    -u, --keyStorePasswordFile {path}
+        The path to the file containing the password to use to access the key
+        store contents.
+    --promptForKeyStorePassword
+        Indicates that the tool should interactively prompt the user for the
+        password to use to access the key store contents.
+    --keyStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store
+        file.
+    -P, --trustStorePath {path}
+        The path to the file to use as trust store when determining whether to
+        trust a certificate presented by the directory server.
+    -T, --trustStorePassword {password}
+        The password to use to access the trust store contents.
+    -U, --trustStorePasswordFile {path}
+        The path to the file containing the password to use to access the trust
+        store contents.
+    --promptForTrustStorePassword
+        Indicates that the tool should interactively prompt the user for the
+        password to use to access the trust store contents.
+    --trustStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store
+        file.
+    -N, --certNickname {nickname}
+        The nickname (alias) of the client certificate in the key store to
+        present to the directory server for SSL client authentication.
+    --enableSSLDebugging
+        Enable Java's low-level support for debugging SSL/TLS communication.
+        This is equivalent to setting the 'javax.net.debug' property to 'all'.
+    -o, --saslOption {name=value}
+        A name-value pair providing information to use when performing SASL
+        authentication.
+    --useSASLExternal
+        Use the SASL EXTERNAL mechanism to authenticate.
+    --helpSASL
+        Provide information about the supported SASL mechanisms, including the
+        properties available for use with each.
+
+  Output Arguments
+
+    --outputPath {path}
+        Specifies the path to which the support data archive should be written.
+        If this path references a file that already exists, then that file will
+        be overwritten with the new support data archive.  If it references a
+        directory that already exists, then a new support data archive will be
+        created in that directory with a name that is dynamically generated.
+        If it references a file that does not exist, then the parent directory
+        must exist, and a new support data archive file will be created with
+        that path and name.
+    --encrypt
+        Indicates that the resulting support data archive should be encrypted.
+        If the --passphraseFile argument is provided in conjunction with the
+        --generatePassphrase argument, then a passphrase will dynamically
+        generated and written to the specified file.  If the --passphraseFile
+        argument is provided without the --generatePassphrase argument, then
+        that file must exist and it will be read to obtain the passphrase used
+        to generate the encryption key.  If the --passphraseFile argument is
+        not provided, then the encryption passphrase will be interactively
+        requested.  Note that when providing an encrypted collect-support-data
+        archive to support personnel, it is strongly recommended that the
+        passphrase be provided over a separate channel than the encrypted
+        archive itself to help prevent unauthorized third-party access.
+    --passphraseFile {path}
+        The path to a file containing the passphrase used to encrypt or decrypt
+        the support data archive.  If this file exists, then it must contain
+        exactly one line that consists entirely of the encryption passphrase.
+        If this file does not exist, then the --generatePassphrase argument
+        must have also been provided, and the generated passphrase will be
+        written into the specified file.
+    --generatePassphrase
+        Indicates that the tool should automatically generate the passphrase
+        used to generate the encryption key and write it to the file specified
+        by the --passphraseFile argument.  This argument may only be used if
+        both the --encrypt and --passphraseFile arguments are also provided.
+    --decrypt {path}
+        Decrypts the encrypted support data archive contained in the specified
+        file.  If the --passphraseFile argument is provided, then it will be
+        used to obtain the passphrase to use to generate the encryption key.
+        Otherwise, the passphrase will be interactively requested.
+
+  Data Collection Arguments
+
+    --collectExpensiveData
+        Indicates that the tool should attempt to collect information that may
+        be time-consuming or resource-intensive to obtain, or that may affect
+        server performance or responsiveness.
+    --collectReplicationStateDump
+        Indicates that the support data archive should include a replication
+        state dump, which may be several megabytes in size.  This argument
+        cannot be used in conjunction with the --noLDAP argument.
+    --includeBinaryFiles
+        Indicates that the support data archive should include any binary files
+        that would have otherwise been omitted, but that may contain
+        information that could be helpful in investigating the underlying
+        issue.  Note that sensitive information in these binary files may not
+        be obscured or redacted in the same way that it would be in plain text
+        files.
+    --archiveExtensionSource
+        Indicates that the resulting support data archive should include the
+        source code (if available) for any third-party extensions installed in
+        the server.
+    --sequential
+        Collect data sequentially rather than in parallel.  This has the effect
+        of reducing the initial memory footprint of this tool, but at the
+        expense of taking longer to complete.  Use this option if running
+        without it results in out-of-memory errors.
+    --securityLevel {none|obscure-secrets|maximum}
+        Specifies the degree to which the tool will attempt to obscure or omit
+        potentially sensitive information.  A value of 'none' indicates that
+        the tool will not attempt to obscure or redact any information.  A
+        value of 'obscure-secrets' indicates that the tool will attempt to
+        obscure secret information (like the values of sensitive configuration
+        properties) and omit log files containing user data (like the data
+        recovery log).  A value of 'maximum' indicates that the tool will take
+        even more drastic measures, like omitting access log files and
+        obscuring attribute values in entry DNs and search filters, but at the
+        risk of omitting information that could be useful in investigating the
+        associated issue.  If this is not provided, a value of
+        'obscure-secrets' will be used by default.
+    --jstackCount {count}
+        The number of times the jstack tool should be invoked to obtain stack
+        traces of all threads running in the JVM.  A value of zero indicates
+        that the jstack tool should not be invoked.  If this argument is not
+        provided, the tool will be invoked ten times by default.
+    --reportCount {count}
+        The number of intervals of data to collect from tools that use
+        interval-based sampling (e.g., vmstat, iostat, mpstat, etc.).  A value
+        of zero indicates that no information should be collected from these
+        tools.  If this argument is not provided, then data will be collected
+        from ten intervals by default.
+    --reportIntervalSeconds {seconds}
+        The number of seconds that should elapse between intervals from tools
+        that use interval-based sampling (e.g., vmstat, iostat, mpstat, etc.).
+        If this argument is provided, the value must be greater than zero.  If
+        it is not provided, an interval duration of one second will be used by
+        default.
+    --logTimeRange {startTime[,endTime]}
+        Include log messages falling within the indicated time range.  The
+        start and end time values should be formatted in the generalized time
+        format (e.g., 'YYYYMMDDhhmmss.uuuZ'), a format similar to the
+        generalized time format but without the time zone indicator to indicate
+        that the value should be in the local time zone (e.g.,
+        'YYYYMMDDhhmmss.uuu'), or the server's default log timestamp format
+        (e.g., '[DD/MMM/YYYY:hh:mm:ss Z]' or '[DD/MMM/YYYY:hh:mm:ss.uuu Z]').
+        If the end time is omitted, the current time will be used.
+    --logDuration {duration}
+        Include log messages within the specified duration before the current
+        time.  If specified, the value must consist of an integer followed by a
+        time unit, which may be one of millisecond, second, minute, hour, or
+        day, or their plurals (e.g., '5 minutes' or '1 hour').
+    --logFileHeadCollectionSizeKB {sizeKB}
+        The amount of data in kilobytes that the tool should capture from the
+        beginning of each log file.  If this is specified, then the value must
+        be greater than or equal to zero.
+    --logFileTailCollectionSizeKB {sizeKB}
+        The amount of data in kilobytes that the tool should capture from the
+        end of each log file.  If this is specified, then the value must be
+        greater than or equal to zero.
+    --pid {pid}
+        Specifies the process ID of an additional process about which
+        information should be collected.  This option may be useful for
+        troubleshooting external server tools.  It may be provided multiple
+        times to specify multiple process IDs.
+    --comment {value}
+        Provides a comment that will be included in a README file within the
+        support data archive.  This comment may provide additional context
+        about the issue being investigated.
+
+  Communication Arguments
+
+    --useRemoteServer
+        Indicates that the collect-support-data request should be sent to a
+        server over LDAP rather than operating against the local instance.
+    --useAdministrativeSession
+        Indicates that the tool should attempt to use an administrative session
+        to process all operations using a dedicated pool of worker threads.
+        This may be useful when trying to diagnose problems in a server that is
+        unresponsive because all normal worker threads are busy processing
+        other requests.  This argument may only be used in conjunction with the
+        --useRemoteServer argument.
+    --proxyToServerAddress {address}
+        The address of a server to which the collect-support-data extended
+        request should be forwarded.  This may be useful for retrieving support
+        data information from a backend Directory Server instance that can only
+        be accessed through a Directory Proxy Server.  The server to which the
+        initial request will be sent (the one specified by the --hostname and
+        --port arguments) must either be configured with an LDAP external
+        server that has the specified proxy-to address and port values or there
+        must be a server instance with that address and port in the topology
+        registry.  This argument may only be provided if both the
+        --useRemoteServer and --proxyToServerPort arguments are also given.
+    --proxyToServerPort {port}
+        The port of a server to which the collect-support-data extended request
+        should be forwarded.  This argument may only be provided if both the
+        --useRemoteServer and --proxyToServerAddress arguments are also given.
+    --noLDAP
+        Indicates that no attempt should be made to collect any information
+        over LDAP.  This option should only be used as a last resort if the
+        server is completely unresponsive or will not start, and it must not be
+        used in conjunction with the --useRemoteServer argument.
+
+  Other Arguments
+
+    -n, --noPrompt
+        Indicates that the tool should not interactively prompt for any
+        information, but should fail if any required information is not
+        provided.
+    --dryRun
+        Indicates that the tool should validate the set of arguments but should
+        not actually generate the support data archive.  If the
+        --useRemoteServer argument is provided, then the extended request will
+        include the LDAP no-operation request control.
+
+  Usage Arguments
+
+    --interactive
+        Launch the tool in interactive mode.
+    -H, --help
+        Display usage information for this program.
+    -V, --version
+        Display version information for this program.
+    --propertiesFilePath {path}
+        The path to a properties file used to specify default values for
+        arguments not supplied on the command line.
+    --generatePropertiesFile {path}
+        Write an empty properties file that may be used to specify default
+        values for arguments.
+    --noPropertiesFile
+        Do not obtain any argument values from a properties file.
+    --suppressPropertiesFileComment
+        Suppress output listing the arguments obtained from a properties file.
+
+Examples
+
+  Collects information about the local server instance using the default
+  settings
+
+    collect-support-data --bindDN uid=admin,dc=example,dc=com \
+         --bindPasswordFile admin-pw.txt
+
+  Collects information about the specified remote instance, including log
+  messages from the last 10 minutes and a more extensive set of support data.
+  The output will be encrypted with a generated passphrase written to a file,
+  and the maximum amount of sanitization will be used.
+
+    collect-support-data --useRemoteServer --hostname ds.example.com \
+         --port 636 --useSSL --trustStorePath config/truststore \
+         --bindDN uid=admin,dc=example,dc=com \
+         --bindPasswordFile admin-pw.txt --collectExpensiveData \
+         --collectReplicationStateDump --securityLevel maximum \
+         --logDuration "10 minutes" --encrypt \
+         --passphraseFile encryption-passphrase.txt --generatePassphrase \
+         --outputPath csd.zip
+
+  Decrypts an encrypted support data archive using a passphrase read from the
+  specified file.
+
+    collect-support-data \
+         --decrypt support-data-ds-inst1-20211116111454.229Z-zip-encrypted \
+         --passphraseFile encryption-passphrase.txt

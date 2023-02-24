@@ -1,0 +1,2228 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>The manage-account Command-Line Tool</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="../unboundid.css" type="text/css">
+    <link rel="shortcut icon" href="../images/favicon.ico">
+  </head>
+
+  <body>
+    <h1>The manage-account Command-Line Tool</h1>
+
+    <p>
+      Retrieve or update information about the current state of a user account.  Processing will be performed using the password policy state extended operation, and you must have the password-reset privilege to use this extended operation.
+    </p>
+    <h3>Usage</h3>
+    <blockquote><pre>manage-account <i>{subCommand}</i> <i>{arguments}</i></pre></blockquote>
+    <p>
+      This tool uses subcommands to indicate which function you want to perform.
+      <br>
+      <a href="#available-subcommands">Jump to a list of the available subcommands.</a>
+    </p>
+    <h3>LDAP Connection and Authentication Arguments</h3>
+    <ul>
+      <li>
+        <tt>-h <i>{host}</i></tt> / <tt>--hostname <i>{host}</i></tt> &mdash; The IP address or resolvable name to use to connect to the directory server.  If this is not provided, then a default value of 'localhost' will be used.
+        <br><br>
+      </li>
+      <li>
+        <tt>-p <i>{port}</i></tt> / <tt>--port <i>{port}</i></tt> &mdash; The port to use to connect to the directory server.  If this is not provided, then a default value of 389 will be used.
+        <br>
+        The specified value must not be less than 1 or greater than 65 535.
+        <br><br>
+      </li>
+      <li>
+        <tt>-D <i>{dn}</i></tt> / <tt>--bindDN <i>{dn}</i></tt> &mdash; The DN to use to bind to the directory server when performing simple authentication.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>-w <i>{password}</i></tt> / <tt>--bindPassword <i>{password}</i></tt> &mdash; The password to use to bind to the directory server when performing simple authentication or a password-based SASL mechanism.
+        <br><br>
+      </li>
+      <li>
+        <tt>-j <i>{path}</i></tt> / <tt>--bindPasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to bind to the directory server when performing simple authentication or a password-based SASL mechanism.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForBindPassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the bind password.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-Z</tt> / <tt>--useSSL</tt> &mdash; Use SSL when communicating with the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-q</tt> / <tt>--useStartTLS</tt> &mdash; Use StartTLS when communicating with the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--defaultTrust</tt> &mdash; Use the JVM's default trust store, and optionally an additional trust store specified using the --trustStorePath argument, to non-interactively determine whether to trust any certificate chain presented during TLS negotiation.  If the chain cannot be trusted based on any of those sources, then negotiation will fail without prompting about whether to trust it.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-X</tt> / <tt>--trustAll</tt> &mdash; Trust any certificate presented by the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-K <i>{path}</i></tt> / <tt>--keyStorePath <i>{path}</i></tt> &mdash; The path to the file to use as the key store for obtaining client certificates when communicating securely with the directory server.
+        <br><br>
+      </li>
+      <li>
+        <tt>-W <i>{password}</i></tt> / <tt>--keyStorePassword <i>{password}</i></tt> &mdash; The password to use to access the key store contents.
+        <br><br>
+      </li>
+      <li>
+        <tt>-u <i>{path}</i></tt> / <tt>--keyStorePasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to access the key store contents.
+        <br>
+        The specified path must refer to a file that may or may not exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForKeyStorePassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the password to use to access the key store contents.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--keyStoreFormat <i>{format}</i></tt> &mdash; The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store file.
+        <br><br>
+      </li>
+      <li>
+        <tt>-P <i>{path}</i></tt> / <tt>--trustStorePath <i>{path}</i></tt> &mdash; The path to the file to use as trust store when determining whether to trust a certificate presented by the directory server.
+        <br><br>
+      </li>
+      <li>
+        <tt>-T <i>{password}</i></tt> / <tt>--trustStorePassword <i>{password}</i></tt> &mdash; The password to use to access the trust store contents.
+        <br><br>
+      </li>
+      <li>
+        <tt>-U <i>{path}</i></tt> / <tt>--trustStorePasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to access the trust store contents.
+        <br>
+        The specified path must refer to a file that may or may not exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForTrustStorePassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the password to use to access the trust store contents.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--trustStoreFormat <i>{format}</i></tt> &mdash; The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store file.
+        <br><br>
+      </li>
+      <li>
+        <tt>-N <i>{nickname}</i></tt> / <tt>--certNickname <i>{nickname}</i></tt> &mdash; The nickname (alias) of the client certificate in the key store to present to the directory server for SSL client authentication.
+        <br><br>
+      </li>
+      <li>
+        <tt>--enableSSLDebugging</tt> &mdash; Enable Java's low-level support for debugging SSL/TLS communication.  This is equivalent to setting the 'javax.net.debug' property to 'all'.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-o <i>{name=value}</i></tt> / <tt>--saslOption <i>{name=value}</i></tt> &mdash; A name-value pair providing information to use when performing SASL authentication.
+        <br><br>
+      </li>
+      <li>
+        <tt>--useSASLExternal</tt> &mdash; Use the SASL EXTERNAL mechanism to authenticate.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--helpSASL</tt> &mdash; Provide information about the supported SASL mechanisms, including the properties available for use with each.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Arguments for Identifying Target Users</h3>
+    <ul>
+      <li>
+        <tt>-b <i>{dn}</i></tt> / <tt>--targetDN <i>{dn}</i></tt> &mdash; The DN of the user entry on which to operate.  This argument may be provided multiple times to specify multiple user DNs.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>--dnInputFile <i>{path}</i></tt> &mdash; The path to a file containing the DNs of the user entries on which to operate.  The DN file must contain one DN per line, and blank lines and lines starting with an octothorpe (#) will be ignored.  This argument may be provided multiple times to use multiple DN files.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetFilter <i>{filter}</i></tt> &mdash; An LDAP filter that may be used to identify the user entries on which to operate.  The baseDN argument may be used to specify the base DN for the search.  This argument may be provided multiple times to specify multiple target filters.
+        <br>
+        A provided value must be able to be parsed as an LDAP search filter as described in RFC 4515.
+        <br><br>
+      </li>
+      <li>
+        <tt>--filterInputFile <i>{path}</i></tt> &mdash; The path to a file containing a set of LDAP filters to use to identify the user entries on which to operate.  The baseDN argument may be used to specify the base DN for the searches.  The filter file must contain one filter per line, and blank lines and lines starting with an octothorpe (#) will be ignored.  This argument may be provided multiple times to use multiple filter files.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--targetUserID <i>{value}</i></tt> &mdash; A string that identifies a user on which to operate.  The tool will search for the user with a base DN specified by the baseDN argument and a user ID attribute specified by the userIDAttribute argument.  This argument may be provided multiple times to specify multiple target user IDs.
+        <br><br>
+      </li>
+      <li>
+        <tt>--userIDInputFile <i>{path}</i></tt> &mdash; The path to a file containing a set of user ID values.  The file must contain one user ID per line, and blank lines and lines starting with an octothorpe (#) will be ignored.  The tool will search for the users with a base DN specified by the baseDN argument and a user ID attribute specified by the userIDAttribute argument.  This argument may be provided multiple times to use multiple user ID files.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--userIDAttribute <i>{value}</i></tt> &mdash; The name or OID of the attribute used to identify users with IDs specified using the targetUserID and userIDInputFile arguments.  If this argument is not provided, a default user ID attribute of uid will be used.
+        <br><br>
+      </li>
+      <li>
+        <tt>--baseDN <i>{dn}</i></tt> &mdash; The base DN to use when searching for user entries when using any of the targetFilter, filterInputFile, targetUserID, or userIDInputFile arguments.  If this argument is not provided, the default base DN will be the null DN.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>-z <i>{value}</i></tt> / <tt>--simplePageSize <i>{value}</i></tt> &mdash; Indicates that any searches performed to identify which users to target should make use of the simple paged results control to cause the entries to be returned in sets of no more than the specified number of entries.  When processing searches that may return a large number of entries, setting a page size can help reduce the likelihood that the server will need to block while sending results to the client if matching entries are identified much more quickly than the client can process the desired manage-account operations against those entries.  Further, when performing searches that may return a large number of entries, and especially for unindexed searches, setting a page size can help the client more efficiently resume processing in the event that the connection used to process the search becomes unusable.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Arguments for Adjusting Performance</h3>
+    <ul>
+      <li>
+        <tt>-t <i>{value}</i></tt> / <tt>--numThreads <i>{value}</i></tt> &mdash; The number of concurrent threads to use when performing manage-account operations against user entries.  If this argument is not provided, a default value of one will be used.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--numSearchThreads <i>{value}</i></tt> &mdash; The number of concurrent threads to use when searching for entries to target with manage-account operations.  This will only be used if arguments are provided that require the tool to perform searches to identify which entries to target (and will primarily be useful only in cases in which there will be multiple searches, as when reading filters or user IDs from a file).  If this argument is not provided, a default value of one will be used.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>-r <i>{value}</i></tt> / <tt>--ratePerSecond <i>{value}</i></tt> &mdash; The maximum rate, in operations per second, at which to target user entries.  If neither this nor the variableRateData argument is provided, then the tool will not perform any rate limiting.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--variableRateData <i>{path}</i></tt> &mdash; The path to a file containing a variable rate definition that may be used to cause the tool to vary the amount of load it generates over time.  If neither this nor the ratePerSecond argument is provided, then the tool will not perform any rate limiting.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--generateSampleRateFile <i>{path}</i></tt> &mdash; The path to a file to create with a sample variable rate definition.  This file will contain comments that describe the expected format for the file to use with the variableRateData argument.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Additional Arguments</h3>
+    <ul>
+      <li>
+        <tt>-R <i>{path}</i></tt> / <tt>--rejectFile <i>{path}</i></tt> &mdash; The path to a file to write with a record of any unsuccessful attempts to retrieve or update account information for a user.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--appendToRejectFile</tt> &mdash; Indicates that the tool should append to the file specified by the --rejectFile argument if it already exists.  If this argument is not provided and the reject file already exists, it will be overwritten.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressEmptyResultOperations</tt> &mdash; Indicates that the result information for each manage-account operation processed should suppress information about password policy state operations included in the result that do not have any values.  Operations presented without values generally indicated that the user's password policy is not configured for the associated functionality (e.g., if the password expiration time was requested but password expiration is not enabled in the user's password policy).
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--interactive</tt> &mdash; Launch the tool in interactive mode.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--outputFile <i>{path}</i></tt> &mdash; Write all standard output and standard error messages to the specified file instead of to the console.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--appendToOutputFile</tt> &mdash; Indicates that the tool should append to the file specified by the --outputFile argument if it already exists.  If this argument is not provided and the output file already exists, it will be overwritten.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--teeOutput</tt> &mdash; Write all standard output and standard error messages to the console as well as to the specified output file.  The --outputFile argument must also be provided.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-H</tt> / <tt>--help</tt> &mdash; Display usage information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--helpSubcommands</tt> &mdash; Display the names and descriptions of the supported subcommands.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-V</tt> / <tt>--version</tt> &mdash; Display version information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--propertiesFilePath <i>{path}</i></tt> &mdash; The path to a properties file used to specify default values for arguments not supplied on the command line.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--generatePropertiesFile <i>{path}</i></tt> &mdash; Write an empty properties file that may be used to specify default values for arguments.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--noPropertiesFile</tt> &mdash; Do not obtain any argument values from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressPropertiesFileComment</tt> &mdash; Suppress output listing the arguments obtained from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Required Argument Sets</h3>
+    <ul>
+      <li>
+        At least one of the following arguments must be provided:  <tt>--targetDN</tt>, <tt>--dnInputFile</tt>, <tt>--targetFilter</tt>, <tt>--filterInputFile</tt>, <tt>--targetUserID</tt>, <tt>--userIDInputFile</tt>
+      </li>
+    </ul>
+    <h3>Dependent Argument Sets</h3>
+    <ul>
+      <li>
+        If the <tt>--keyStorePassword</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--keyStorePasswordFile</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--promptForKeyStorePassword</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--trustStorePassword</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--trustStorePasswordFile</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--promptForTrustStorePassword</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--keyStorePath</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--trustStorePath</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--defaultTrust</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--trustAll</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--bindPassword</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--bindPasswordFile</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--promptForBindPassword</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--appendToRejectFile</tt> argument is provided, then the <tt>--rejectFile</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--appendToOutputFile</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--teeOutput</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+    </ul>
+    <h3>Exclusive Argument Sets</h3>
+    <ul>
+      <li>
+        The following arguments cannot be used together:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--keyStorePassword</tt>, <tt>--keyStorePasswordFile</tt>, <tt>--promptForKeyStorePassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--trustStorePassword</tt>, <tt>--trustStorePasswordFile</tt>, <tt>--promptForTrustStorePassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--defaultTrust</tt>, <tt>--trustAll</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--trustAll</tt>, <tt>--trustStorePath</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--bindDN</tt>, <tt>--saslOption</tt>, <tt>--useSASLExternal</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--bindPassword</tt>, <tt>--bindPasswordFile</tt>, <tt>--promptForBindPassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--propertiesFilePath</tt>, <tt>--noPropertiesFile</tt>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieve all available state information for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-all --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+    <ul>
+      <li>Retrieve any password policy state account usability error messages for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-account-usability-error-messages \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+    <ul>
+      <li>Update user 'uid=jdoe,ou=People,dc=example,dc=com' to make the account administratively disabled.</li>
+    </ul>
+    <blockquote><pre>    manage-account set-account-is-disabled --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --accountIsDisabled true</pre></blockquote>
+    <ul>
+      <li>Clears the authentication failure times for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-authentication-failure-times \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h3><a name="available-subcommands">Available Subcommands</a></h3>
+    <ul>
+      <li>
+        <a href="#subcommand-get-all">get-all</a> &mdash; Retrieve all available state information for a user.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-password-policy-dn">get-password-policy-dn</a> &mdash; Retrieve the DN of the password policy that governs a user.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-account-is-usable">get-account-is-usable</a> &mdash; Determine whether a user account will be allowed to authenticate or be used as an alternate authorization identity.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-account-usability-notice-messages">get-account-usability-notice-messages</a> &mdash; Retrieve any password policy state account usability notice messages for a user.  These messages may provide useful information about the state of the user account, but do not necessarily represent a current or imminent problem with the account.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-account-usability-warning-messages">get-account-usability-warning-messages</a> &mdash; Retrieve any password policy state account usability warning messages for a user.  The messages may provide information about conditions that may leave a user account unusable in the near future unless corrective action is taken.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-account-usability-error-messages">get-account-usability-error-messages</a> &mdash; Retrieve any password policy state account usability error messages for a user.  The messages may provide information about conditions that prevent a user account from authenticating, being used as an alternate authorization identity, or otherwise functioning normally.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-password-changed-time">get-password-changed-time</a> &mdash; Retrieve the time that a user's password was last changed, whether via a self change or an administrative reset.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-set-password-changed-time">set-password-changed-time</a> &mdash; Set the password changed time value for a user.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-clear-password-changed-time">clear-password-changed-time</a> &mdash; Clear the password changed time value for a user.  For password policy evaluations that require knowing when the user's password was last changed, the server will attempt to fall back to using the create timestamp, if available.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-account-is-disabled">get-account-is-disabled</a> &mdash; Determine whether a user account has been disabled by an administrator and cannot authenticate or be used as an alternate authorization identity.  This can also be accomplished with a standard LDAP search operation by determining whether the user entry has a ds-pwp-account-disabled operational attribute with a value of true.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-set-account-is-disabled">set-account-is-disabled</a> &mdash; Specify whether a user account is administratively disabled.  A disabled account cannot authenticate or be used as an alternate authorization identity.  This can also be accomplished with a standard LDAP modify operation by setting the value of the ds-pwp-account-disabled operational attribute in the user's entry with a value of either true or false (or by removing the attribute from the user's entry, which is equivalent to giving it a value of false).
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-clear-account-is-disabled">clear-account-is-disabled</a> &mdash; Clear the account disabled state information from a user entry, which is logically equivalent to using the set-account-is-disabled subcommand with an accountIsDisabled value of false.  This can also be accomplished with a standard LDAP modify operation by removing the ds-pwp-account-disabled operational attribute from the user's entry.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-account-activation-time">get-account-activation-time</a> &mdash; Retrieve the account activation time for a user.  If the activation time is in the future, the user cannot authenticate or be used as an alternate authorization identity.  This can also be accomplished with a standard LDAP search operation by retrieving the ds-pwp-account-activation-time operational attribute from the user's entry.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-set-account-activation-time">set-account-activation-time</a> &mdash; Set the account activation time for a user.  If the activation time is in the future, the user cannot authenticate or be used as an alternate authorization identity.  This can also be accomplished with a standard LDAP modify operation by setting the ds-pwp-account-activation-time attribute to have a generalized time representation of the desired activation time.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-clear-account-activation-time">clear-account-activation-time</a> &mdash; Clear the account activation time for a user.  If the account previously had an activation time in the future, this will make it immediately eligible for use.  This can also be accomplished with a standard LDAP modify operation by removing the ds-pwp-account-activation-time attribute from the user's entry.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-seconds-until-account-activation">get-seconds-until-account-activation</a> &mdash; Retrieve the length of time in seconds until a user's account is eligible for use.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-account-is-not-yet-active">get-account-is-not-yet-active</a> &mdash; Determine whether a user account has an activation time in the future and therefore cannot authenticate or be used as an alternate authorization identity.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-account-expiration-time">get-account-expiration-time</a> &mdash; Retrieve the account expiration time for a user.  If the expiration time is in the past, the user cannot authenticate or be used as an alternate authorization identity.  This can also be accomplished with a standard LDAP search operation by retrieving the ds-pwp-account-expiration-time operational attribute from the user's entry.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-set-account-expiration-time">set-account-expiration-time</a> &mdash; Set the account expiration time for a user.  If the expiration time is in the past, the user cannot authenticate or be used as an alternate authorization identity.  This can also be accomplished with a standard LDAP modify operation by setting the ds-pwp-account-expiration-time attribute to have a generalized time representation of the desired expiration time.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-clear-account-expiration-time">clear-account-expiration-time</a> &mdash; Clear the account expiration time for a user.  If the account previously had an expiration time in the past, this will make it immediately eligible for use.  This can also be accomplished with a standard LDAP modify operation by removing the ds-pwp-account-expiration-time attribute from the user's entry.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-seconds-until-account-expiration">get-seconds-until-account-expiration</a> &mdash; Retrieve the length of time in seconds until a user's account expires.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-account-is-expired">get-account-is-expired</a> &mdash; Determine whether a user account has an expiration time in the past and therefore cannot authenticate or be used as an alternate authorization identity.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-password-expiration-warned-time">get-password-expiration-warned-time</a> &mdash; Retrieve the time that a user received the first warning about an upcoming password expiration.  This will only be available if password expiration is enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-set-password-expiration-warned-time">set-password-expiration-warned-time</a> &mdash; Specify the time that a user received the first warning about an upcoming password expiration.  Note that this will not in itself trigger a password expiration warning nor cause any account status notification handlers to be invoked.  This will have no effect if password expiration is not enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-clear-password-expiration-warned-time">clear-password-expiration-warned-time</a> &mdash; Clear a record of any password expiration warning from a user's entry.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-seconds-until-password-expiration-warning">get-seconds-until-password-expiration-warning</a> &mdash; Retrieve the length of time in seconds until a user will be eligible to start receiving warnings about an upcoming password expiration.  This will only be available if password expiration is enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-password-expiration-time">get-password-expiration-time</a> &mdash; Retrieves the time that a user's password will expire.  This will only be available if password expiration is enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-seconds-until-password-expiration">get-seconds-until-password-expiration</a> &mdash; Retrieves the length of time in seconds until a user's password will expire.  This will only be available if password expiration is available in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-password-is-expired">get-password-is-expired</a> &mdash; Determine whether a user account has an expired password and therefore cannot authenticate or be used as an alternate authorization identity.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-account-is-failure-locked">get-account-is-failure-locked</a> &mdash; Determines whether a user's account is locked as a result of too many failed authentication attempts.  This will only be available if failure lockout is enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-set-account-is-failure-locked">set-account-is-failure-locked</a> &mdash; Specifies whether a user's account should be locked as a result of too many failed authentication attempts.  This will have no effect if failure lockout is not enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-failure-lockout-time">get-failure-lockout-time</a> &mdash; Retrieves the time that a user's account was locked as a result of too many failed authentication attempts.  This will only be available if failure lockout is enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-seconds-until-authentication-failure-unlock">get-seconds-until-authentication-failure-unlock</a> &mdash; Retrieves the length of time in seconds until a user's temporary failure lockout expires.  This will only be available if failure lockout is enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-authentication-failure-times">get-authentication-failure-times</a> &mdash; Retrieves the timestamps for any failed authentication attempts for a user since the user's last successful authentication.  This will only be available if failure lockout is enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-add-authentication-failure-time">add-authentication-failure-time</a> &mdash; Adds one or more new values to the set of authentication failure times for a user.  If the resulting set of authentication failure times has reached the configured lockout failure count, the user's account will be locked.  This will have no effect if failure lockout is not enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-set-authentication-failure-times">set-authentication-failure-times</a> &mdash; Sets the timestamps for failed authentication attempts for a user.  If the number of authentication failure times provided is greater than or equal to the lockout failure count for the user's password policy, the user's account will be locked.  This will have no effect if failure lockout is not enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-clear-authentication-failure-times">clear-authentication-failure-times</a> &mdash; Clears the set of authentication failure times for a user.  If the user's account had been locked be of too many failed authentication attempts, this will also clear that lockout.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-remaining-authentication-failure-count">get-remaining-authentication-failure-count</a> &mdash; Retrieves the number of additional failed authentication attempts that will be required to lock a user's account.  This will only be available if failure lockout is enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-account-is-idle-locked">get-account-is-idle-locked</a> &mdash; Determines whether a user's account is locked because it has been too long since the user last authenticated.  This will only be available if idle lockout is enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-seconds-until-idle-lockout">get-seconds-until-idle-lockout</a> &mdash; Retrieves the length of time in seconds until the user's account will be locked because it has been too long since the user last authenticated.  This will only be available if idle lockout is enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-idle-lockout-time">get-idle-lockout-time</a> &mdash; Retrieves the time at which the user's account was locked because it had been too long since the user last authenticated, or the time it will be locked unless the user authenticates before that time.  This will only be available if idle lockout is enabled in the user's password policy
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-must-change-password">get-must-change-password</a> &mdash; Determines whether a user's password has been reset by an administrator and the user must choose a new password before they will be allowed to perform any other operations.  This will only be available if force change on add or force change on reset is enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-set-must-change-password">set-must-change-password</a> &mdash; Specifies whether a user's password has been reset by an administrator and the user must choose a new password before they will be allowed to perform any other operations.  This will have no effect if neither force change on add nor force change on reset is enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-clear-must-change-password">clear-must-change-password</a> &mdash; Clears the password reset state information from a user's account.  If the account had previously been locked because the user failed to choose a new password in a timely manner after an administrative reset, that lockout will be lifted.  This will have no effect if neither force change on add nor force change on reset is enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-account-is-password-reset-locked">get-account-is-password-reset-locked</a> &mdash; Determines whether the user's account is locked because the user failed to choose a new password in a timely manner after an administrative reset.  This will only be available if either force change on add or force change on reset is enabled in the user's password policy, and if a maximum password reset age is defined in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-seconds-until-password-reset-lockout">get-seconds-until-password-reset-lockout</a> &mdash; Determines the length of time in seconds until the user's account will be locked unless they choose a new password after an administrative password reset.  This will only be available if either force change on add or force change on reset is enabled in the user's password policy, and if a maximum password reset age is defined in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-password-reset-lockout-time">get-password-reset-lockout-time</a> &mdash; Retrieves the time that a user's account was or will be locked for failing to choose a new password in a timely manner after an administrative reset.  This will only be available if either force change on add or force change on reset is enabled in the user's password policy, and if a maximum password reset age is defined in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-last-login-time">get-last-login-time</a> &mdash; Retrieves the time that a user last authenticated.  This will only be available if last login time tracking is enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-set-last-login-time">set-last-login-time</a> &mdash; Specifies the time that a user last authenticated.  This will have no effect if last login time tracking is not enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-clear-last-login-time">clear-last-login-time</a> &mdash; Clears the last login time from a user's entry.  This will have no effect if last login time tracking is not enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-last-login-ip-address">get-last-login-ip-address</a> &mdash; Retrieves the IP address of the client from which a user last authenticated.  This will only be available if last login IP address tracking is enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-set-last-login-ip-address">set-last-login-ip-address</a> &mdash; Specifies the IP address of the client from which a user last authenticated.  This will have no effect if last login IP address tracking is not enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-clear-last-login-ip-address">clear-last-login-ip-address</a> &mdash; Clears the last login IP address from a user's entry.  This will have no effect if last login IP address tracking is not enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-grace-login-use-times">get-grace-login-use-times</a> &mdash; Retrieves the times that a user has authenticated with grace logins after their password had expired.  This will only be available if both password expiration and grace login supports are configured in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-add-grace-login-use-time">add-grace-login-use-time</a> &mdash; Adds one or more new values to the set of grace login use times for a user.  This will have no effect unless both password expiration and grace login support are configured in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-set-grace-login-use-times">set-grace-login-use-times</a> &mdash; Replaces the set of grace login use times for a user.  This will have no effect unless both password expiration and grace login support are configured in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-clear-grace-login-use-times">clear-grace-login-use-times</a> &mdash; Clears the set of grace login use times for a user.  This will have no effect unless both password expiration and grace login support are configured in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-remaining-grace-login-count">get-remaining-grace-login-count</a> &mdash; Retrieves the number of additional grace logins that will be available to a user before they will be unable to authenticate with an expired password.  This will only be available if both password expiration and grace login support are enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-password-changed-by-required-time">get-password-changed-by-required-time</a> &mdash; Retrieves the most recent required change time with which a user has complied.  This will only be available if a required change time is configured in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-set-password-changed-by-required-time">set-password-changed-by-required-time</a> &mdash; Specifies the most recent required change time with which a user has complied.  This will not have any effect unless a required change time is configured in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-clear-password-changed-by-required-time">clear-password-changed-by-required-time</a> &mdash; Clears the record of the most recent required change time with which a user has complied.  This will not have any effect unless a required change time is configured in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-seconds-until-required-password-change-time">get-seconds-until-required-password-change-time</a> &mdash; Retrieves the length of time in seconds until the user account is locked for failure to comply with a required change time.  This will only be available if a required change time is configured in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-password-history-count">get-password-history-count</a> &mdash; Retrieves the number of passwords in a user's password history.  This will only be available if the password history is enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-clear-password-history">clear-password-history</a> &mdash; Clears the password history for a user.  This will have no effect if the password history is not enabled in the user's password policy.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-has-retired-password">get-has-retired-password</a> &mdash; Determines whether a user has an active retired password.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-password-retired-time">get-password-retired-time</a> &mdash; Retrieves the time that a user's former password was retired.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-retired-password-expiration-time">get-retired-password-expiration-time</a> &mdash; Retrieves the time that a user's retired password will expire.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-clear-retired-password">clear-retired-password</a> &mdash; Purges a retired password from a user's entry so that it may no longer be used to authenticate.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-available-sasl-mechanisms">get-available-sasl-mechanisms</a> &mdash; Retrieves a list of the SASL mechanisms that are available for a user.  This will take into account the server configuration, the types of credentials the user has, and the authentication constraints defined for the user.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-available-otp-delivery-mechanisms">get-available-otp-delivery-mechanisms</a> &mdash; Retrieves a list of the one-time password delivery mechanisms that are available for a user.  If the user's entry includes information about which OTP delivery mechanisms are preferred, then the values will be returned in order of most preferred to least preferred.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-has-totp-shared-secret">get-has-totp-shared-secret</a> &mdash; Determines whether a user has at least one TOTP shared secret that may be used in conjunction with the UNBOUNDID-TOTP SASL mechanism or the Verify TOTP extended operation.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-add-totp-shared-secret">add-totp-shared-secret</a> &mdash; Adds a value to the set of TOTP shared secrets for a user.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-remove-totp-shared-secret">remove-totp-shared-secret</a> &mdash; Removes a value from the set of TOTP shared secrets for a user.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-set-totp-shared-secrets">set-totp-shared-secrets</a> &mdash; Replaces the set of TOTP shared secrets registered for a user.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-clear-totp-shared-secrets">clear-totp-shared-secrets</a> &mdash; Clears the set of TOTP shared secrets registered for a user.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-has-registered-yubikey-public-id">get-has-registered-yubikey-public-id</a> &mdash; Determines whether a user has at least one registered YubiKey OTP device public ID.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-registered-yubikey-public-ids">get-registered-yubikey-public-ids</a> &mdash; Retrieves a list of the public IDs of the YubiKey OTP devices registered for a user.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-add-registered-yubikey-public-id">add-registered-yubikey-public-id</a> &mdash; Adds a value to the set of registered YubiKey OTP public IDs for a user.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-remove-registered-yubikey-public-id">remove-registered-yubikey-public-id</a> &mdash; Removes a value from the set of registered YubiKey OTP public IDs for a user.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-set-registered-yubikey-public-ids">set-registered-yubikey-public-ids</a> &mdash; Replaces the list of the public IDs of the YubiKey OTP devices registered for a user.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-clear-registered-yubikey-public-ids">clear-registered-yubikey-public-ids</a> &mdash; Clears the list of the public IDs of the YubiKey OTP devices registered for a user.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-has-static-password">get-has-static-password</a> &mdash; Determines whether a user has one static password.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-last-bind-password-validation-time">get-last-bind-password-validation-time</a> &mdash; Retrieves the time the server last invoked password validators during a bind operation for a user.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-seconds-since-last-bind-password-validation">get-seconds-since-last-bind-password-validation</a> &mdash; Retrieves the length of time in seconds since the server last invoked password validators during a bind operation for a user.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-set-last-bind-password-validation-time">set-last-bind-password-validation-time</a> &mdash; Specifies the time the server last invoked password validators during a bind operation for a user.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-clear-last-bind-password-validation-time">clear-last-bind-password-validation-time</a> &mdash; Clears the time the server last invoked password validators during a bind operation for a user.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-account-is-validation-locked">get-account-is-validation-locked</a> &mdash; Determines whether a user's account is locked because it contains a password that does not satisfy all of the configured password validators.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-set-account-is-validation-locked">set-account-is-validation-locked</a> &mdash; Specifies whether a user's account should be locked because it contains a password that does not satisfy all of the configured password validators.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-get-recent-login-history">get-recent-login-history</a> &mdash; Retrieves the user's recent login history.
+        <br><br>
+      </li>
+      <li>
+        <a href="#subcommand-clear-recent-login-history">clear-recent-login-history</a> &mdash; Clears the user's recent login history.
+        <br><br>
+      </li>
+    </ul>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-all">Usage For Subcommand get-all</a></h2>
+    <p>Retrieve all available state information for a user.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieve all available state information for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-all get-all --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-password-policy-dn">Usage For Subcommand get-password-policy-dn</a></h2>
+    <p>Retrieve the DN of the password policy that governs a user.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieve the DN of the password policy that governs user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-password-policy-dn get-password-policy-dn \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-account-is-usable">Usage For Subcommand get-account-is-usable</a></h2>
+    <p>Determine whether a user account will be allowed to authenticate or be used as an alternate authorization identity.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Determine whether user 'uid=jdoe,ou=People,dc=example,dc=com' will be permitted to authenticate or be used as an alternate authorization identity.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-account-is-usable get-account-is-usable \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-account-usability-notice-messages">Usage For Subcommand get-account-usability-notice-messages</a></h2>
+    <p>Retrieve any password policy state account usability notice messages for a user.  These messages may provide useful information about the state of the user account, but do not necessarily represent a current or imminent problem with the account.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieve any password policy state account usability notice messages for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-account-usability-notice-messages \
+         get-account-usability-notice-messages --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-account-usability-warning-messages">Usage For Subcommand get-account-usability-warning-messages</a></h2>
+    <p>Retrieve any password policy state account usability warning messages for a user.  The messages may provide information about conditions that may leave a user account unusable in the near future unless corrective action is taken.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieve any password policy state account usability warning messages for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-account-usability-warning-messages \
+         get-account-usability-warning-messages \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-account-usability-error-messages">Usage For Subcommand get-account-usability-error-messages</a></h2>
+    <p>Retrieve any password policy state account usability error messages for a user.  The messages may provide information about conditions that prevent a user account from authenticating, being used as an alternate authorization identity, or otherwise functioning normally.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieve any password policy state account usability error messages for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-account-usability-error-messages \
+         get-account-usability-error-messages --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-password-changed-time">Usage For Subcommand get-password-changed-time</a></h2>
+    <p>Retrieve the time that a user's password was last changed, whether via a self change or an administrative reset.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieve the time that the password for user 'uid=jdoe,ou=People,dc=example,dc=com' was last changed.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-password-changed-time get-password-changed-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-set-password-changed-time">Usage For Subcommand set-password-changed-time</a></h2>
+    <p>Set the password changed time value for a user.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{timestamp}</i></tt> / <tt>--passwordChangedTime <i>{timestamp}</i></tt> &mdash; The new value for the password changed time.  It must be a timestamp formatted either in generalized time form or in the local time zone using one of the following formats:  YYYYMMDDhhmmss.uuu, YYYYMMDDhhmmss, or YYYYMMDDhhmm.  If this argument is not provided, the password changed time will be set to the current time.
+        <br>
+        A provided value must be able to be parsed as a valid generalized time (as described in RFC 4517 section 3.1.13) or as a timestamp in the local time zone using any of the formats 'YYYYMMDDhhmmss.uuu', 'YYYYMMDDhhmmss', or 'YYYYMMDDhhmm'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Set the password changed time for user 'uid=jdoe,ou=People,dc=example,dc=com' to '20211116111454.382Z'.</li>
+    </ul>
+    <blockquote><pre>    manage-account set-password-changed-time set-password-changed-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --passwordChangedTime 20211116111454.382Z</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-clear-password-changed-time">Usage For Subcommand clear-password-changed-time</a></h2>
+    <p>Clear the password changed time value for a user.  For password policy evaluations that require knowing when the user's password was last changed, the server will attempt to fall back to using the create timestamp, if available.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Clear the password changed time for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-password-changed-time clear-password-changed-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-account-is-disabled">Usage For Subcommand get-account-is-disabled</a></h2>
+    <p>Determine whether a user account has been disabled by an administrator and cannot authenticate or be used as an alternate authorization identity.  This can also be accomplished with a standard LDAP search operation by determining whether the user entry has a ds-pwp-account-disabled operational attribute with a value of true.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Determine whether the account for user 'uid=jdoe,ou=People,dc=example,dc=com' has been disabled by an administrator.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-account-is-disabled get-account-is-disabled \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-set-account-is-disabled">Usage For Subcommand set-account-is-disabled</a></h2>
+    <p>Specify whether a user account is administratively disabled.  A disabled account cannot authenticate or be used as an alternate authorization identity.  This can also be accomplished with a standard LDAP modify operation by setting the value of the ds-pwp-account-disabled operational attribute in the user's entry with a value of either true or false (or by removing the attribute from the user's entry, which is equivalent to giving it a value of false).</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{true|false}</i></tt> / <tt>--accountIsDisabled <i>{true|false}</i></tt> &mdash; The new value for the flag indicating whether the user's account is disabled.  The value must be either 'true' or 'false'.
+        <br>
+        A provided value should be either 'true' or 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Update user 'uid=jdoe,ou=People,dc=example,dc=com' to make the account administratively disabled.</li>
+    </ul>
+    <blockquote><pre>    manage-account set-account-is-disabled set-account-is-disabled \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --accountIsDisabled true</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-clear-account-is-disabled">Usage For Subcommand clear-account-is-disabled</a></h2>
+    <p>Clear the account disabled state information from a user entry, which is logically equivalent to using the set-account-is-disabled subcommand with an accountIsDisabled value of false.  This can also be accomplished with a standard LDAP modify operation by removing the ds-pwp-account-disabled operational attribute from the user's entry.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Clear the account disabled state information for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-account-is-disabled clear-account-is-disabled \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-account-activation-time">Usage For Subcommand get-account-activation-time</a></h2>
+    <p>Retrieve the account activation time for a user.  If the activation time is in the future, the user cannot authenticate or be used as an alternate authorization identity.  This can also be accomplished with a standard LDAP search operation by retrieving the ds-pwp-account-activation-time operational attribute from the user's entry.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieve the account activation time for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-account-activation-time get-account-activation-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-set-account-activation-time">Usage For Subcommand set-account-activation-time</a></h2>
+    <p>Set the account activation time for a user.  If the activation time is in the future, the user cannot authenticate or be used as an alternate authorization identity.  This can also be accomplished with a standard LDAP modify operation by setting the ds-pwp-account-activation-time attribute to have a generalized time representation of the desired activation time.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{timestamp}</i></tt> / <tt>--accountActivationTime <i>{timestamp}</i></tt> &mdash; The new value for the account activation time.  It must be a timestamp formatted either in generalized time form or in the local time zone using one of the following formats:  YYYYMMDDhhmmss.uuu, YYYYMMDDhhmmss, or YYYYMMDDhhmm.  If this argument is not provided, the account activation time will be set to the current time.
+        <br>
+        A provided value must be able to be parsed as a valid generalized time (as described in RFC 4517 section 3.1.13) or as a timestamp in the local time zone using any of the formats 'YYYYMMDDhhmmss.uuu', 'YYYYMMDDhhmmss', or 'YYYYMMDDhhmm'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Set the account activation time for user 'uid=jdoe,ou=People,dc=example,dc=com' to '20211116111454.382Z'.</li>
+    </ul>
+    <blockquote><pre>    manage-account set-account-activation-time set-account-activation-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --accountActivationTime 20211116111454.382Z</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-clear-account-activation-time">Usage For Subcommand clear-account-activation-time</a></h2>
+    <p>Clear the account activation time for a user.  If the account previously had an activation time in the future, this will make it immediately eligible for use.  This can also be accomplished with a standard LDAP modify operation by removing the ds-pwp-account-activation-time attribute from the user's entry.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Clear the account activation time for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-account-activation-time \
+         clear-account-activation-time --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-seconds-until-account-activation">Usage For Subcommand get-seconds-until-account-activation</a></h2>
+    <p>Retrieve the length of time in seconds until a user's account is eligible for use.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieve the length of time in seconds until user account 'uid=jdoe,ou=People,dc=example,dc=com' will be eligible for use.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-seconds-until-account-activation \
+         get-seconds-until-account-activation --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-account-is-not-yet-active">Usage For Subcommand get-account-is-not-yet-active</a></h2>
+    <p>Determine whether a user account has an activation time in the future and therefore cannot authenticate or be used as an alternate authorization identity.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Determine whether user 'uid=jdoe,ou=People,dc=example,dc=com' has an account activation time in the future.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-account-is-not-yet-active \
+         get-account-is-not-yet-active --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-account-expiration-time">Usage For Subcommand get-account-expiration-time</a></h2>
+    <p>Retrieve the account expiration time for a user.  If the expiration time is in the past, the user cannot authenticate or be used as an alternate authorization identity.  This can also be accomplished with a standard LDAP search operation by retrieving the ds-pwp-account-expiration-time operational attribute from the user's entry.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieve the account expiration time for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-account-expiration-time get-account-expiration-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-set-account-expiration-time">Usage For Subcommand set-account-expiration-time</a></h2>
+    <p>Set the account expiration time for a user.  If the expiration time is in the past, the user cannot authenticate or be used as an alternate authorization identity.  This can also be accomplished with a standard LDAP modify operation by setting the ds-pwp-account-expiration-time attribute to have a generalized time representation of the desired expiration time.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{timestamp}</i></tt> / <tt>--accountExpirationTime <i>{timestamp}</i></tt> &mdash; The new value for the account expiration time.  It must be a timestamp formatted either in generalized time form or in the local time zone using one of the following formats:  YYYYMMDDhhmmss.uuu, YYYYMMDDhhmmss, or YYYYMMDDhhmm.  If this argument is not provided, the account expiration time will be set to the current time.
+        <br>
+        A provided value must be able to be parsed as a valid generalized time (as described in RFC 4517 section 3.1.13) or as a timestamp in the local time zone using any of the formats 'YYYYMMDDhhmmss.uuu', 'YYYYMMDDhhmmss', or 'YYYYMMDDhhmm'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Set the account expiration time for user 'uid=jdoe,ou=People,dc=example,dc=com' to '20211116111454.382Z'.</li>
+    </ul>
+    <blockquote><pre>    manage-account set-account-expiration-time set-account-expiration-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --accountExpirationTime 20211116111454.382Z</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-clear-account-expiration-time">Usage For Subcommand clear-account-expiration-time</a></h2>
+    <p>Clear the account expiration time for a user.  If the account previously had an expiration time in the past, this will make it immediately eligible for use.  This can also be accomplished with a standard LDAP modify operation by removing the ds-pwp-account-expiration-time attribute from the user's entry.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Clear the account expiration time for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-account-expiration-time \
+         clear-account-expiration-time --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-seconds-until-account-expiration">Usage For Subcommand get-seconds-until-account-expiration</a></h2>
+    <p>Retrieve the length of time in seconds until a user's account expires.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieve the length of time in seconds until user account 'uid=jdoe,ou=People,dc=example,dc=com' expires.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-seconds-until-account-expiration \
+         get-seconds-until-account-expiration --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-account-is-expired">Usage For Subcommand get-account-is-expired</a></h2>
+    <p>Determine whether a user account has an expiration time in the past and therefore cannot authenticate or be used as an alternate authorization identity.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Determine whether user 'uid=jdoe,ou=People,dc=example,dc=com' has an account expiration time in the past.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-account-is-expired get-account-is-expired \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-password-expiration-warned-time">Usage For Subcommand get-password-expiration-warned-time</a></h2>
+    <p>Retrieve the time that a user received the first warning about an upcoming password expiration.  This will only be available if password expiration is enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieve the time that user 'uid=jdoe,ou=People,dc=example,dc=com' received the first warning about an upcoming password expiration.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-password-expiration-warned-time \
+         get-password-expiration-warned-time --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-set-password-expiration-warned-time">Usage For Subcommand set-password-expiration-warned-time</a></h2>
+    <p>Specify the time that a user received the first warning about an upcoming password expiration.  Note that this will not in itself trigger a password expiration warning nor cause any account status notification handlers to be invoked.  This will have no effect if password expiration is not enabled in the user's password policy.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{timestamp}</i></tt> / <tt>--passwordExpirationWarnedTime <i>{timestamp}</i></tt> &mdash; The new value for the password expiration warned time.  It must be a timestamp formatted either in generalized time form or in the local time zone using one of the following formats:  YYYYMMDDhhmmss.uuu, YYYYMMDDhhmmss, or YYYYMMDDhhmm.  If this argument is not provided, the password expiration warned time will be set to the current time.
+        <br>
+        A provided value must be able to be parsed as a valid generalized time (as described in RFC 4517 section 3.1.13) or as a timestamp in the local time zone using any of the formats 'YYYYMMDDhhmmss.uuu', 'YYYYMMDDhhmmss', or 'YYYYMMDDhhmm'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Set the password expiration warned time for user 'uid=jdoe,ou=People,dc=example,dc=com' to '20211116111454.382Z'.</li>
+    </ul>
+    <blockquote><pre>    manage-account set-password-expiration-warned-time \
+         set-password-expiration-warned-time --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --passwordExpirationWarnedTime 20211116111454.382Z</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-clear-password-expiration-warned-time">Usage For Subcommand clear-password-expiration-warned-time</a></h2>
+    <p>Clear a record of any password expiration warning from a user's entry.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Clear the password expiration warned time for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-password-expiration-warned-time \
+         clear-password-expiration-warned-time --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-seconds-until-password-expiration-warning">Usage For Subcommand get-seconds-until-password-expiration-warning</a></h2>
+    <p>Retrieve the length of time in seconds until a user will be eligible to start receiving warnings about an upcoming password expiration.  This will only be available if password expiration is enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieve the length of time in seconds until user 'uid=jdoe,ou=People,dc=example,dc=com' will be eligible to start receiving password expiration warnings.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-seconds-until-password-expiration-warning \
+         get-seconds-until-password-expiration-warning \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-password-expiration-time">Usage For Subcommand get-password-expiration-time</a></h2>
+    <p>Retrieves the time that a user's password will expire.  This will only be available if password expiration is enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the time that the password for user 'uid=jdoe,ou=People,dc=example,dc=com' will expire.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-password-expiration-time get-password-expiration-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-seconds-until-password-expiration">Usage For Subcommand get-seconds-until-password-expiration</a></h2>
+    <p>Retrieves the length of time in seconds until a user's password will expire.  This will only be available if password expiration is available in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the length of time in seconds until the password for user 'uid=jdoe,ou=People,dc=example,dc=com' expires.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-seconds-until-password-expiration \
+         get-seconds-until-password-expiration --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-password-is-expired">Usage For Subcommand get-password-is-expired</a></h2>
+    <p>Determine whether a user account has an expired password and therefore cannot authenticate or be used as an alternate authorization identity.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Determine whether user 'uid=jdoe,ou=People,dc=example,dc=com' has an expired password.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-password-is-expired get-password-is-expired \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-account-is-failure-locked">Usage For Subcommand get-account-is-failure-locked</a></h2>
+    <p>Determines whether a user's account is locked as a result of too many failed authentication attempts.  This will only be available if failure lockout is enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Determines whether the account for user 'uid=jdoe,ou=People,dc=example,dc=com' is locked as a result of too many failed authentication attempts.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-account-is-failure-locked \
+         get-account-is-failure-locked --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-set-account-is-failure-locked">Usage For Subcommand set-account-is-failure-locked</a></h2>
+    <p>Specifies whether a user's account should be locked as a result of too many failed authentication attempts.  This will have no effect if failure lockout is not enabled in the user's password policy.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{true|false}</i></tt> / <tt>--accountIsFailureLocked <i>{true|false}</i></tt> &mdash; Indicates whether the user's account should be locked as a result of too many failed authentication attempts.  The value must be either 'true' (in which case the server will update the user's entry to include the necessary number of failed authentication attempts) or 'false' (in which case the server will clear information about any authentication failures from a user's entry).
+        <br>
+        A provided value should be either 'true' or 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Forces the account for user 'uid=jdoe,ou=People,dc=example,dc=com' to be locked as a result of too many failed authentication attempts.</li>
+    </ul>
+    <blockquote><pre>    manage-account set-account-is-failure-locked \
+         set-account-is-failure-locked --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --accountIsFailureLocked true</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-failure-lockout-time">Usage For Subcommand get-failure-lockout-time</a></h2>
+    <p>Retrieves the time that a user's account was locked as a result of too many failed authentication attempts.  This will only be available if failure lockout is enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the time that the account for user 'uid=jdoe,ou=People,dc=example,dc=com' was locked as a result of too many failed authentication attempts.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-failure-lockout-time get-failure-lockout-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-seconds-until-authentication-failure-unlock">Usage For Subcommand get-seconds-until-authentication-failure-unlock</a></h2>
+    <p>Retrieves the length of time in seconds until a user's temporary failure lockout expires.  This will only be available if failure lockout is enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the length of time in seconds until the temporary failure lockout for user 'uid=jdoe,ou=People,dc=example,dc=com' expires.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-seconds-until-authentication-failure-unlock \
+         get-seconds-until-authentication-failure-unlock \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-authentication-failure-times">Usage For Subcommand get-authentication-failure-times</a></h2>
+    <p>Retrieves the timestamps for any failed authentication attempts for a user since the user's last successful authentication.  This will only be available if failure lockout is enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the timestamps for any failed authentication attempts for user 'uid=jdoe,ou=People,dc=example,dc=com' since that user's last successful authentication.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-authentication-failure-times \
+         get-authentication-failure-times --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-add-authentication-failure-time">Usage For Subcommand add-authentication-failure-time</a></h2>
+    <p>Adds one or more new values to the set of authentication failure times for a user.  If the resulting set of authentication failure times has reached the configured lockout failure count, the user's account will be locked.  This will have no effect if failure lockout is not enabled in the user's password policy.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{timestamp}</i></tt> / <tt>--authenticationFailureTime <i>{timestamp}</i></tt> &mdash; A timestamp for an authentication failure time to add to the user's entry.  It must be a timestamp formatted either in generalized time form or in the local time zone using one of the following formats:  YYYYMMDDhhmmss.uuu, YYYYMMDDhhmmss, or YYYYMMDDhhmm.  This argument may be provided multiple times to specify multiple authentication failure times.  If this argument is not provided, the current time will be added to the set of authentication failure times.
+        <br>
+        A provided value must be able to be parsed as a valid generalized time (as described in RFC 4517 section 3.1.13) or as a timestamp in the local time zone using any of the formats 'YYYYMMDDhhmmss.uuu', 'YYYYMMDDhhmmss', or 'YYYYMMDDhhmm'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Adds the current time to the set of authentication failure times for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account add-authentication-failure-time \
+         add-authentication-failure-time --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-set-authentication-failure-times">Usage For Subcommand set-authentication-failure-times</a></h2>
+    <p>Sets the timestamps for failed authentication attempts for a user.  If the number of authentication failure times provided is greater than or equal to the lockout failure count for the user's password policy, the user's account will be locked.  This will have no effect if failure lockout is not enabled in the user's password policy.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{timestamp}</i></tt> / <tt>--authenticationFailureTime <i>{timestamp}</i></tt> &mdash; A timestamp for an authentication failure time to set in the user's entry.  It must be a timestamp formatted either in generalized time form or in the local time zone using one of the following formats:  YYYYMMDDhhmmss.uuu, YYYYMMDDhhmmss, or YYYYMMDDhhmm.  This argument may be provided multiple times to specify multiple authentication failure times.  If this argument is not provided, the set of authentication failure times will be updated to include only the current time.
+        <br>
+        A provided value must be able to be parsed as a valid generalized time (as described in RFC 4517 section 3.1.13) or as a timestamp in the local time zone using any of the formats 'YYYYMMDDhhmmss.uuu', 'YYYYMMDDhhmmss', or 'YYYYMMDDhhmm'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Sets the authentication failure times for user 'uid=jdoe,ou=People,dc=example,dc=com' to include values of '20211116111442.037Z' and '20211116111454.382Z'.</li>
+    </ul>
+    <blockquote><pre>    manage-account set-authentication-failure-times \
+         set-authentication-failure-times --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --authenticationFailureTime 20211116111442.037Z \
+         --authenticationFailureTime 20211116111454.382Z</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-clear-authentication-failure-times">Usage For Subcommand clear-authentication-failure-times</a></h2>
+    <p>Clears the set of authentication failure times for a user.  If the user's account had been locked be of too many failed authentication attempts, this will also clear that lockout.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Clears the authentication failure times for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-authentication-failure-times \
+         clear-authentication-failure-times --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-remaining-authentication-failure-count">Usage For Subcommand get-remaining-authentication-failure-count</a></h2>
+    <p>Retrieves the number of additional failed authentication attempts that will be required to lock a user's account.  This will only be available if failure lockout is enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the remaining number of failed authentication attempts that will be required to lock the account for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-remaining-authentication-failure-count \
+         get-remaining-authentication-failure-count \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-account-is-idle-locked">Usage For Subcommand get-account-is-idle-locked</a></h2>
+    <p>Determines whether a user's account is locked because it has been too long since the user last authenticated.  This will only be available if idle lockout is enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Determines whether the account for user 'uid=jdoe,ou=People,dc=example,dc=com' is locked because it has been too long since the user last authenticated.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-account-is-idle-locked get-account-is-idle-locked \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-seconds-until-idle-lockout">Usage For Subcommand get-seconds-until-idle-lockout</a></h2>
+    <p>Retrieves the length of time in seconds until the user's account will be locked because it has been too long since the user last authenticated.  This will only be available if idle lockout is enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the length of time until the account for user 'uid=jdoe,ou=People,dc=example,dc=com' will be locked because it has been too long since the user last authenticated.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-seconds-until-idle-lockout \
+         get-seconds-until-idle-lockout --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-idle-lockout-time">Usage For Subcommand get-idle-lockout-time</a></h2>
+    <p>Retrieves the time at which the user's account was locked because it had been too long since the user last authenticated, or the time it will be locked unless the user authenticates before that time.  This will only be available if idle lockout is enabled in the user's password policy</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the time at which the account for user 'uid=jdoe,ou=People,dc=example,dc=com' was locked because it had been too long since the user had last authenticated.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-idle-lockout-time get-idle-lockout-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-must-change-password">Usage For Subcommand get-must-change-password</a></h2>
+    <p>Determines whether a user's password has been reset by an administrator and the user must choose a new password before they will be allowed to perform any other operations.  This will only be available if force change on add or force change on reset is enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Determines whether the password for user 'uid=jdoe,ou=People,dc=example,dc=com' has been reset and must be changed before any other operations will be allowed.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-must-change-password get-must-change-password \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-set-must-change-password">Usage For Subcommand set-must-change-password</a></h2>
+    <p>Specifies whether a user's password has been reset by an administrator and the user must choose a new password before they will be allowed to perform any other operations.  This will have no effect if neither force change on add nor force change on reset is enabled in the user's password policy.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{true|false}</i></tt> / <tt>--mustChangePassword <i>{true|false}</i></tt> &mdash; Indicates whether the user should be forced to choose a new password before being permitted to perform any other operations.  The value must be either 'true' or 'false'.
+        <br>
+        A provided value should be either 'true' or 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Specifies that the password for user 'uid=jdoe,ou=People,dc=example,dc=com' has been reset by an administrator and must be changed before they will be allowed to perform any other operations.</li>
+    </ul>
+    <blockquote><pre>    manage-account set-must-change-password set-must-change-password \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --mustChangePassword true</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-clear-must-change-password">Usage For Subcommand clear-must-change-password</a></h2>
+    <p>Clears the password reset state information from a user's account.  If the account had previously been locked because the user failed to choose a new password in a timely manner after an administrative reset, that lockout will be lifted.  This will have no effect if neither force change on add nor force change on reset is enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Clears the password reset state information from the account for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-must-change-password clear-must-change-password \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-account-is-password-reset-locked">Usage For Subcommand get-account-is-password-reset-locked</a></h2>
+    <p>Determines whether the user's account is locked because the user failed to choose a new password in a timely manner after an administrative reset.  This will only be available if either force change on add or force change on reset is enabled in the user's password policy, and if a maximum password reset age is defined in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Determines whether the account for user 'uid=jdoe,ou=People,dc=example,dc=com' is locked because the user failed to choose a new password in a timely manner after an administrative reset.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-account-is-password-reset-locked \
+         get-account-is-password-reset-locked --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-seconds-until-password-reset-lockout">Usage For Subcommand get-seconds-until-password-reset-lockout</a></h2>
+    <p>Determines the length of time in seconds until the user's account will be locked unless they choose a new password after an administrative password reset.  This will only be available if either force change on add or force change on reset is enabled in the user's password policy, and if a maximum password reset age is defined in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Determines the length of time in seconds until the account for user 'uid=jdoe,ou=People,dc=example,dc=com' will be locked unless they choose a new password.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-seconds-until-password-reset-lockout \
+         get-seconds-until-password-reset-lockout \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-password-reset-lockout-time">Usage For Subcommand get-password-reset-lockout-time</a></h2>
+    <p>Retrieves the time that a user's account was or will be locked for failing to choose a new password in a timely manner after an administrative reset.  This will only be available if either force change on add or force change on reset is enabled in the user's password policy, and if a maximum password reset age is defined in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the time that the account for user 'uid=jdoe,ou=People,dc=example,dc=com' was or will be locked for failing to choose a new password in a timely manner after an administrative reset.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-password-reset-lockout-time \
+         get-password-reset-lockout-time --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-last-login-time">Usage For Subcommand get-last-login-time</a></h2>
+    <p>Retrieves the time that a user last authenticated.  This will only be available if last login time tracking is enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the time that user 'uid=jdoe,ou=People,dc=example,dc=com' last authenticated.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-last-login-time get-last-login-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-set-last-login-time">Usage For Subcommand set-last-login-time</a></h2>
+    <p>Specifies the time that a user last authenticated.  This will have no effect if last login time tracking is not enabled in the user's password policy.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{timestamp}</i></tt> / <tt>--lastLoginTime <i>{timestamp}</i></tt> &mdash; The timestamp to use for the last login time value.  It must be a timestamp formatted either in generalized time form or in the local time zone using one of the following formats:  YYYYMMDDhhmmss.uuu, YYYYMMDDhhmmss, or YYYYMMDDhhmm.  If this argument is not provided, the last login time will be set to the current time.
+        <br>
+        A provided value must be able to be parsed as a valid generalized time (as described in RFC 4517 section 3.1.13) or as a timestamp in the local time zone using any of the formats 'YYYYMMDDhhmmss.uuu', 'YYYYMMDDhhmmss', or 'YYYYMMDDhhmm'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Sets the last login time for user 'uid=jdoe,ou=People,dc=example,dc=com' to '20211116111454.382Z'.</li>
+    </ul>
+    <blockquote><pre>    manage-account set-last-login-time set-last-login-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --lastLoginTime 20211116111454.382Z</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-clear-last-login-time">Usage For Subcommand clear-last-login-time</a></h2>
+    <p>Clears the last login time from a user's entry.  This will have no effect if last login time tracking is not enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Clears the last login time for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-last-login-time clear-last-login-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-last-login-ip-address">Usage For Subcommand get-last-login-ip-address</a></h2>
+    <p>Retrieves the IP address of the client from which a user last authenticated.  This will only be available if last login IP address tracking is enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the IP address of the client from which user 'uid=jdoe,ou=People,dc=example,dc=com' last authenticated.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-last-login-ip-address get-last-login-ip-address \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-set-last-login-ip-address">Usage For Subcommand set-last-login-ip-address</a></h2>
+    <p>Specifies the IP address of the client from which a user last authenticated.  This will have no effect if last login IP address tracking is not enabled in the user's password policy.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{value}</i></tt> / <tt>--lastLoginIPAddress <i>{value}</i></tt> &mdash; The last login IP address value to use.  It may be an IPv4 or IPv6 address.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Sets the last login IP address for user 'uid=jdoe,ou=People,dc=example,dc=com' to '1.2.3.4'.</li>
+    </ul>
+    <blockquote><pre>    manage-account set-last-login-ip-address set-last-login-ip-address \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --lastLoginIPAddress 1.2.3.4</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-clear-last-login-ip-address">Usage For Subcommand clear-last-login-ip-address</a></h2>
+    <p>Clears the last login IP address from a user's entry.  This will have no effect if last login IP address tracking is not enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Clears the last login IP address for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-last-login-ip-address clear-last-login-ip-address \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-grace-login-use-times">Usage For Subcommand get-grace-login-use-times</a></h2>
+    <p>Retrieves the times that a user has authenticated with grace logins after their password had expired.  This will only be available if both password expiration and grace login supports are configured in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the grace login times for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-grace-login-use-times get-grace-login-use-times \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-add-grace-login-use-time">Usage For Subcommand add-grace-login-use-time</a></h2>
+    <p>Adds one or more new values to the set of grace login use times for a user.  This will have no effect unless both password expiration and grace login support are configured in the user's password policy.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{timestamp}</i></tt> / <tt>--graceLoginUseTime <i>{timestamp}</i></tt> &mdash; A timestamp for a grace login use time to add to the user's entry.  It must be a timestamp formatted either in generalized time form or in the local time zone using one of the following formats:  YYYYMMDDhhmmss.uuu, YYYYMMDDhhmmss, or YYYYMMDDhhmm.  This argument may be provided multiple times to specify multiple grace login use times.  If this argument is not provided, the current time will be used.
+        <br>
+        A provided value must be able to be parsed as a valid generalized time (as described in RFC 4517 section 3.1.13) or as a timestamp in the local time zone using any of the formats 'YYYYMMDDhhmmss.uuu', 'YYYYMMDDhhmmss', or 'YYYYMMDDhhmm'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Adds the current time to the set of grace login use times for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account add-grace-login-use-time add-grace-login-use-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-set-grace-login-use-times">Usage For Subcommand set-grace-login-use-times</a></h2>
+    <p>Replaces the set of grace login use times for a user.  This will have no effect unless both password expiration and grace login support are configured in the user's password policy.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{timestamp}</i></tt> / <tt>--graceLoginUseTime <i>{timestamp}</i></tt> &mdash; A timestamp for a grace login use time to set in the user's entry.  It must be a timestamp formatted either in generalized time form or in the local time zone using one of the following formats:  YYYYMMDDhhmmss.uuu, YYYYMMDDhhmmss, or YYYYMMDDhhmm.  This argument may be provided multiple times to specify multiple grace login use times.  If this argument is not provided, the set of grace login use times will be updated to contain only the current time.
+        <br>
+        A provided value must be able to be parsed as a valid generalized time (as described in RFC 4517 section 3.1.13) or as a timestamp in the local time zone using any of the formats 'YYYYMMDDhhmmss.uuu', 'YYYYMMDDhhmmss', or 'YYYYMMDDhhmm'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Sets the grace login use times for user 'uid=jdoe,ou=People,dc=example,dc=com' to be '20211116111442.037Z' and '20211116111454.382Z'.</li>
+    </ul>
+    <blockquote><pre>    manage-account set-grace-login-use-times set-grace-login-use-times \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --graceLoginUseTime 20211116111442.037Z \
+         --graceLoginUseTime 20211116111454.382Z</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-clear-grace-login-use-times">Usage For Subcommand clear-grace-login-use-times</a></h2>
+    <p>Clears the set of grace login use times for a user.  This will have no effect unless both password expiration and grace login support are configured in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Clears the set of grace login use times for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-grace-login-use-times clear-grace-login-use-times \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-remaining-grace-login-count">Usage For Subcommand get-remaining-grace-login-count</a></h2>
+    <p>Retrieves the number of additional grace logins that will be available to a user before they will be unable to authenticate with an expired password.  This will only be available if both password expiration and grace login support are enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the remaining number of grace logins that for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-remaining-grace-login-count \
+         get-remaining-grace-login-count --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-password-changed-by-required-time">Usage For Subcommand get-password-changed-by-required-time</a></h2>
+    <p>Retrieves the most recent required change time with which a user has complied.  This will only be available if a required change time is configured in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the most recent required change time with which user 'uid=jdoe,ou=People,dc=example,dc=com' has complied.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-password-changed-by-required-time \
+         get-password-changed-by-required-time --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-set-password-changed-by-required-time">Usage For Subcommand set-password-changed-by-required-time</a></h2>
+    <p>Specifies the most recent required change time with which a user has complied.  This will not have any effect unless a required change time is configured in the user's password policy.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{timestamp}</i></tt> / <tt>--passwordChangedByRequiredTime <i>{timestamp}</i></tt> &mdash; The most recent required change time with which the user has complied.  It must be a timestamp formatted either in generalized time form or in the local time zone using one of the following formats:  YYYYMMDDhhmmss.uuu, YYYYMMDDhhmmss, or YYYYMMDDhhmm.  If this argument is not provided, the most recent required change time will be used.
+        <br>
+        A provided value must be able to be parsed as a valid generalized time (as described in RFC 4517 section 3.1.13) or as a timestamp in the local time zone using any of the formats 'YYYYMMDDhhmmss.uuu', 'YYYYMMDDhhmmss', or 'YYYYMMDDhhmm'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Specifies that user 'uid=jdoe,ou=People,dc=example,dc=com' has most recently complied with the most recent required change time.</li>
+    </ul>
+    <blockquote><pre>    manage-account set-password-changed-by-required-time \
+         set-password-changed-by-required-time --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-clear-password-changed-by-required-time">Usage For Subcommand clear-password-changed-by-required-time</a></h2>
+    <p>Clears the record of the most recent required change time with which a user has complied.  This will not have any effect unless a required change time is configured in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Clears the record of the most recent required change time with which user 'uid=jdoe,ou=People,dc=example,dc=com' complied.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-password-changed-by-required-time \
+         clear-password-changed-by-required-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-seconds-until-required-password-change-time">Usage For Subcommand get-seconds-until-required-password-change-time</a></h2>
+    <p>Retrieves the length of time in seconds until the user account is locked for failure to comply with a required change time.  This will only be available if a required change time is configured in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the length of time in seconds until the account for user 'uid=jdoe,ou=People,dc=example,dc=com' is locked for failure to comply with a required change time.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-seconds-until-required-password-change-time \
+         get-seconds-until-required-password-change-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-password-history-count">Usage For Subcommand get-password-history-count</a></h2>
+    <p>Retrieves the number of passwords in a user's password history.  This will only be available if the password history is enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the number of passwords in the password history for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-password-history-count get-password-history-count \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-clear-password-history">Usage For Subcommand clear-password-history</a></h2>
+    <p>Clears the password history for a user.  This will have no effect if the password history is not enabled in the user's password policy.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Clears the password history for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-password-history clear-password-history \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-has-retired-password">Usage For Subcommand get-has-retired-password</a></h2>
+    <p>Determines whether a user has an active retired password.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Determines whether user 'uid=jdoe,ou=People,dc=example,dc=com' has a retired password.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-has-retired-password get-has-retired-password \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-password-retired-time">Usage For Subcommand get-password-retired-time</a></h2>
+    <p>Retrieves the time that a user's former password was retired.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the time the former password for user 'uid=jdoe,ou=People,dc=example,dc=com' was retired.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-password-retired-time get-password-retired-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-retired-password-expiration-time">Usage For Subcommand get-retired-password-expiration-time</a></h2>
+    <p>Retrieves the time that a user's retired password will expire.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the time that the retired password for user 'uid=jdoe,ou=People,dc=example,dc=com' will expire.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-retired-password-expiration-time \
+         get-retired-password-expiration-time --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-clear-retired-password">Usage For Subcommand clear-retired-password</a></h2>
+    <p>Purges a retired password from a user's entry so that it may no longer be used to authenticate.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Purges a retired password for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-retired-password clear-retired-password \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-available-sasl-mechanisms">Usage For Subcommand get-available-sasl-mechanisms</a></h2>
+    <p>Retrieves a list of the SASL mechanisms that are available for a user.  This will take into account the server configuration, the types of credentials the user has, and the authentication constraints defined for the user.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves a list of the SASL mechanisms that are available for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-available-sasl-mechanisms \
+         get-available-sasl-mechanisms --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-available-otp-delivery-mechanisms">Usage For Subcommand get-available-otp-delivery-mechanisms</a></h2>
+    <p>Retrieves a list of the one-time password delivery mechanisms that are available for a user.  If the user's entry includes information about which OTP delivery mechanisms are preferred, then the values will be returned in order of most preferred to least preferred.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves a list of the one-time password delivery mechanisms that are available for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-available-otp-delivery-mechanisms \
+         get-available-otp-delivery-mechanisms --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-has-totp-shared-secret">Usage For Subcommand get-has-totp-shared-secret</a></h2>
+    <p>Determines whether a user has at least one TOTP shared secret that may be used in conjunction with the UNBOUNDID-TOTP SASL mechanism or the Verify TOTP extended operation.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Determines whether user 'uid=jdoe,ou=People,dc=example,dc=com' has at least one TOTP shared secret.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-has-totp-shared-secret get-has-totp-shared-secret \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-add-totp-shared-secret">Usage For Subcommand add-totp-shared-secret</a></h2>
+    <p>Adds a value to the set of TOTP shared secrets for a user.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{value}</i></tt> / <tt>--totpSharedSecret <i>{value}</i></tt> &mdash; The public ID for a YubiKey OTP device to register for a user.  This argument must be provided at least once, but may be provided multiple times to specify multiple public IDs to register.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Adds value 'abcdefghijklmnop' to the set of TOTP shared secrets for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account add-totp-shared-secret add-totp-shared-secret \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --totpSharedSecret abcdefghijklmnop</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-remove-totp-shared-secret">Usage For Subcommand remove-totp-shared-secret</a></h2>
+    <p>Removes a value from the set of TOTP shared secrets for a user.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{value}</i></tt> / <tt>--totpSharedSecret <i>{value}</i></tt> &mdash; The public ID for a YubiKey OTP device to deregister for a user.  This argument must be provided at least once, but may be provided multiple times to specify multiple public IDs to deregister.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Removes value 'abcdefghijklmnop' from the set of TOTP shared secrets for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account remove-totp-shared-secret remove-totp-shared-secret \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --totpSharedSecret abcdefghijklmnop</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-set-totp-shared-secrets">Usage For Subcommand set-totp-shared-secrets</a></h2>
+    <p>Replaces the set of TOTP shared secrets registered for a user.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{value}</i></tt> / <tt>--totpSharedSecret <i>{value}</i></tt> &mdash; The TOTP shared secret to register for a user.  This argument must be provided at least once, but may be provided multiple times to specify multiple TOTP shared secrets to register.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Replaces the set of TOTP shared secrets for user 'uid=jdoe,ou=People,dc=example,dc=com' with a single value of 'abcdefghijklmnop'.</li>
+    </ul>
+    <blockquote><pre>    manage-account set-totp-shared-secrets set-totp-shared-secrets \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --totpSharedSecret abcdefghijklmnop</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-clear-totp-shared-secrets">Usage For Subcommand clear-totp-shared-secrets</a></h2>
+    <p>Clears the set of TOTP shared secrets registered for a user.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Clears the set of TOTP shared secrets registered for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-totp-shared-secrets clear-totp-shared-secrets \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-has-registered-yubikey-public-id">Usage For Subcommand get-has-registered-yubikey-public-id</a></h2>
+    <p>Determines whether a user has at least one registered YubiKey OTP device public ID.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Determines whether user 'uid=jdoe,ou=People,dc=example,dc=com' has at least one registered YubiKey OTP device public ID.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-has-registered-yubikey-public-id \
+         get-has-registered-yubikey-public-id --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-registered-yubikey-public-ids">Usage For Subcommand get-registered-yubikey-public-ids</a></h2>
+    <p>Retrieves a list of the public IDs of the YubiKey OTP devices registered for a user.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves a list of the public IDs of the YubiKey OTP devices registered for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-registered-yubikey-public-ids \
+         get-registered-yubikey-public-ids --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-add-registered-yubikey-public-id">Usage For Subcommand add-registered-yubikey-public-id</a></h2>
+    <p>Adds a value to the set of registered YubiKey OTP public IDs for a user.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{value}</i></tt> / <tt>--publicID <i>{value}</i></tt> &mdash; The public ID for a YubiKey OTP device to register for a user.  This argument must be provided at least once, but may be provided multiple times to specify multiple public IDs to register.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Adds value 'abcdefghijkl' to the set of registered YubiKey OTP public IDs for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account add-registered-yubikey-public-id \
+         add-registered-yubikey-public-id --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --publicID abcdefghijkl</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-remove-registered-yubikey-public-id">Usage For Subcommand remove-registered-yubikey-public-id</a></h2>
+    <p>Removes a value from the set of registered YubiKey OTP public IDs for a user.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{value}</i></tt> / <tt>--publicID <i>{value}</i></tt> &mdash; The public ID for a YubiKey OTP device to deregister for a user.  This argument must be provided at least once, but may be provided multiple times to specify multiple public IDs to deregister.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Removes value 'abcdefghijkl' from the set of registered YubiKey OTP public IDs for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account remove-registered-yubikey-public-id \
+         remove-registered-yubikey-public-id --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --publicID abcdefghijkl</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-set-registered-yubikey-public-ids">Usage For Subcommand set-registered-yubikey-public-ids</a></h2>
+    <p>Replaces the list of the public IDs of the YubiKey OTP devices registered for a user.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{value}</i></tt> / <tt>--publicID <i>{value}</i></tt> &mdash; The public ID for a YubiKey OTP device to register for a user.  This argument must be provided at least once, but may be provided multiple times to specify multiple public IDs to register.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Replaces the list of the public IDs of the YubiKey OTP devices registered for user 'uid=jdoe,ou=People,dc=example,dc=com' with a single public ID of 'abcdefghijkl'.</li>
+    </ul>
+    <blockquote><pre>    manage-account set-registered-yubikey-public-ids \
+         set-registered-yubikey-public-ids --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --publicID abcdefghijkl</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-clear-registered-yubikey-public-ids">Usage For Subcommand clear-registered-yubikey-public-ids</a></h2>
+    <p>Clears the list of the public IDs of the YubiKey OTP devices registered for a user.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Clears the list of the public IDs of the YubiKey OTP devices registered for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-registered-yubikey-public-ids \
+         clear-registered-yubikey-public-ids --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-has-static-password">Usage For Subcommand get-has-static-password</a></h2>
+    <p>Determines whether a user has one static password.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Determines whether user 'uid=jdoe,ou=People,dc=example,dc=com' has a static password.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-has-static-password get-has-static-password \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-last-bind-password-validation-time">Usage For Subcommand get-last-bind-password-validation-time</a></h2>
+    <p>Retrieves the time the server last invoked password validators during a bind operation for a user.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the time the server last invoked password validators during a bind operation for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-last-bind-password-validation-time \
+         get-last-bind-password-validation-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-seconds-since-last-bind-password-validation">Usage For Subcommand get-seconds-since-last-bind-password-validation</a></h2>
+    <p>Retrieves the length of time in seconds since the server last invoked password validators during a bind operation for a user.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the length of time in seconds since the server last invoked password validators during a bind operation for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-seconds-since-last-bind-password-validation \
+         get-seconds-since-last-bind-password-validation \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-set-last-bind-password-validation-time">Usage For Subcommand set-last-bind-password-validation-time</a></h2>
+    <p>Specifies the time the server last invoked password validators during a bind operation for a user.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{timestamp}</i></tt> / <tt>--validationTime <i>{timestamp}</i></tt> &mdash; The new value for the last bind password validation time for the user.  It must be a timestamp formatted either in generalized time form or in the local time zone using one of the following formats:  YYYYMMDDhhmmss.uuu, YYYYMMDDhhmmss, or YYYYMMDDhhmm.  If this argument is not provided, the last bind password validation time will be set to the current time.
+        <br>
+        A provided value must be able to be parsed as a valid generalized time (as described in RFC 4517 section 3.1.13) or as a timestamp in the local time zone using any of the formats 'YYYYMMDDhhmmss.uuu', 'YYYYMMDDhhmmss', or 'YYYYMMDDhhmm'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Updates the password policy state for user 'uid=jdoe,ou=People,dc=example,dc=com' to indicate that the server last invoked password validators during a bind at time '20211116111454.382Z'.</li>
+    </ul>
+    <blockquote><pre>    manage-account set-last-bind-password-validation-time \
+         set-last-bind-password-validation-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --validationTime 20211116111454.382Z</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-clear-last-bind-password-validation-time">Usage For Subcommand clear-last-bind-password-validation-time</a></h2>
+    <p>Clears the time the server last invoked password validators during a bind operation for a user.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Clears the time the server last invoked password validators during a bind operation for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-last-bind-password-validation-time \
+         clear-last-bind-password-validation-time \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-account-is-validation-locked">Usage For Subcommand get-account-is-validation-locked</a></h2>
+    <p>Determines whether a user's account is locked because it contains a password that does not satisfy all of the configured password validators.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Determines whether the account for user 'uid=jdoe,ou=People,dc=example,dc=com' is locked because it contains a password that does not satisfy all of the configured password validators.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-account-is-validation-locked \
+         get-account-is-validation-locked --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-set-account-is-validation-locked">Usage For Subcommand set-account-is-validation-locked</a></h2>
+    <p>Specifies whether a user's account should be locked because it contains a password that does not satisfy all of the configured password validators.</p>
+    <h3>Arguments</h3>
+    <ul>
+      <li>
+        <tt>-O <i>{true|false}</i></tt> / <tt>--accountIsValidationLocked <i>{true|false}</i></tt> &mdash; Indicates whether the user's account should be locked because it contains a password that does not satisfy all of the configured password validators.  The value must be either 'true' or 'false'.
+        <br>
+        A provided value should be either 'true' or 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Forces the account for user 'uid=jdoe,ou=People,dc=example,dc=com' to be locked because it contains a password that does not satisfy all of the configured password validators.</li>
+    </ul>
+    <blockquote><pre>    manage-account set-account-is-validation-locked \
+         set-account-is-validation-locked --hostname server.example.com \
+         --port 389 --bindDN uid=admin,dc=example,dc=com \
+         --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com \
+         --accountIsValidationLocked true</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-get-recent-login-history">Usage For Subcommand get-recent-login-history</a></h2>
+    <p>Retrieves the user's recent login history.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Retrieves the recent login history for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account get-recent-login-history get-recent-login-history \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+
+    <p>&nbsp;</p>
+
+    <h2><a name="subcommand-clear-recent-login-history">Usage For Subcommand clear-recent-login-history</a></h2>
+    <p>Clears the user's recent login history.</p>
+    <h3>Examples</h3>
+    <ul>
+      <li>Clears the recent login history for user 'uid=jdoe,ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    manage-account clear-recent-login-history clear-recent-login-history \
+         --hostname server.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com --promptForBindPassword \
+         --targetDN uid=jdoe,ou=People,dc=example,dc=com</pre></blockquote>
+  </body>
+</html>

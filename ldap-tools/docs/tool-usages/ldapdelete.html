@@ -1,0 +1,618 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>The ldapdelete Command-Line Tool</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="../unboundid.css" type="text/css">
+    <link rel="shortcut icon" href="../images/favicon.ico">
+  </head>
+
+  <body>
+    <h1>The ldapdelete Command-Line Tool</h1>
+
+    <p>
+      Delete one or more entries from an LDAP directory server.  You can provide the DNs of the entries to delete using named arguments, as trailing arguments, from a file, or from standard input.  Alternatively, you can identify entries to delete using a search base DN and filter.
+    </p>
+    <h3>Usage</h3>
+    <blockquote><pre>ldapdelete <i>{arguments}</i> <i>[{dn1} [{dn2} [{dn3} ...] ] ]</i></pre></blockquote>
+    <h3>LDAP Connection and Authentication Arguments</h3>
+    <ul>
+      <li>
+        <tt>-h <i>{host}</i></tt> / <tt>--hostname <i>{host}</i></tt> &mdash; The IP address or resolvable name to use to connect to the directory server.  If this is not provided, then a default value of 'localhost' will be used.
+        <br><br>
+      </li>
+      <li>
+        <tt>-p <i>{port}</i></tt> / <tt>--port <i>{port}</i></tt> &mdash; The port to use to connect to the directory server.  If this is not provided, then a default value of 389 will be used.
+        <br>
+        The specified value must not be less than 1 or greater than 65 535.
+        <br><br>
+      </li>
+      <li>
+        <tt>-D <i>{dn}</i></tt> / <tt>--bindDN <i>{dn}</i></tt> &mdash; The DN to use to bind to the directory server when performing simple authentication.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>-w <i>{password}</i></tt> / <tt>--bindPassword <i>{password}</i></tt> &mdash; The password to use to bind to the directory server when performing simple authentication or a password-based SASL mechanism.
+        <br><br>
+      </li>
+      <li>
+        <tt>-j <i>{path}</i></tt> / <tt>--bindPasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to bind to the directory server when performing simple authentication or a password-based SASL mechanism.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForBindPassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the bind password.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-Z</tt> / <tt>--useSSL</tt> &mdash; Use SSL when communicating with the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-q</tt> / <tt>--useStartTLS</tt> &mdash; Use StartTLS when communicating with the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--defaultTrust</tt> &mdash; Use the JVM's default trust store, and optionally an additional trust store specified using the --trustStorePath argument, to non-interactively determine whether to trust any certificate chain presented during TLS negotiation.  If the chain cannot be trusted based on any of those sources, then negotiation will fail without prompting about whether to trust it.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-X</tt> / <tt>--trustAll</tt> &mdash; Trust any certificate presented by the directory server.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-K <i>{path}</i></tt> / <tt>--keyStorePath <i>{path}</i></tt> &mdash; The path to the file to use as the key store for obtaining client certificates when communicating securely with the directory server.
+        <br><br>
+      </li>
+      <li>
+        <tt>-W <i>{password}</i></tt> / <tt>--keyStorePassword <i>{password}</i></tt> &mdash; The password to use to access the key store contents.
+        <br><br>
+      </li>
+      <li>
+        <tt>-u <i>{path}</i></tt> / <tt>--keyStorePasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to access the key store contents.
+        <br>
+        The specified path must refer to a file that may or may not exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForKeyStorePassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the password to use to access the key store contents.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--keyStoreFormat <i>{format}</i></tt> &mdash; The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store file.
+        <br><br>
+      </li>
+      <li>
+        <tt>-P <i>{path}</i></tt> / <tt>--trustStorePath <i>{path}</i></tt> &mdash; The path to the file to use as trust store when determining whether to trust a certificate presented by the directory server.
+        <br><br>
+      </li>
+      <li>
+        <tt>-T <i>{password}</i></tt> / <tt>--trustStorePassword <i>{password}</i></tt> &mdash; The password to use to access the trust store contents.
+        <br><br>
+      </li>
+      <li>
+        <tt>-U <i>{path}</i></tt> / <tt>--trustStorePasswordFile <i>{path}</i></tt> &mdash; The path to the file containing the password to use to access the trust store contents.
+        <br>
+        The specified path must refer to a file that may or may not exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--promptForTrustStorePassword</tt> &mdash; Indicates that the tool should interactively prompt the user for the password to use to access the trust store contents.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--trustStoreFormat <i>{format}</i></tt> &mdash; The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store file.
+        <br><br>
+      </li>
+      <li>
+        <tt>-N <i>{nickname}</i></tt> / <tt>--certNickname <i>{nickname}</i></tt> &mdash; The nickname (alias) of the client certificate in the key store to present to the directory server for SSL client authentication.
+        <br><br>
+      </li>
+      <li>
+        <tt>--enableSSLDebugging</tt> &mdash; Enable Java's low-level support for debugging SSL/TLS communication.  This is equivalent to setting the 'javax.net.debug' property to 'all'.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-o <i>{name=value}</i></tt> / <tt>--saslOption <i>{name=value}</i></tt> &mdash; A name-value pair providing information to use when performing SASL authentication.
+        <br><br>
+      </li>
+      <li>
+        <tt>--useSASLExternal</tt> &mdash; Use the SASL EXTERNAL mechanism to authenticate.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--helpSASL</tt> &mdash; Provide information about the supported SASL mechanisms, including the properties available for use with each.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Data Arguments</h3>
+    <ul>
+      <li>
+        <tt>-b <i>{dn}</i></tt> / <tt>--entryDN <i>{dn}</i></tt> &mdash; The DN of an entry to delete.  This argument may be provided multiple times to specify the DNs of multiple entries to delete, and entries will be deleted in the order in which the arguments were given.  This argument must not be used in conjunction with any other argument used to indicate which entries should be deleted.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>-f <i>{path}</i></tt> / <tt>--dnFile <i>{path}</i></tt> &mdash; The path to a file containing the DNs of the entries to delete.  Each DN must be on its own line in the file, with blank lines and lines starting with the '#' character being ignored.  Each DN line may optionally start with 'dn:' (or 'dn::' to indicate that the DN is base64-encoded), and long DNs may be wrapped across multiple lines by starting subsequent lines with at least one space.  This argument may be provided multiple times to specify multiple DN files, and the files will be processed in the order they were provided.  This argument must not be used in conjunction with any other argument used to indicate which entries should be deleted.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--deleteEntriesMatchingFilter <i>{filter}</i></tt> &mdash; An LDAP search filter that can be used to identify the entries to delete.  The base DN for the searches should be specified using the --searchBaseDN argument, with the null DN being used by default if that argument is not given.  This argument may be provided multiple times to specify multiple filters, and searches will be performed in the order in which the filters are provided.  This argument must not be used in conjunction with any other argument used to indicate which entries should be deleted.
+        <br>
+        A provided value must be able to be parsed as an LDAP search filter as described in RFC 4515.
+        <br><br>
+      </li>
+      <li>
+        <tt>--deleteEntriesMatchingFiltersFromFile <i>{path}</i></tt> &mdash; The path to a file containing LDAP search filters (one filter per line, with blank lines and lines starting with the '#' character being ignored) that can be used to identify the entries to delete.  The base DN for the searches should be specified using the --searchBaseDN argument, with the null DN being used by default if that argument is not given.  This argument may be provided multiple times to specify the paths to multiple filter files, and the files will be processed in the order they are provided on the command line.  This argument must not be used in conjunction with any other argument used to indicate which entries should be deleted.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--searchBaseDN <i>{dn}</i></tt> &mdash; The base DN to use when searching for entries to delete.  This argument may only be used in conjunction with the --deleteEntriesMatchingFilter or --deleteEntriesMatchingFiltersFromFile arguments.  It may be provided multiple times to specify multiple search base DNs.  If this argument is not given, the null DN will be used as the base DN for the searches.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>--searchPageSize <i>{value}</i></tt> &mdash; The page size to use in conjunction with the simple paged results control when retrieving entries.  This argument may be used in conjunction with either the --deleteEntriesMatchingFilter or the --deleteEntriesMatchingFilterFromFile argument to indicate that the search should use the simple paged results control to retrieve the entries in pages rather than all at once.  It may also be used in conjunction with the --clientSideSubtreeDelete argument to indicate the page size for the simple paged results control that it uses.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>--encryptionPassphraseFile <i>{path}</i></tt> &mdash; The path to a file containing the passphrase used to encrypt an input file.  If this is not provided and an input file is encrypted (and the encryption key cannot be automatically obtained, for example, from a Ping Identity Directory Server's encryption settings database), then the user will be interactively prompted for the passphrase.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>-i <i>{charset}</i></tt> / <tt>--characterSet <i>{charset}</i></tt> &mdash; The character set/data encoding to use when reading data from files or standard input.  If this is not specified, the UTF-8 character set will be used by default.
+        <br><br>
+      </li>
+      <li>
+        <tt>-R <i>{path}</i></tt> / <tt>--rejectFile <i>{path}</i></tt> &mdash; The path to a file that will be updated with the DNs of any entries that could not be deleted, along with information about the failed delete attempt.  If this is not provided, then failure information will only be written to standard error.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>-v</tt> / <tt>--verbose</tt> &mdash; Generate verbose output.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--scriptFriendly</tt> &mdash; Generate script-friendly output.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Delete Operation Arguments</h3>
+    <ul>
+      <li>
+        <tt>--retryFailedOperations</tt> &mdash; Indicates that if an operation fails in a way that indicates that the connection to the directory server may be invalid, the tool should automatically retry the failed operation on a newly created connection.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--neverRetry</tt> &mdash; Indicates that the tool should not attempt to retry operations that fail in a way that the connection to the directory server may be invalid.  By default, it will automatically try to establish a new connection and retry the failed operation.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-n</tt> / <tt>--dryRun</tt> &mdash; Indicates that the tool should display what it would do, and may perform searches if appropriate, but will not actually attempt to delete any entries.  Note that if the server supports the no-operation request control, you may wish to use the --noOperation argument instead, which will actually send the delete requests with a control indicating that the server should perform as much validation of the request that it can, but should not actually delete the target entry.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-c</tt> / <tt>--continueOnError</tt> &mdash; Indicates that the tool should continue processing even after encountering an error.  This is only applicable if it is run with arguments that would cause it to attempt to delete multiple entries.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--followReferrals</tt> &mdash; Indicates that the tool should attempt to follow any referrals that it encounters.  By default, any referrals that are returned will be treated as failures.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--useAdministrativeSession</tt> &mdash; Indicates that the tool should attempt to use the Ping Identity-proprietary start administrative session extended operation to create an administrative session that will cause all requests to be processed in a dedicated pool of worker threads.  This may be useful when trying to diagnose or resolve an issue when all regular worker threads are busy processing other requests
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-r <i>{deletesPerSecond}</i></tt> / <tt>--ratePerSecond <i>{deletesPerSecond}</i></tt> &mdash; The maximum number of delete operations that should be attempted per second.  If this is not provided, then no rate limit will be imposed on delete requests.
+        <br>
+        The specified value must not be less than 1 or greater than 2 147 483 647.
+        <br><br>
+      </li>
+      <li>
+        <tt>-V <i>{version}</i></tt> / <tt>--ldapVersion <i>{version}</i></tt> &mdash; The LDAP protocol version that should be used.
+        <br>
+        The specified value must not be less than 3 or greater than 3.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Control Arguments</h3>
+    <ul>
+      <li>
+        <tt>--clientSideSubtreeDelete</tt> &mdash; Indicates that all delete requests should be processed as client-side subtree deletes by searching for all entries below the target entry and then deleting them.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-x</tt> / <tt>--serverSideSubtreeDelete</tt> &mdash; Indicates that all delete requests should be processed as server-side subtree deletes by using the subtree delete request control.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-s</tt> / <tt>--softDelete</tt> &mdash; Indicates that delete requests should include the Ping Identity-proprietary soft delete request control to indicate that the server should hide the entries rather than deleting them immediately.  Soft-deleted may or may not be completely removed after a period of time, based on the server configuration.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--hardDelete</tt> &mdash; Indicates that delete requests should include the Ping Identity-proprietary hard delete request control to indicate that the target entries should be completely removed, even if they would have otherwise been processed as soft deletes.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-Y <i>{authzID}</i></tt> / <tt>--proxyAs <i>{authzID}</i></tt> &mdash; Indicates that search and delete requests should include the proxied authorization v2 request control, to request that they be processed under the authority of the specified user.
+        <br><br>
+      </li>
+      <li>
+        <tt>--proxyV1As <i>{dn}</i></tt> &mdash; Indicates that search and delete requests should include the proxied authorization v1 request control, to request that they be processed under the authority of the specified user.
+        <br>
+        A provided value must be able to be parsed as an LDAP distinguished name as described in RFC 4514.
+        <br><br>
+      </li>
+      <li>
+        <tt>--useManageDsaIT</tt> &mdash; Indicates that search and delete requests should include the Manage DSA IT request control to indicate that the server should treat referral entries as regular entries.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--assertionFilter <i>{filter}</i></tt> &mdash; Indicates that delete requests should include the assertion request control to indicate that the server should reject any attempt to delete an entry that does not match the provided filter.
+        <br>
+        A provided value must be able to be parsed as an LDAP search filter as described in RFC 4515.
+        <br><br>
+      </li>
+      <li>
+        <tt>--preReadAttribute <i>{attr}</i></tt> &mdash; Indicates that delete requests should include the pre-read request control to indicate that delete responses should include a post-read response control with the values of the specified at the time the entry was deleted.  This may be provided multiple times to request multiple pre-read attributes.
+        <br><br>
+      </li>
+      <li>
+        <tt>--noOperation</tt> &mdash; Indicates that delete requests should include the no-operation request control to indicate that the server should perform as much processing as possible for the delete operation without actually removing the entry.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--getBackendSetID</tt> &mdash; Indicates that delete requests sent through a Directory Proxy Server should include the Ping Identity-proprietary get backend set ID request control to indicate that the response should include a control with the ID of the entry-balancing backend set in which the delete was processed.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--routeToBackendSet <i>{entry-balancing-processor-id:backend-set-id}</i></tt> &mdash; Indicates that search and delete requests should include the Ping Identity-proprietary route to backend set request control to indicate that the Directory Proxy Server should forward those requests to servers in the specified entry-balancing backend set.  This control may be provided multiple times to specify multiple backend sets for the same or different entry-balancing request processors.
+        <br><br>
+      </li>
+      <li>
+        <tt>--getServerID</tt> &mdash; Indicates that delete requests should include the Ping Identity-proprietary get server ID request control to indicate that the response should include a control with the server ID of the Directory Server instance in which the delete was processed.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--routeToServer <i>{id}</i></tt> &mdash; Indicates that search and delete requests should include the Ping Identity-proprietary route to server request control to indicate that the Directory Proxy Server should forward those requests to the specified backend server.
+        <br><br>
+      </li>
+      <li>
+        <tt>--useAssuredReplication</tt> &mdash; Indicates that delete requests should include the Ping Identity-proprietary assured replication request control to delay the response from the server until the change has been replicated to other servers.  The --assuredReplicationLocalLevel, --assuredReplicationRemoteLevel, and --assuredReplicationTimeout arguments may also be used to customize the content of the request control.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--assuredReplicationLocalLevel <i>{none|received-any-server|processed-all-servers}</i></tt> &mdash; The replication assurance level that should be used for servers in the same location as the server that originally processed the change.  The value must be one of 'none', 'received-any-server', or 'processed-all-servers'.  If this is not provided, the server will determine an appropriate local assurance level.
+        <br>
+        A provided value should be one of the following:  'received-any-server', 'processed-all-servers', 'none'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--assuredReplicationRemoteLevel <i>{none|received-any-remote-location|received-all-remote-locations|processed-all-remote-servers}</i></tt> &mdash; The replication assurance level that should be used for servers in a different location from the server that originally processed the change.  The value must be one of 'none', 'received-any-remote-location', 'received-all-remote-locations', or 'processed-all-remote-servers'.  If this is not provided, the server will determine an appropriate remote assurance level.
+        <br>
+        A provided value should be one of the following:  'processed-all-remote-servers', 'none', 'received-any-remote-location', 'received-all-remote-locations'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--assuredReplicationTimeout <i>{duration}</i></tt> &mdash; The maximum length of time that the server should delay the response to the delete operation while waiting for the desired replication assurance to be achieved.  If this is not provided, the server will determine an appropriate timeout to use.
+        <br>
+        The provided value must contain an integer followed by a unit of 'ns' (for nanoseconds), 'us' (for microseconds), 'ms' (for milliseconds), 's' (for seconds), 'm' (for minutes), 'h' (for hours), 'd' (for days), or 'w' (for weeks).  The specified duration must not be less than 0ns or greater than 9223372036854775807ns.
+        <br><br>
+      </li>
+      <li>
+        <tt>--replicationRepair</tt> &mdash; Indicates that delete requests should include the Ping Identity-proprietary replication repair request control to indicate that the delete operation should not be replicated.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressReferentialIntegrityUpdates</tt> &mdash; Indicates that delete requests should include the Ping Identity-proprietary suppress referential integrity updates request control so that the server will not perform any referential integrity processing for the delete operation.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--operationPurpose <i>{value}</i></tt> &mdash; Indicates that requests should include the Ping Identity-proprietary operation purpose request control to indicate the intended purpose for the operations.
+        <br><br>
+      </li>
+      <li>
+        <tt>-E</tt> / <tt>--authorizationIdentity</tt> &mdash; Indicates that bind requests should include the authorization identity request control to retrieve the authorization identity for the authenticated connection.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--getAuthorizationEntryAttribute <i>{attr}</i></tt> &mdash; Indicates that bind requests should include the Ping Identity-proprietary get authorization entry request control to retrieve the specified attribute from the authenticated user's entry.  This argument may be provided multiple times to request that multiple attributes be returned.
+        <br><br>
+      </li>
+      <li>
+        <tt>--getUserResourceLimits</tt> &mdash; Indicates that bind requests should include the Ping Identity-proprietary get user resource limits request control to retrieve information about the resource limits that the server will impose for the authenticated connection.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-J <i>{oid}[:{criticality}[:{stringValue}|::{base64Value}]]</i></tt> / <tt>--deleteControl <i>{oid}[:{criticality}[:{stringValue}|::{base64Value}]]</i></tt> &mdash; Provides a control to include in all delete requests.
+        <br>
+        A provided value must be a string representation of a valid LDAP control in the form {oid}[:{criticality}[:{stringValue}|::{base64Value}]].
+        <br><br>
+      </li>
+      <li>
+        <tt>--bindControl <i>{oid}[:{criticality}[:{stringValue}|::{base64Value}]]</i></tt> &mdash; Provides a control to include in all bind requests.
+        <br>
+        A provided value must be a string representation of a valid LDAP control in the form {oid}[:{criticality}[:{stringValue}|::{base64Value}]].
+        <br><br>
+      </li>
+    </ul>
+    <h3>Additional Arguments</h3>
+    <ul>
+      <li>
+        <tt>--interactive</tt> &mdash; Launch the tool in interactive mode.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--outputFile <i>{path}</i></tt> &mdash; Write all standard output and standard error messages to the specified file instead of to the console.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--appendToOutputFile</tt> &mdash; Indicates that the tool should append to the file specified by the --outputFile argument if it already exists.  If this argument is not provided and the output file already exists, it will be overwritten.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--teeOutput</tt> &mdash; Write all standard output and standard error messages to the console as well as to the specified output file.  The --outputFile argument must also be provided.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>-H</tt> / <tt>--help</tt> &mdash; Display usage information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--version</tt> &mdash; Display version information for this program.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--propertiesFilePath <i>{path}</i></tt> &mdash; The path to a properties file used to specify default values for arguments not supplied on the command line.
+        <br>
+        The specified path must refer to a file that exists.
+        <br><br>
+      </li>
+      <li>
+        <tt>--generatePropertiesFile <i>{path}</i></tt> &mdash; Write an empty properties file that may be used to specify default values for arguments.
+        <br>
+        The specified path must refer to a file which may or may not exist, but whose parent directory must exist.
+        <br><br>
+      </li>
+      <li>
+        <tt>--noPropertiesFile</tt> &mdash; Do not obtain any argument values from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+      <li>
+        <tt>--suppressPropertiesFileComment</tt> &mdash; Suppress output listing the arguments obtained from a properties file.
+        <br>
+        This argument is not allowed to have a value.  If this argument is included in a set of arguments, then it will be assumed to have a value of 'true'.  If it is absent from a set of arguments, then it will be assumed to have a value of 'false'.
+        <br><br>
+      </li>
+    </ul>
+    <h3>Dependent Argument Sets</h3>
+    <ul>
+      <li>
+        If the <tt>--keyStorePassword</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--keyStorePasswordFile</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--promptForKeyStorePassword</tt> argument is provided, then the <tt>--keyStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--trustStorePassword</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--trustStorePasswordFile</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--promptForTrustStorePassword</tt> argument is provided, then the <tt>--trustStorePath</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--keyStorePath</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--trustStorePath</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--defaultTrust</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--trustAll</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        If the <tt>--bindPassword</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--bindPasswordFile</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--promptForBindPassword</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--bindDN</tt>, <tt>--saslOption</tt>
+      </li>
+      <li>
+        If the <tt>--searchBaseDN</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--deleteEntriesMatchingFilter</tt>, <tt>--deleteEntriesMatchingFiltersFromFile</tt>
+      </li>
+      <li>
+        If the <tt>--searchPageSize</tt> argument is provided, then at least one of the following arguments must also be provided:  <tt>--deleteEntriesMatchingFilter</tt>, <tt>--deleteEntriesMatchingFiltersFromFile</tt>, <tt>--clientSideSubtreeDelete</tt>
+      </li>
+      <li>
+        If the <tt>--appendToOutputFile</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+      <li>
+        If the <tt>--teeOutput</tt> argument is provided, then the <tt>--outputFile</tt> argument must also be provided.
+      </li>
+    </ul>
+    <h3>Exclusive Argument Sets</h3>
+    <ul>
+      <li>
+        The following arguments cannot be used together:  <tt>--useSSL</tt>, <tt>--useStartTLS</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--keyStorePassword</tt>, <tt>--keyStorePasswordFile</tt>, <tt>--promptForKeyStorePassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--trustStorePassword</tt>, <tt>--trustStorePasswordFile</tt>, <tt>--promptForTrustStorePassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--defaultTrust</tt>, <tt>--trustAll</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--trustAll</tt>, <tt>--trustStorePath</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--bindDN</tt>, <tt>--saslOption</tt>, <tt>--useSASLExternal</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--bindPassword</tt>, <tt>--bindPasswordFile</tt>, <tt>--promptForBindPassword</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--entryDN</tt>, <tt>--dnFile</tt>, <tt>--deleteEntriesMatchingFilter</tt>, <tt>--deleteEntriesMatchingFiltersFromFile</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--followReferrals</tt>, <tt>--useManageDsaIT</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--clientSideSubtreeDelete</tt>, <tt>--serverSideSubtreeDelete</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--clientSideSubtreeDelete</tt>, <tt>--followReferrals</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--clientSideSubtreeDelete</tt>, <tt>--preReadAttribute</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--clientSideSubtreeDelete</tt>, <tt>--getBackendSetID</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--clientSideSubtreeDelete</tt>, <tt>--getServerID</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--clientSideSubtreeDelete</tt>, <tt>--noOperation</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--clientSideSubtreeDelete</tt>, <tt>--dryRun</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--softDelete</tt>, <tt>--hardDelete</tt>
+      </li>
+      <li>
+        The following arguments cannot be used together:  <tt>--propertiesFilePath</tt>, <tt>--noPropertiesFile</tt>
+      </li>
+    </ul>
+    <h3>Examples</h3>
+    <ul>
+      <li>Deletes the entry with DN 'uid=test.user,ou=People,dc=example,dc=com'</li>
+    </ul>
+    <blockquote><pre>    ldapdelete --hostname ds.example.com --port 636 --useSSL \
+         --bindDN uid=admin,dc=example,dc=com \
+         uid=test.user,ou=People,dc=example,dc=com</pre></blockquote>
+    <ul>
+      <li>Deletes the entries whose DNs are contained in the file 'dns-to-delete.txt'.</li>
+    </ul>
+    <blockquote><pre>    ldapdelete --hostname ds.example.com --port 636 --useSSL \
+         --trustStorePath trust-store.jks \
+         --bindDN uid=admin,dc=example,dc=com \
+         --bindPasswordFile admin-password.txt --dnFile dns-to-delete.txt</pre></blockquote>
+    <ul>
+      <li>Deletes all entries matching filter '(description=delete)' below base entry 'ou=People,dc=example,dc=com'.</li>
+    </ul>
+    <blockquote><pre>    ldapdelete --hostname ds.example.com --port 389 --useStartTLS \
+         --trustStorePath trust-store.jks \
+         --bindDN uid=admin,dc=example,dc=com \
+         --bindPasswordFile admin-password.txt \
+         --deleteEntriesMatchingFilter "(description=delete)"</pre></blockquote>
+    <ul>
+      <li>Deletes the entries whose DNs are read from standard input (one DN per line).</li>
+    </ul>
+    <blockquote><pre>    ldapdelete --hostname ds.example.com --port 389 \
+         --bindDN uid=admin,dc=example,dc=com</pre></blockquote>
+  </body>
+</html>

@@ -1,0 +1,305 @@
+Usage for ldapcompare:
+
+Perform compare operations in an LDAP directory server.  Compare operations may
+be used to efficiently determine whether a specified entry has a given value.
+
+The exit code for this tool will indicate whether processing was successful or
+unsuccessful, and to provide a basic indication of the reason for unsuccessful
+attempts.  By default, it will use an exit code of zero (which corresponds to
+the LDAP 'success' result) if all compare operations completed with a result
+code of either 'compare false' or 'compare true' (integer values 5 and 6,
+respectively), but if the --useCompareResultCodeAsExitCode argument is
+provided, only one compare assertion is performed, and it yields an exit code
+of 'compare false' or 'compare true', then the numeric value for that result
+code will be used as the exit code.  If any error occurs during processing,
+then the exit code will be a nonzero value that reflects the first error result
+that was encountered.
+
+The attribute type and assertion value to use for the compare operations will
+typically be provided as the first unnamed trailing argument provided on the
+command line.  It should be formatted with the name or OID of the target
+attribute type followed by a single colon and the string representation of the
+assertion value.  Alternatively, the attribute name or OID may be followed by
+two colons and the base64-encoded representation of the assertion value, or it
+may be followed by a colon and a less-than symbol to indicate that the
+assertion value should be read from a file (in which case the exact bytes of
+the file, including line breaks, will be used as the assertion value).
+
+The DNs of the entries to compare may either be provided on the command line as
+additional unnamed trailing arguments after the provided attribute-value
+assertion, or they may be read from a file whose path is provided using the
+--dnFile argument.
+
+If the attribute-value assertion is provided on the command line as an unnamed
+trailing argument, then the same assertion will be performed for all
+operations.  If multiple types of assertions should be performed, then you may
+use the --assertionFile argument to specify the path to a file containing both
+attribute-value assertions and entry DNs.
+
+Usage:  ldapcompare {options}
+[attribute:value|attribute::base64Value|attribute:<valueFilePath [dn1 [dn2 [
+dn3 [ .. ]]]]]
+
+Available options include:
+
+  LDAP Connection and Authentication Arguments
+
+    -h, --hostname {host}
+        The IP address or resolvable name to use to connect to the directory
+        server.  If this is not provided, then a default value of 'localhost'
+        will be used.
+    -p, --port {port}
+        The port to use to connect to the directory server.  If this is not
+        provided, then a default value of 389 will be used.
+    -D, --bindDN {dn}
+        The DN to use to bind to the directory server when performing simple
+        authentication.
+    -w, --bindPassword {password}
+        The password to use to bind to the directory server when performing
+        simple authentication or a password-based SASL mechanism.
+    -j, --bindPasswordFile {path}
+        The path to the file containing the password to use to bind to the
+        directory server when performing simple authentication or a
+        password-based SASL mechanism.
+    --promptForBindPassword
+        Indicates that the tool should interactively prompt the user for the
+        bind password.
+    -Z, --useSSL
+        Use SSL when communicating with the directory server.
+    -q, --useStartTLS
+        Use StartTLS when communicating with the directory server.
+    --defaultTrust
+        Use the JVM's default trust store, and optionally an additional trust
+        store specified using the --trustStorePath argument, to
+        non-interactively determine whether to trust any certificate chain
+        presented during TLS negotiation.  If the chain cannot be trusted based
+        on any of those sources, then negotiation will fail without prompting
+        about whether to trust it.
+    -X, --trustAll
+        Trust any certificate presented by the directory server.
+    -K, --keyStorePath {path}
+        The path to the file to use as the key store for obtaining client
+        certificates when communicating securely with the directory server.
+    -W, --keyStorePassword {password}
+        The password to use to access the key store contents.
+    -u, --keyStorePasswordFile {path}
+        The path to the file containing the password to use to access the key
+        store contents.
+    --promptForKeyStorePassword
+        Indicates that the tool should interactively prompt the user for the
+        password to use to access the key store contents.
+    --keyStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the key store
+        file.
+    -P, --trustStorePath {path}
+        The path to the file to use as trust store when determining whether to
+        trust a certificate presented by the directory server.
+    -T, --trustStorePassword {password}
+        The password to use to access the trust store contents.
+    -U, --trustStorePasswordFile {path}
+        The path to the file containing the password to use to access the trust
+        store contents.
+    --promptForTrustStorePassword
+        Indicates that the tool should interactively prompt the user for the
+        password to use to access the trust store contents.
+    --trustStoreFormat {format}
+        The format (e.g., JKS, PKCS12, PKCS11, BCFKS, etc.) for the trust store
+        file.
+    -N, --certNickname {nickname}
+        The nickname (alias) of the client certificate in the key store to
+        present to the directory server for SSL client authentication.
+    --enableSSLDebugging
+        Enable Java's low-level support for debugging SSL/TLS communication.
+        This is equivalent to setting the 'javax.net.debug' property to 'all'.
+    -o, --saslOption {name=value}
+        A name-value pair providing information to use when performing SASL
+        authentication.
+    --useSASLExternal
+        Use the SASL EXTERNAL mechanism to authenticate.
+    --helpSASL
+        Provide information about the supported SASL mechanisms, including the
+        properties available for use with each.
+
+  Processing Arguments
+
+    -f, --dnFile {path}
+        The path to a file containing the DNs of the entries in which to
+        perform the compare assertions.  If this argument is provided, then
+        each DN must be provided on its own line with no other content on that
+        line, and there must be exactly one unnamed trailing argument to
+        specify the attribute-value assertion to evaluate against all entries
+        referenced in the DN file.  If this argument is not provided, then
+        there must be at least two unnamed trailing arguments, with the first
+        specifying the attribute-value assertion and all remaining trailing
+        arguments providing the DNs of the entries to evaluate.
+    --assertionFile {path}
+        The path to a file with information about the compare assertions to be
+        evaluated.  If this is provided, then each line of the file must
+        contain the DN of the target entry followed by one or more horizontal
+        tab characters and the attribute-value assertion to process against
+        that entry (specified as the attribute name followed by a single colon
+        and the string representation of the assertion value, the attribute
+        name followed by two colons and a base64-encoded representation of the
+        assertion value, or the attribute name followed by a colon, a less-than
+        sign, and the path to a file from which the raw assertion value should
+        be read).
+    --followReferrals
+        Attempt to follow any referrals encountered during compare processing.
+    --useAdministrativeSession
+        Use an administrative session to process all operations using a
+        dedicated pool of worker threads.  This may be useful when trying to
+        diagnose problems in a server that is unresponsive because all normal
+        worker threads are busy processing other requests.
+    -c, --continueOnError
+        Continue processing even if there are errors.
+    -n, --dryRun
+        Indicate which compare assertions would be processed, but do not
+        actually send them to the server.
+
+  Bind Control Arguments
+
+    --bindControl {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Include the indicated control in all bind requests used to authenticate
+        to the server.
+    -E, --authorizationIdentity
+        Include the authorization identity request control (as described in RFC
+        3829) in all bind requests.  If this control is included, a successful
+        bind result should include the authorization identity assigned to the
+        connection.
+    --usePasswordPolicyControl
+        Include the password policy request control (as described in
+        draft-behera-ldap-password-policy) in all bind requests.  If this
+        control is included, the bind result may include additional information
+        about the target user's password policy state.
+    --getAuthorizationEntryAttribute {attribute}
+        Include the UnboundID-proprietary get authorization entry request
+        control in all bind requests to indicate that the bind result should
+        include the specified attributes from the entries for the
+        authentication and authorization identities.  This argument may be
+        provided multiple times to specify multiple attributes to request.
+    --getUserResourceLimits
+        Include the UnboundID-proprietary get user resource limits request
+        control in all bind requests to indicate that a successful bind result
+        should include information about resource limits (e.g., size limit,
+        time limit, idle time limit, etc.) that the server may impose for the
+        user.
+
+  Compare Control Arguments
+
+    -J, --compareControl {oid}[:{criticality}[:{stringValue}|::{base64Value}]]
+        Include the indicated control in all compare requests sent to the
+        directory server.
+    -Y, --proxyAs {authzID}
+        Include the proxied authorization control (also known as the proxied
+        authorization v2 request control, as described in RFC 4370) in compare
+        requests to indicate that the server should process the operation under
+        the authority of the specified user.  The authorization identity should
+        generally be specified in the form 'dn:' followed by the DN of the
+        target user, or 'u:' followed by a username for the target user.
+    --proxyV1As {dn}
+        Include the proxied authorization v1 request control (as described in
+        draft-weltman-ldapv3-proxy-04) in compare requests to indicate that the
+        server should process the operation under the authority of the user
+        with the specified DN.
+    --manageDsaIT
+        Include the manageDsaIT request control in all compare requests to
+        indicate that any referral entries should be treated as regular entries
+        rather than causing the server to generate a referral result.
+    --assertionFilter {filter}
+        Include the LDAP assertion request control (as described in RFC 4528)
+        in all compare requests to indicate that the compare operation should
+        only be evaluated if the target entry matches the provided filter.
+    --operationPurpose {purpose}
+        Include the UnboundID-proprietary operation purpose request control in
+        all compare requests to provide information about the purpose for the
+        operation.
+
+  Output Arguments
+
+    --outputFile {path}
+        The path to a file to which standard output should be written.
+        Messages written to standard error will not be written to this file.
+    --teeOutput
+        Write standard output messages to both the specified output file and
+        the default standard output stream.
+    --outputFormat {tab-delimited|csv|json}
+        Specifies the format in which the output should be written.  Allowed
+        values include 'tab-delimited' 'csv', or 'json'.  For each output
+        format, the output will include the DN of the target entry, the name of
+        the attribute type, the assertion value, the numeric value for the
+        result code, and the name for the result code.  The JSON format may
+        also include additional fields.
+    -v, --verbose
+        Indicates that the tool should generate verbose output.  If this is
+        provided, then complete details about the result of each compare
+        operation will be written to standard error.  If this is not provided,
+        then that detail will only be written for operations that include an
+        error result or that include one or more response controls.
+    --terse
+        Indicates that the tool should generate terse output.  If this is
+        provided, then additional compare output will be suppressed, even for
+        error results and results with response controls.
+    --useCompareResultCodeAsExitCode
+        Use the integer value of the compare operation result code as the tool
+        exit code.  This primarily applies to cases in which only a single
+        compare assertion is processed and the response to that compare
+        operation has a result code of either 'compare false' (integer value 5)
+        or 'compare true' (integer value 6).  By default, the tool will use an
+        exit code of zero in such cases to indicate that processing completed
+        successfully, but the exit code may be useful in scripts to more easily
+        obtain the result of the compare operation.  Note that if multiple
+        compare operations are all processed successfully, then the tool will
+        always return an exit code of zero, and if an error is encountered
+        during processing, then the exit code will reflect the LDAP result code
+        for that associated error.  This option only affects the tool exit code
+        and does not alter the visible output in any way.
+
+  Usage Arguments
+
+    --interactive
+        Launch the tool in interactive mode.
+    -H, --help
+        Display usage information for this program.
+    -V, --version
+        Display version information for this program.
+    --propertiesFilePath {path}
+        The path to a properties file used to specify default values for
+        arguments not supplied on the command line.
+    --generatePropertiesFile {path}
+        Write an empty properties file that may be used to specify default
+        values for arguments.
+    --noPropertiesFile
+        Do not obtain any argument values from a properties file.
+    --suppressPropertiesFileComment
+        Suppress output listing the arguments obtained from a properties file.
+
+Examples
+
+  Use an LDAP compare operation to determine whether entry
+  'uid=jdoe,ou=People,dc=example,dc=com' has a value of 'Austin' for the 'l'
+  attribute.  The result of the compare operation will be displayed in the
+  default tab-delimited text format.
+
+    ldapcompare --hostname ds.example.com --port 636 --useSSL \
+         --bindDN uid=admin,dc=example,dc=com l:Austin \
+         uid=jdoe,ou=People,dc=example,dc=com
+
+  Use a series of LDAP compare operations to determine which of the entries
+  with DNs are read from the file 'entry-dns.txt' have a 'title' value of
+  'manager'.  The result of each compare operation will be displayed in the
+  comma-separated values (CSV) format, with all unnecessary output suppressed.
+
+    ldapcompare --hostname ds.example.com --port 636 --useSSL \
+         --bindDN uid=admin,dc=example,dc=com --dnFile entry-dns.txt \
+         --outputFormat csv --terse title:manager
+
+  Use a series of LDAP compare operations using both entry DNs and
+  attribute-value assertions read from the file 'compare-assertions.txt'.  The
+  results of the compare operations will be written in JSON format to the file
+  'compare-assertion-results.json', and verbose output about the processing
+  will be written to standard error.
+
+    ldapcompare --hostname ds.example.com --port 636 --useSSL \
+         --bindDN uid=admin,dc=example,dc=com \
+         --assertionFile compare-assertions.txt --outputFormat json \
+         --outputFile compare-assertion-results.json --verbose
