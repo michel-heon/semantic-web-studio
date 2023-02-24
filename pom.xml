@@ -172,6 +172,7 @@
                         <configuration>
                             <skip>${jena.skip.install}</skip>
                             <outputDirectory>${sw-studio.deploy.dir}/lib</outputDirectory>
+
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
