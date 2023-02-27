@@ -33,36 +33,44 @@
         <jena.version>3.17.0</jena.version>
         <jena.skip.install>false</jena.skip.install>
         <sw-studio.deploy.dir>${project.build.directory}/deploy</sw-studio.deploy.dir>
+        <maven.compiler.release>11</maven.compiler.release>
     </properties>
     <build>
         <finalName>semantic-web-studio</finalName>
         <plugins>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.1</version>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
+                        <id>echo-properties</id>
                         <phase>validate</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <tasks>
-                                <echo>Displaying value of 'semantic-web-studio' property</echo>
-                                <echo>[jena.version] ${jena.version}</echo>
-                                <echo>[jena.skip.install] ${jena.skip.install}</echo>
-                                <echo>[sw-studio.deploy.dir] ${sw-studio.deploy.dir}</echo>
-                            </tasks>
+                            <skip>false</skip>
+                            <target>
+                                <echo message="###################################################################" />
+                                <echo message="Displaying value of '${project.artifactId}' properties" />
+                                <echo message="###################################################################" />
+                                <echo message="# [jena.version]         ${jena.version}" />
+                                <echo message="# [jena.skip.install]    ${jena.skip.install}" />
+                                <echo message="# [sw-studio.deploy.dir] ${sw-studio.deploy.dir}" />
+                                <echo message="# [java.version]         ${env.JAVA_VERSION}" />
+                                <echo message="###################################################################" />
+                                <echo message="###################################################################" />
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
                 <groupId>com.googlecode.maven-download-plugin</groupId>
                 <artifactId>download-maven-plugin</artifactId>
-                <version>1.6.8</version>
+                <version>1.2.1</version>
                 <executions>
                     <execution>
                         <id>install-jena</id>
@@ -95,7 +103,7 @@
                             <overwrite>true</overwrite>
                             <resources>
                                 <resource>
-                                	<filtering>false</filtering>
+                                    <filtering>false</filtering>
                                     <directory>${project.basedir}/src/main/bash</directory>
                                 </resource>
                             </resources>
@@ -113,7 +121,7 @@
                             <overwrite>true</overwrite>
                             <resources>
                                 <resource>
-                                	<filtering>false</filtering>
+                                    <filtering>false</filtering>
                                     <directory>${project.build.directory}/apache-jena-${jena.version}</directory>
                                 </resource>
                             </resources>
@@ -132,7 +140,7 @@
                             <resources>
                                 <resource>
                                     <directory>${project.build.directory}</directory>
-                                	<filtering>false</filtering>
+                                    <filtering>false</filtering>
                                     <includes>
                                         <include>*.jar</include>
                                     </includes>
@@ -180,8 +188,19 @@
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>

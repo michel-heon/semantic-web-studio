@@ -14,23 +14,10 @@ export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd 
 ###################################################################
 # Assigner JENA_VERSION si elle n'existe pas
 [ ! -z JENA_VERSION ] && export JENA_VERSION=3.17.0
-
-###################################################################
-# Assigner SW_STUDIO_HOME
-# si elle est passée en paramètre
-if [ ! -z $1 ]; then 
-    export SW_STUDIO_HOME=$1
-else
-    ###################################################################
-    # Assigner SW_STUDIO_HOME
-    # si elle n'est pas déjà assignée
-    if [ -z $SW_STUDIO_HOME ]; then 
-        export SW_STUDIO_HOME=$HOME/sw_studio
-    fi
-fi
-
+[ -z "$SW_STUDIO_HOME" ] && export SW_STUDIO_HOME=$1
 export JENA_HOME=$SW_STUDIO_HOME
 export TOOLS_DIR=$SW_STUDIO_HOME/ldap-tools/tools
+export JAVA_VERSION=11
 export PATH=$JENA_HOME:$JENA_HOME/bin:$TOOLS_DIR:$PATH
 
 

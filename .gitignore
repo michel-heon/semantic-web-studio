@@ -69,3 +69,4 @@ Thumbs.db
 /deploy/
 /.apt_generated/
 /.apt_generated_tests/
+/bin/
